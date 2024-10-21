@@ -29,3 +29,6 @@ class User(models.Model):
 
     def set_password(self, raw_password):
         """Hashes password and stores it"""
+
+
+# poop
