@@ -1,5 +1,5 @@
 """
-URL configuration for e project.
+URL configuration for frc_marketplace_database project.
 
 The `urlpatterns` list routes URLs to views. For more information please see:
     https://docs.djangoproject.com/en/5.1/topics/http/urls/

@@ -1,0 +1,25 @@
+services:
+  db:
+    image: postgres:16
+    environment:
+      POSTGRES_PASSWORD: password123
+      POSTGRES_USER: admin
+      POSTGRES_DB: frc_marketplace_psql
+    ports:
+      - "5432:5432" # expose psql ports
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+  app:
+    build: frc_marketplace_database
+    container_name: django_app
+    command: pipenv run python manage.py runserver 0.0.0.0:8000
+    ports:
+      - "8000:8000" # expose django ports
+    environment:
+      - DATABASE_URL=postgres://admin:password123@db:5432/frc_marketplace_psql
+      - DJANGO_SETTINGS_MODULE=frc_marketplace_API.settings # points to settings module
+    depends_on:
+      - db # waits for database to be ready
+
+volumes:
+  pgdata:
