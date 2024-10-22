@@ -8,7 +8,19 @@ services:
     ports:
       - "5432:5432" # expose psql ports
     volumes:
-      - pgdata:/var/lib/postgresql/data
+      - pgdata:/var/lib/postgresql/data # for persistent data
+
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@pgadmin.com # admin login
+      PGADMIN_DEFAULT_PASSWORD: admin123 # admin login
+    ports:
+      - "8888:80"
+    volumes:
+      - pgadmin_data:/var/lib/pgadmin # for persistent pgadmin configs
+
+
   app:
     build: frc_marketplace_database
     container_name: django_app
@@ -23,3 +35,4 @@ services:
 
 volumes:
   pgdata:
+  pgadmin_data:
