@@ -9,6 +9,7 @@ djangorestframework = "*"
 django-phone-field = "*"
 django-address = "*"
 psycopg2-binary="*"
+python-decouple="*"
 
 [dev-packages]
 
