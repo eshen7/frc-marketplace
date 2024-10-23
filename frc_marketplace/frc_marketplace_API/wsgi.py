@@ -1,5 +1,5 @@
 """
-WSGI config for frc_marketplace_database project.
+WSGI config for frc_marketplace project.
 
 It exposes the WSGI callable as a module-level variable named ``application``.
 

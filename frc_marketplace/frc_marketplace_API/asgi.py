@@ -1,5 +1,5 @@
 """
-ASGI config for frc_marketplace_database project.
+ASGI config for frc_marketplace project.
 
 It exposes the ASGI callable as a module-level variable named ``application``.
 
@@ -11,6 +11,6 @@ import os
 
 from django.core.asgi import get_asgi_application
 
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'frc_marketplace_database.settings')
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'frc_marketplace.settings')
 
 application = get_asgi_application()
