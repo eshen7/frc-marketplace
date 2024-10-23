@@ -15,7 +15,20 @@ from django.contrib.auth.base_user import BaseUserManager, AbstractBaseUser
 from django.contrib.auth.models import PermissionsMixin
 from django.db import models
 from phone_field import PhoneField
-from address.models import AddressField
+from address.models import AddressField, Address
+
+
+def default_address():
+    """Create and return a default address."""
+    from address.models import Address  # Avoid circular import issues
+    return Address.objects.create(
+        street_number='1001',
+        route='Avenida De Las Americas',
+        locality='Houston',
+        postal_code='77010',
+        country='US'
+    )
+
 
 
 class UserManager(BaseUserManager):
@@ -28,7 +41,11 @@ class UserManager(BaseUserManager):
         email = self.normalize_email(email)
         user = self.model(email=email, **extra_fields)
         user.set_password(password)
+
+        extra_fields.setdefault('address', default_address()) # set default address if none is given
+
         user.save(using=self._db)
+
         return user
 
     def create_superuser(self, email, password, **extra_fields):
@@ -60,7 +77,7 @@ class User(AbstractBaseUser,PermissionsMixin):
     objects = UserManager()
 
     USERNAME_FIELD = 'email'
-    REQUIRED_FIELDS = ["team_name", "team_number","phone","address"]
+    REQUIRED_FIELDS = ["team_name", "team_number","phone"]
 
     def __str__(self):
         return self.email

@@ -22,7 +22,7 @@ services:
 
 
   app:
-    build: frc_marketplace_database
+    build: frc_marketplace_API
     container_name: django_app
     command: >
       sh -c "
