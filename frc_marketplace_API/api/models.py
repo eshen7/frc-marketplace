@@ -1,57 +1,42 @@
-# PART REQUESTS
-# Title
-# Photos
-# Part name
-# Model specs
-# Need by
-# Need it for what
-# Extra info
-# Condition of part
-# Team requesting
-
 import uuid
-
 from django.contrib.auth.base_user import BaseUserManager, AbstractBaseUser
 from django.contrib.auth.models import PermissionsMixin
 from django.db import models
 from phone_field import PhoneField
-from address.models import AddressField, Address
+from address.models import AddressField, Address, Locality
 
 
 def default_address():
     """Create and return a default address."""
-    from address.models import Address  # Avoid circular import issues
-    return Address.objects.create(
-        street_number='1001',
-        route='Avenida De Las Americas',
-        locality='Houston',
-        postal_code='77010',
-        country='US'
-    )
-
+    # Create a default Address instance using the recommended structure
+    addr_data = {
+        'raw': '1001 Avenida De Las Americas, Houston, TX 77010'
+    }
+    addr, _ = Address.objects.get_or_create(**addr_data)
+    return addr
 
 
 class UserManager(BaseUserManager):
-    """user manager for each account"""
+    """User manager for each account."""
 
     def create_user(self, email, password=None, **extra_fields):
-        """protocol to create regular users"""
+        """Protocol to create regular users."""
         if not email:
             raise ValueError("Email is required!")
         email = self.normalize_email(email)
+
         user = self.model(email=email, **extra_fields)
         user.set_password(password)
-
-        extra_fields.setdefault('address', default_address()) # set default address if none is given
-
         user.save(using=self._db)
-
         return user
 
     def create_superuser(self, email, password, **extra_fields):
-        """protocol to create superusers (admin)"""
+        """Protocol to create superusers (admins)."""
         extra_fields.setdefault('is_staff', True)
         extra_fields.setdefault('is_superuser', True)
+
+        # Set the default address if it's not provided
+        extra_fields.setdefault('address', default_address())
 
         if not extra_fields.get('is_staff'):
             raise ValueError('Superuser is_staff field is required!')
@@ -60,29 +45,29 @@ class UserManager(BaseUserManager):
 
         return self.create_user(email, password, **extra_fields)
 
-class User(AbstractBaseUser,PermissionsMixin):
-    """user model"""
+
+class User(AbstractBaseUser, PermissionsMixin):
+    """User model."""
     UUID = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     email = models.EmailField(unique=True)
-    team_name = models.CharField()
-    team_number = models.IntegerField(unique=True)
-    phone = PhoneField(unique=True)
-    address = AddressField(null=True, blank=True)
-    password = models.CharField(max_length=128)  # store hashed password
+    team_name = models.CharField(max_length=255,null=True,blank=True)
+    team_number = models.IntegerField(unique=True,null=True,blank=True)
+    phone = PhoneField(unique=True,null=True,blank=True)
+    address = AddressField(on_delete=models.SET_NULL, null=True, blank=True)
+    password = models.CharField(max_length=128)  # Store hashed password
     is_active = models.BooleanField(default=True)
-    is_staff = models.BooleanField(default=False) # base user is not staff by default
-    is_superuser = models.BooleanField(default=False) # base user is not superuser by default
+    is_staff = models.BooleanField(default=False)  # Default user is not staff
+    is_superuser = models.BooleanField(default=False)  # Default user is not superuser
     date_joined = models.DateTimeField(auto_now_add=True)
 
     objects = UserManager()
 
     USERNAME_FIELD = 'email'
-    REQUIRED_FIELDS = ["team_name", "team_number","phone"]
+    REQUIRED_FIELDS = []  # No additional required fields other than email
 
     def __str__(self):
         return self.email
 
     def set_password(self, raw_password):
-        """hashes password and stores it"""
+        """Hashes password and stores it."""
         super().set_password(raw_password=raw_password)
-
