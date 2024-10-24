@@ -94,6 +94,18 @@ class User(AbstractBaseUser, PermissionsMixin):
         """Hashes password and stores it."""
         super().set_password(raw_password=raw_password)
 
+class Part(models.Model):
+    """Part Model."""
+
+    name = models.CharField(max_length=255)
+    description = models.CharField(null=True, blank=True)
+    picture = models.ImageField(upload_to='parts/', null=True, blank=True)
+
 
 class PartRequest(models.Model):
-    pass
+    """Part Request Model."""
+
+    part = models.ForeignKey(Part, on_delete=models.PROTECT, related_name='requests')
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='requests')
+    quantity = models.IntegerField(default=1)
+    request_date = models.DateField(auto_now_add=True)
