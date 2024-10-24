@@ -28,32 +28,13 @@ class UserManager(BaseUserManager):
             raise ValueError("Email is required!")
         email = self.normalize_email(email)
 
-        logger.debug(f"Received extra_fields: {extra_fields}")
-
-        address_data = extra_fields.pop("address", None)
-
-        if not address_data:
-            raise ValueError("Address is required!")
-
-        # Create or get the address object first
-        if isinstance(address_data, str):
-            """If raw address string is provided"""
-            addr, _ = Address.objects.get_or_create(raw=address_data)
-        elif isinstance(address_data, dict):
-            """If address components are provided as a dictionary"""
-            addr, _ = Address.objects.get_or_create(**address_data)
-        elif isinstance(address_data, Address):
-            """If Address instance is provided"""
-            addr = address_data
-        else:
-            raise ValueError("Invalid address format")
-
-        user = self.model(email=email, address=addr, **extra_fields)
+        user = self.model(email=email, **extra_fields)
         user.set_password(password)
 
         user.save(using=self._db)
         return user
-
+    
+    
     def create_superuser(self, email, password, **extra_fields):
         """Protocol to create superusers (admins)."""
 

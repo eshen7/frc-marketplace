@@ -1,3 +1,4 @@
+from django.forms import ValidationError
 from django.shortcuts import render
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
@@ -15,18 +16,31 @@ def user_views(request):
     if request.method == "POST":
         return _create_user(request=request)
 
+
 def _create_user(request):
-    serializer = UserSerializer(data=request.data)
-    if serializer.is_valid():
-        serializer.save()  # save new user to database
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
-    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    try:
+        serializer = UserSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    except ValidationError as e:
+        return Response(
+            {"message": "Validation failed", "errors": e.detail},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+    except Exception as e:
+        return Response(
+            {"message": "Registration failed", "error": str(e)},
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+        )
 
 
 def _get_user(request):
-    return Response(
-        UserSerializer({"email": "123@gg.com", "password": "12345678"}).data
-    )
+    users = User.objects.all()
+    serializer = UserSerializer(users, many=True)
+    return Response(serializer.data, status=status.HTTP_200_OK)
+
 
 @api_view(["GET", "POST"])
 def part_views(request):
@@ -51,6 +65,7 @@ def _get_parts(request):
     parts = Part.objects.all()
     serializer = PartSerializer(parts, many=True)
     return Response(serializer.data, status=status.HTTP_200_OK)
+
 
 @api_view(["GET", "POST"])
 def part_request_views(request):
