@@ -45,8 +45,42 @@
   color: #888;
 }
 
-.top-bar {
+.topBar {
   background-color: #450000;
-  width: 800px;
   height: 75px;
+  display: flex;
+  align-items: center;
+  padding: 0 20px;
+  position: fixed;
+  top: 0;
+  left:0;
+  width: 100%;
+  z-index: 1000;
 }
+
+.alignImg {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  max-width: 100%;
+  height: auto;
+  display: block;
+  margin: 20px auto;
+}
+
+.pageHeader {
+  text-align: center;
+  padding: 20px;
+  font-size: 2.5em;
+  font-weight: bold;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  background-color: #f0f0f0;
+  box-shadow: 0 4px 2px -2px gray;
+  z-index: 1000;
+  color: black;
+}
+
