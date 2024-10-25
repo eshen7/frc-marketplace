@@ -16,15 +16,7 @@ const App = () => {
 	return (
 		<>
 			<TopBar />
-			<Routes>
-				<Route path="/" element={<Home />} />
-				<Route path="/signup" element={<Signup />} />
-				<Route path="/login" element={<Login />} />
-				<Route path="/request" element={<Request />} />
-				<Route path="/fulfill" element={<Fulfill />} />
-				<Route path="*" element={<p>Page not found</p>} />
-			</Routes>
-			<p className="">
+			{/* <p className="">
 				googoo gaga bitch
 			</p>
 			<h1>FRC Marketplace</h1>
@@ -38,7 +30,7 @@ const App = () => {
 			</div>
 			<p>
 				test test test test test test test test test test test
-			</p>
+			</p> */}
 		</>
 	)
 }

@@ -5,43 +5,48 @@ import './index.css'
 import App from './App.jsx'
 import { ThemeProvider } from '@mui/material/styles';
 import theme from './theme.jsx';
-
 import {
   createBrowserRouter,
   RouterProvider,
 } from "react-router-dom";
-import Login from './pages/Login';
+import Login from './pages/Login'; 
 import Signup from './pages/Signup';
-import Request from './pages/Request';
-import Fulfill from './pages/Fulfill';
+import Request from './pages/Request'; 
+import Fulfill from './pages/Fulfill'; 
 
 const ErrorPage = () => <p> Sorry, this page does not exist</p>;
 
 const router = createBrowserRouter([
   {
     path: '/',
-    element: <App />,
+    element: <App />, 
     errorElement: <ErrorPage />,
-  },
-  {
-    path: '/signup',
-    element: <Signup />,
-  },
-  {
-    path: '/login',
-    element: <Login />,
-  },
-  {
-    path: '/request',
-    element: <Request />,
-  },
-  {
-    path: '/fulfill',
-    element: <Fulfill />,
-  },
-  {
-    path: '*',
-    element: <p>Page not found</p>,
+    children: [ 
+      {
+        path: '/', 
+        element: <Home />, 
+      },
+      {
+        path: 'signup', 
+        element: <Signup />,
+      },
+      {
+        path: 'login',
+        element: <Login />,
+      },
+      {
+        path: 'request',
+        element: <Request />,
+      },
+      {
+        path: 'fulfill',
+        element: <Fulfill />,
+      },
+      {
+        path: '*',
+        element: <p>Page not found</p>,
+      },
+    ],
   },
 ]);
 
@@ -59,13 +64,15 @@ if (!rootElement._reactRoot) {
 }
 
 //render application
-const renderApp = () => {
+const renderApp =() => {
   if (root) {
     root.render(
       <StrictMode>
-          <RouterProvider router={router} />
+          <ThemeProvider theme={theme}>
+            <RouterProvider router={router} />
+            </ThemeProvider>
       </StrictMode>
-    );
+   );
   }
 };
 //initial application rendering
@@ -78,11 +85,4 @@ if (import.meta.hot) {
     renderApp();
   });
 }
-/*
-createRoot(document.getElementById('root')).render(
-  <StrictMode>
-    <ThemeProvider theme={theme}>
-      <App />
-    </ThemeProvider>
-  </StrictMode>,
-)*/
+
