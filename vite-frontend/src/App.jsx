@@ -15,7 +15,6 @@ const App = () => {
 	console.log("App component rendered");
 	return (
 		<>
-			<TopBar />
 			<Outlet />
 		</>
 	)

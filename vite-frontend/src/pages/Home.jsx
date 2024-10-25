@@ -2,7 +2,6 @@ import React from 'react';
 import { useState } from 'react'
 
 const Home = () => {
-    const [count, setCount] = useState(0)
 	return (
 		<>
 			<h1 className="pageHeader" style={{ fontSize: '6em'}}> FRC Marketplace</h1>

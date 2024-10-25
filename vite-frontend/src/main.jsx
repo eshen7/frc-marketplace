@@ -9,26 +9,26 @@ import {
   createBrowserRouter,
   RouterProvider,
 } from "react-router-dom";
-import Login from './pages/Login'; 
+import Home from './pages/Home';
+import Login from './pages/Login';
 import Signup from './pages/Signup';
 import Request from './pages/Request'; 
 import Fulfill from './pages/Fulfill'; 
-import Home from './pages/Home.jsx';
 
 const ErrorPage = () => <p> Sorry, this page does not exist</p>;
 
 const router = createBrowserRouter([
   {
     path: '/',
-    element: <App />, 
+    element: <App />,
     errorElement: <ErrorPage />,
-    children: [ 
+    children: [
       {
-        path: '/', 
-        element: <Home />, 
+        path: '/',
+        element: <Home />,
       },
       {
-        path: 'signup', 
+        path: 'signup',
         element: <Signup />,
       },
       {
@@ -65,15 +65,15 @@ if (!rootElement._reactRoot) {
 }
 
 //render application
-const renderApp =() => {
+const renderApp = () => {
   if (root) {
     root.render(
       <StrictMode>
-          <ThemeProvider theme={theme}>
-            <RouterProvider router={router} />
-            </ThemeProvider>
+        <ThemeProvider theme={theme}>
+          <RouterProvider router={router} />
+        </ThemeProvider>
       </StrictMode>
-   );
+    );
   }
 };
 //initial application rendering

@@ -14,7 +14,7 @@ const TopBar = () => {
                 <div className='h-16 flex items-center justify-end'>
                     <Stack className="justify-center" direction="row" spacing={2}>
                         <Stack direction="row" spacing={2} className='px-6'>
-                            <Button variant="contained" color='secondary'>Sign In</Button>
+                            <Button variant="contained" color='secondary' className='whitespace-nowrap'>Sign In</Button>
                             <Button variant="outlined" color='secondary'>Register</Button>
                         </Stack>
                         <IconButton className='items-center'>
