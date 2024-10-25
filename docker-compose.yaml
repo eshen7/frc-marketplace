@@ -20,15 +20,11 @@ services:
     volumes:
       - pgadmin_data:/var/lib/pgadmin # for persistent pgadmin configs
 
-
   app:
     build: frc_marketplace_API
     container_name: django_app
     command: >
-      sh -c "
-      pipenv run python manage.py makemigrations &&
-      pipenv run python manage.py migrate &&
-      pipenv run python manage.py runserver 0.0.0.0:${DJANGO_PORT_OUTER}"
+      sh -c " pipenv run python manage.py makemigrations api && pipenv run python manage.py migrate api && pipenv run python manage.py runserver 0.0.0.0:${DJANGO_PORT_OUTER}"
     ports:
       - "${DJANGO_PORT_OUTER}:${DJANGO_PORT_INNER}" # expose django ports
     env_file:

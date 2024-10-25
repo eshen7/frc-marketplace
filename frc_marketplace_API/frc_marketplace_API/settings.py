@@ -43,6 +43,7 @@ INSTALLED_APPS = [
     # Third-party apps
     'phone_field',  # For model support
     'address',  # For model support
+    'rest_framework', # For rest api framework
 
     'api',  # django app
 ]
