@@ -4,7 +4,7 @@ import react from '@vitejs/plugin-react-swc'
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [react()],
-  base: '/static/',
+  /*base: '/static/',
   build: {
     outDir: '../myproject/static',
     emptyOutDir: true,
@@ -12,5 +12,5 @@ export default defineConfig({
     rollupOptions: {
       input: './src/main.jsx' 
     }
-  }
+  }*/
 })

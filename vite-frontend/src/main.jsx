@@ -10,10 +10,10 @@ import {
   createBrowserRouter,
   RouterProvider,
 } from "react-router-dom";
-import Login from './pages/Login'; 
+import Login from './pages/Login';
 import Signup from './pages/Signup';
-import Request from './pages/Request'; 
-import Fulfill from './pages/Fulfill'; 
+import Request from './pages/Request';
+import Fulfill from './pages/Fulfill';
 
 const ErrorPage = () => <p> Sorry, this page does not exist</p>;
 
@@ -59,13 +59,13 @@ if (!rootElement._reactRoot) {
 }
 
 //render application
-const renderApp =() => {
+const renderApp = () => {
   if (root) {
     root.render(
       <StrictMode>
-        <RouterProvider router={router} />
+          <RouterProvider router={router} />
       </StrictMode>
-   );
+    );
   }
 };
 //initial application rendering
@@ -78,11 +78,11 @@ if (import.meta.hot) {
     renderApp();
   });
 }
-
+/*
 createRoot(document.getElementById('root')).render(
   <StrictMode>
     <ThemeProvider theme={theme}>
       <App />
     </ThemeProvider>
   </StrictMode>,
-)
+)*/

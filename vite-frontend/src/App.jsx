@@ -17,13 +17,13 @@ const App = () => {
 		<>
 			<TopBar />
 			<Routes>
-					<Route path="/" element={<Home />} />
-					<Route path="/signup" element={<Signup />} />
-					<Route path="/login" element={<Login />} />
-					<Route path="/request" element={<Request />} />
-					<Route path="/fulfill" element={<Fulfill />} />
-					<Route path="*" element={<p>Page not found</p>} />
-				</Routes>
+				<Route path="/" element={<Home />} />
+				<Route path="/signup" element={<Signup />} />
+				<Route path="/login" element={<Login />} />
+				<Route path="/request" element={<Request />} />
+				<Route path="/fulfill" element={<Fulfill />} />
+				<Route path="*" element={<p>Page not found</p>} />
+			</Routes>
 			<p className="">
 				googoo gaga bitch
 			</p>
