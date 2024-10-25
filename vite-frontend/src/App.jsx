@@ -2,7 +2,7 @@ import { useState } from 'react'
 import reactLogo from './assets/react.svg'
 import viteLogo from '/vite.svg'
 import React from 'react';
-import { Routes, Route } from 'react-router-dom';
+import { Routes, Route, Outlet } from 'react-router-dom';
 import Home from './pages/Home';
 import Signup from './pages/Signup';
 import Login from './pages/Login';
@@ -16,21 +16,7 @@ const App = () => {
 	return (
 		<>
 			<TopBar />
-			{/* <p className="">
-				googoo gaga bitch
-			</p>
-			<h1>FRC Marketplace</h1>
-			<div className="card">
-				<button onClick={() => setCount((count) => count + 1)}>
-					count is {count}
-				</button>
-				<p>
-					Edit <code>src/App.jsx</code> and save to test HMR
-				</p>
-			</div>
-			<p>
-				test test test test test test test test test test test
-			</p> */}
+			<Outlet />
 		</>
 	)
 }

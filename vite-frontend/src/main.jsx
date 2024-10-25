@@ -13,6 +13,7 @@ import Login from './pages/Login';
 import Signup from './pages/Signup';
 import Request from './pages/Request'; 
 import Fulfill from './pages/Fulfill'; 
+import Home from './pages/Home.jsx';
 
 const ErrorPage = () => <p> Sorry, this page does not exist</p>;
 
