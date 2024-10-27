@@ -6,17 +6,8 @@ from phone_field import PhoneField
 from address.models import AddressField, Address, Locality
 import logging
 
-logger = logging.getLogger(__name__)
-
-
-def default_address():
-    """Create and return a default address."""
-
-    addr_data = {
-        "raw": "1001 Avenida De Las Americas, Houston, TX 77010"  # George R. Brown Convention Center
-    }
-    addr, _ = Address.objects.get_or_create(**addr_data)
-    return addr
+# Default address for superusers
+DEFAULT_ADDRESS = {"raw": "1001 Avenida De Las Americas, Houston, TX 77010"}
 
 
 class UserManager(BaseUserManager):
@@ -33,16 +24,17 @@ class UserManager(BaseUserManager):
 
         user.save(using=self._db)
         return user
-    
-    
+
     def create_superuser(self, email, password, **extra_fields):
         """Protocol to create superusers (admins)."""
 
         extra_fields.setdefault("is_staff", True)
         extra_fields.setdefault("is_superuser", True)
 
-        # Set the default address if it's not provided (superuser only)
-        extra_fields.setdefault("address", default_address())
+        # Set the default address (superuser only)
+        extra_fields.setdefault(
+            "address", Address.objects.get_or_create(DEFAULT_ADDRESS)
+        )
 
         return self.create_user(email, password, **extra_fields)
 
@@ -75,18 +67,19 @@ class User(AbstractBaseUser, PermissionsMixin):
         """Hashes password and stores it."""
         super().set_password(raw_password=raw_password)
 
+
 class Part(models.Model):
     """Part Model."""
 
     name = models.CharField(max_length=255)
     description = models.CharField(null=True, blank=True)
-    picture = models.ImageField(upload_to='parts/', null=True, blank=True)
+    picture = models.ImageField(upload_to="parts/", null=True, blank=True)
 
 
 class PartRequest(models.Model):
     """Part Request Model."""
 
-    part = models.ForeignKey(Part, on_delete=models.PROTECT, related_name='requests')
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='requests')
+    part = models.ForeignKey(Part, on_delete=models.PROTECT, related_name="requests")
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="requests")
     quantity = models.IntegerField(default=1)
     request_date = models.DateField(auto_now_add=True)

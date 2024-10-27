@@ -20,7 +20,7 @@ services:
     volumes:
       - pgadmin_data:/var/lib/pgadmin # for persistent pgadmin configs
 
-  app:
+  backend_app:
     build: frc_marketplace_API
     container_name: django_app
     command: >
@@ -34,6 +34,16 @@ services:
       - DJANGO_SETTINGS_MODULE=frc_marketplace_API.settings # points to settings module
     depends_on:
       - db # waits for database to be ready
+  
+  frontend_app:
+    build: vite-frontend
+    container_name: vite_frontend
+    ports:
+      - "${VITE_PORT_OUTER}:${VITE_PORT_INNER}" # expose vite ports
+    command: >
+      sh -c "npm run dev --host 0.0.0.0 --port ${VITE_PORT_OUTER}"
+    env_file:
+      - .env
 
 volumes:
   pgdata:

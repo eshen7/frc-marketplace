@@ -11,6 +11,7 @@ django-address = "*"
 psycopg2-binary="*"
 python-decouple="*"
 pillow="*"
+googlemaps="*"
 
 [dev-packages]
 
