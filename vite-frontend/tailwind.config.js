@@ -7,10 +7,13 @@ export default {
   theme: {
     extend: {
       fontFamily: {
-        robot: ['Roboto', 'sans-serif']
+        roboto: ['Roboto', 'sans-serif'],
+        paytone: ['Paytone One', 'sans-serif']
       },
     },
   },
-  plugins: [],
+  plugins: [
+    require('tailwindcss-textshadow') // Requires a plugin for text shadows
+  ],
 }
 

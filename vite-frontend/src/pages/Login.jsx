@@ -9,12 +9,12 @@ const Login = () => {
   return (
     <>
       <TopBar />
-      <div className='flex justify-center'>
-        <div className='flex flex-col bg-gray-300 min-h-fit container my-20 justify-center w-2/3 mx-auto py-20 rounded-3xl min-w-96'>
+      <div className='flex justify-center bg-gray-100'>
+        <div className='flex flex-col bg-gray-200 min-h-fit container my-20 justify-center w-2/3 mx-auto py-20 rounded-3xl min-w-96 shadow-xl'>
           <h1 className='text-5xl text-red-800 font-bold font-roboto text-center mb-32'>Sign in</h1>
           <div className='flex flex-col gap-5'>
             <div className="w-2/3 mx-auto"><TextField id="outlined-basic" label="Email" variant="outlined" className='w-full' /></div>
-            <div className="w-2/3 mx-auto"><TextField id="outlined-basic" label="Pasword" variant="outlined" className='w-full' /></div>
+            <div className="w-2/3 mx-auto"><TextField id="outlined-basic" label="Password" variant="outlined" className='w-full' /></div>
             <div className='flex flex-row mx-10 justify-center'>
               <div className='w-1/2 flex justify-center'>
                 <a href='signup' className='text-blue-600 hover:text-blue-800'>Sign Up Instead</a>
