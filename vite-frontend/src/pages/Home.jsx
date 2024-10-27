@@ -2,6 +2,7 @@ import React from 'react';
 import TopBar from '../components/TopBar';
 import { useRef, useState } from 'react'
 
+
 const getDaysUntil = (dueDate) => {
 	const now = new Date()
 	const diffTime = dueDate.getTime() - now.getTime()
@@ -10,7 +11,7 @@ const getDaysUntil = (dueDate) => {
 }
 
 const recentRequests = [
-	{ id: 1, title: "CIM Motor", team: "Team 1234", distance: 2, dueDate: new Date(2024, 9, 27) },
+	{ id: 1, title: "CIM Motor", team: "Team 1234", distance: 2, dueDate: new Date(2024, 9, 25) },
 	{ id: 2, title: "Pneumatic Cylinder", team: "Team 5678", distance: 5, dueDate: new Date(2024, 9, 28) },
 	{ id: 3, title: "Talon SRX", team: "Team 9101", distance: 10, dueDate: new Date(2024, 9, 27) },
 	{ id: 4, title: "Encoder", team: "Team 2468", distance: 15, dueDate: new Date(2024, 10, 5) },
@@ -35,6 +36,44 @@ const recentSales = [
 	{ id: 10, title: "Aluminum Extrusion", team: "Team 6543", price: 40, distance: 16 },
 ]
 
+const renderPartRequest = (request) => {
+	const daysUntil = getDaysUntil(request.dueDate);
+	const isUrgent = daysUntil < 5 && daysUntil > 0;
+	const isOverdue = daysUntil < 0;
+	const isDueToday = daysUntil === 0;
+	const absoluteDaysUntil = Math.abs(daysUntil);
+
+	const renderDueDate = () => {
+		return (
+			<p className={`text-sm ${isOverdue || isDueToday ? 'text-red-600 font-bold' : isUrgent ? 'text-orange-600 font-bold' : 'text-gray-500'}`}>
+				{isOverdue ? (
+					<>
+						OVERDUE! ({absoluteDaysUntil} {absoluteDaysUntil === 1 ? "day" : "days"} ago)
+					</>
+				) : isDueToday ? (
+					<>Need Today!</>
+				) : (
+					<>
+						Need By: {request.dueDate.toLocaleDateString()} ({daysUntil} {daysUntil === 1 ? "day" : "days"})
+					</>
+				)}
+			</p>
+		);
+	};
+
+	return (
+		<div key={request.id} className={`flex-none w-[256px] bg-white rounded-lg shadow-md p-6 whitespace-nowrap ${isUrgent ? "border-2 border-orange-600" : isOverdue || isDueToday ? "border-2 border-red-600" : ''}`}>
+			<h3 className="text-xl font-semibold mb-2">{request.title}</h3>
+			<p className="text-gray-600 mb-2">{request.team}</p>
+			{renderDueDate()}
+			<p className="text-sm text-gray-500">{request.distance} miles away</p>
+			<button className="mt-4 bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition-colors">
+				Offer Part
+			</button>
+		</div>
+	)
+};
+
 
 const Home = () => {
 	return (
@@ -49,20 +88,8 @@ const Home = () => {
 					</div>
 					<div className="flex overflow-x-auto space-x-4 pb-4">
 						{recentRequests.map((request) => {
-							const daysUntil = getDaysUntil(request.dueDate);
-							const isUrgent = daysUntil < 3;
 							return (
-								<div key={request.id} className="flex-none w-64 bg-white rounded-lg shadow-md p-6">
-									<h3 className="text-xl font-semibold mb-2">{request.title}</h3>
-									<p className="text-gray-600 mb-2">{request.team}</p>
-									<p className={`text-sm ${isUrgent ? 'text-red-600 font-bold' : 'text-gray-500'}`}>
-										Due: {request.dueDate.toLocaleDateString()} ({daysUntil} {daysUntil < 2 ? "day" : "days"})
-									</p>
-									<p className="text-sm text-gray-500">{request.distance} miles away</p>
-									<button className="mt-4 bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition-colors">
-										Offer Part
-									</button>
-								</div>
+								<>{renderPartRequest(request)}</>
 							)
 						})}
 					</div>
