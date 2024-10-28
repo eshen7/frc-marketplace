@@ -4,7 +4,6 @@ from rest_framework import serializers
 from .models import User, Part, PartRequest
 from address.models import Address
 import googlemaps
-from django.conf import settings
 from address.models import State, Country, Locality
 from decouple import config
 
@@ -38,23 +37,24 @@ class UserSerializer(serializers.ModelSerializer):
                     return component["long_name"]
             return None
 
-        country_name = get_component("country")
+        # Handle optional components
+        country_name = get_component("country") or "Unknown"
         country, _ = Country.objects.get_or_create(name=country_name)
 
-        state_name = get_component("administrative_area_level_1")
+        state_name = get_component("administrative_area_level_1") or "Unknown"
         state, _ = State.objects.get_or_create(name=state_name, country=country)
 
-        locality_name = get_component("locality")
+        locality_name = get_component("locality") or "Unknown"
         locality, _ = Locality.objects.get_or_create(
             name=locality_name,
             state=state,
-            defaults={"postal_code": get_component("postal_code")},
+            defaults={"postal_code": get_component("postal_code") or "N/A"},
         )
 
-        # Create address
+        # Create address (full or partial)
         address = Address.objects.create(
-            street_number=get_component("street_number"),
-            route=get_component("route"),
+            street_number=get_component("street_number") or "",
+            route=get_component("route") or "",
             locality=locality,
             raw=raw_address,
         )
@@ -63,7 +63,7 @@ class UserSerializer(serializers.ModelSerializer):
 
     def validate_address(self, value) -> Address:
         try:
-            gmaps = googlemaps.Client(key=config("GOOGLE_GEOCODING_API_KEY"))
+            gmaps = googlemaps.Client(key=config("GOOGLE_API_KEY"))
 
             # Geocode the address
             geocode_result = gmaps.geocode(value)

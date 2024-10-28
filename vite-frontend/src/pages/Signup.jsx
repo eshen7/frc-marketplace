@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import TopBar from "./../components/TopBar.jsx";
 import { Box, Button } from "@mui/material";
 import TextField from "@mui/material/TextField";
@@ -20,6 +20,50 @@ const Signup = () => {
   });
 
   const [passwordError, setPasswordError] = useState("");
+  const [autocomplete, setAutocomplete] = useState(null);
+
+  useEffect(() => {
+    // Initialize Google Places Autocomplete
+    const initAutocomplete = () => {
+      if (window.google && window.google.maps) {
+        const autocompleteInstance = new window.google.maps.places.Autocomplete(
+          document.getElementById("address-input"),
+          {
+            types: ["address"],
+            // componentRestrictions: { country: 'US' } // Optional: restrict to US addresses
+          }
+        );
+
+        autocompleteInstance.addListener("place_changed", () => {
+          const place = autocompleteInstance.getPlace();
+          if (place.formatted_address) {
+            handleChange("address", place.formatted_address);
+          }
+        });
+
+        setAutocomplete(autocompleteInstance);
+      }
+    };
+
+    // Load Google Places script if not already loaded
+    if (!window.google) {
+      const script = document.createElement("script");
+      script.src = `https://maps.googleapis.com/maps/api/js?key=${process.env.GOOGLE_API_KEY}&libraries=places`;
+      script.async = true;
+      script.defer = true;
+      script.onload = initAutocomplete;
+      document.head.appendChild(script);
+    } else {
+      initAutocomplete();
+    }
+
+    // Cleanup
+    return () => {
+      if (autocomplete) {
+        window.google.maps.event.clearInstanceListeners(autocomplete);
+      }
+    };
+  }, []);
 
   const validatePasswords = (password, confirmation) => {
     if (!password || !confirmation) {
@@ -92,13 +136,14 @@ const Signup = () => {
             </div>
             <div className="w-2/3 mx-auto">
               <TextField
-                id="outlined-basic"
+                id="address-input" // Important: This ID is used by Google Places
                 required
                 label="Address"
                 variant="outlined"
                 className="w-full"
                 value={formData.address}
                 onChange={(e) => handleChange("address", e.target.value)}
+                placeholder="Start typing your address..."
               />
             </div>
             <div className="w-2/3 mx-auto">
