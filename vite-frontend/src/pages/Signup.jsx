@@ -118,6 +118,7 @@ const Signup = () => {
                 id="outlined-basic"
                 required
                 label="Phone Number"
+                type="number"
                 variant="outlined"
                 className="w-full"
                 value={formData.phone}
