@@ -81,9 +81,9 @@ const renderParts = () => {
 		<section className="mb-12 mx-[30px]">
 			<div className="flex justify-between items-center mb-4">
 				<h2 className="text-2xl font-bold">Recent Part Requests Nearby</h2>
-				<button href="/requests" className='bg-red-800 text-white py-3 px-5 rounded-[5px] hover:bg-red-900 transition-translate duration-100'>
+				<a href="requests"><button className='bg-red-800 text-white py-3 px-5 rounded-[5px] hover:bg-red-900 transition-translate duration-100'>
 					See All Requests
-				</button>
+				</button></a>
 			</div>
 			<div className="flex overflow-x-auto space-x-4 pb-4">
 				{recentRequests.map((request) => {
@@ -101,9 +101,9 @@ const renderSales = () => {
 		<section className='mx-[30px]'>
 			<div className="flex justify-between items-center mb-4">
 				<h2 className="text-2xl font-bold">Recent Parts for Sale Nearby</h2>
-				<button className='bg-red-800 text-white py-3 px-5 rounded-[5px] hover:bg-red-900 transition-translate duration-100'>
+				<a href="sales"><button className='bg-red-800 text-white py-3 px-5 rounded-[5px] hover:bg-red-900 transition-translate duration-100'>
 					See All Sales
-				</button>
+				</button></a>
 			</div>
 			<div className="flex overflow-x-auto space-x-4 pb-4 scrollbar-hide">
 				{recentSales.map((sale) => (
