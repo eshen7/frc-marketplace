@@ -42,6 +42,7 @@ class UserManager(BaseUserManager):
 class User(AbstractBaseUser, PermissionsMixin):
     """User model."""
 
+    full_name = models.CharField(max_length=255, null=True, blank=True)
     email = models.EmailField(unique=True)
     team_name = models.CharField(max_length=255, null=True, blank=True)
     team_number = models.IntegerField(unique=True, null=True, blank=True)
