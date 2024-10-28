@@ -19,7 +19,7 @@ const TopBar = () => {
                     <Button href="requests" variant="contained" color="secondary">
                         Requests
                     </Button>
-                    <Button href="requests" variant="contained" color="secondary">
+                    <Button href="sales" variant="contained" color="secondary">
                         Sales
                     </Button>
                 </div>

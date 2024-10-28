@@ -101,9 +101,9 @@ const renderSales = () => {
 		<section className='mx-[30px]'>
 			<div className="flex justify-between items-center mb-4">
 				<h2 className="text-2xl font-bold">Recent Parts for Sale Nearby</h2>
-				<button className='bg-red-800 text-white py-3 px-5 rounded-[5px] hover:bg-red-900 transition-translate duration-100'>
+				<a href="sales"><button className='bg-red-800 text-white py-3 px-5 rounded-[5px] hover:bg-red-900 transition-translate duration-100'>
 					See All Sales
-				</button>
+				</button></a>
 			</div>
 			<div className="flex overflow-x-auto space-x-4 pb-4 scrollbar-hide">
 				{recentSales.map((sale) => (
