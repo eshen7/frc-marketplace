@@ -1,5 +1,7 @@
 import React from 'react';
 import TopBar from '../components/TopBar';
+import Footer from '../components/Footer';
+
 import { useRef, useState } from 'react'
 
 
@@ -36,7 +38,7 @@ const recentSales = [
 	{ id: 10, title: "Aluminum Extrusion", team: "Team 6543", price: 40, distance: 16 },
 ]
 
-const renderPartRequest = (request) => {
+const renderRequest = (request) => {
 	const daysUntil = getDaysUntil(request.dueDate);
 	const isUrgent = daysUntil < 5 && daysUntil > 0;
 	const isOverdue = daysUntil < 0;
@@ -74,45 +76,63 @@ const renderPartRequest = (request) => {
 	)
 };
 
+const renderParts = () => {
+	return (
+		<section className="mb-12 mx-[30px]">
+			<div className="flex justify-between items-center mb-4">
+				<h2 className="text-2xl font-bold">Recent Part Requests Nearby</h2>
+				<button href="/requests" className='bg-red-800 text-white py-3 px-5 rounded-[5px] hover:bg-red-900 transition-translate duration-100'>
+					See All Requests
+				</button>
+			</div>
+			<div className="flex overflow-x-auto space-x-4 pb-4">
+				{recentRequests.map((request) => {
+					return (
+						<>{renderRequest(request)}</>
+					)
+				})}
+			</div>
+		</section>
+	);
+};
+
+const renderSales = () => {
+	return (
+		<section className='mx-[30px]'>
+			<div className="flex justify-between items-center mb-4">
+				<h2 className="text-2xl font-bold">Recent Parts for Sale Nearby</h2>
+				<button className='bg-red-800 text-white py-3 px-5 rounded-[5px] hover:bg-red-900 transition-translate duration-100'>
+					See All Sales
+				</button>
+			</div>
+			<div className="flex overflow-x-auto space-x-4 pb-4 scrollbar-hide">
+				{recentSales.map((sale) => (
+					<div key={sale.id} className="flex-none w-64 bg-white rounded-lg shadow-md p-6">
+						<h3 className="text-xl font-semibold mb-2">{sale.title}</h3>
+						<p className="text-gray-600 mb-2">{sale.team}</p>
+						<p className="text-green-600 font-bold mb-2">${sale.price}</p>
+						<p className="text-sm text-gray-500">{sale.distance} miles away</p>
+						<button className="mt-4 bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 transition-colors">
+							Buy Now
+						</button>
+					</div>
+				))}
+			</div>
+		</section>
+	);
+}
+
 
 const Home = () => {
 	return (
 		<>
+			<TopBar />
 			<div className='bg-gray-100'>
-				<TopBar />
-				<h1 className="text-7xl text-center mt-[80px] mb-[80px] font-paytone text-[#AE0000] font-extrabold text-shadow-md"> FRC MARKETPLACE</h1>
-
-				<section className="mb-12 mx-[30px]">
-					<div className="flex justify-between items-center mb-4">
-						<h2 className="text-2xl font-bold">Recent Part Requests Nearby</h2>
-					</div>
-					<div className="flex overflow-x-auto space-x-4 pb-4">
-						{recentRequests.map((request) => {
-							return (
-								<>{renderPartRequest(request)}</>
-							)
-						})}
-					</div>
-				</section>
-				<section className='mx-[30px]'>
-					<div className="flex justify-between items-center mb-4">
-						<h2 className="text-2xl font-bold">Recent Parts for Sale Nearby</h2>
-					</div>
-					<div className="flex overflow-x-auto space-x-4 pb-4 scrollbar-hide">
-						{recentSales.map((sale) => (
-							<div key={sale.id} className="flex-none w-64 bg-white rounded-lg shadow-md p-6">
-								<h3 className="text-xl font-semibold mb-2">{sale.title}</h3>
-								<p className="text-gray-600 mb-2">{sale.team}</p>
-								<p className="text-green-600 font-bold mb-2">${sale.price}</p>
-								<p className="text-sm text-gray-500">{sale.distance} miles away</p>
-								<button className="mt-4 bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 transition-colors">
-									Buy Now
-								</button>
-							</div>
-						))}
-					</div>
-				</section>
+				<h1 className="text-7xl text-center pt-[80px] mb-[80px] font-paytone text-[#AE0000] font-extrabold text-shadow-md"> FRC MARKETPLACE</h1>
+				<>{renderParts()}</>
+				<>{renderSales()}</>
 			</div>
+			<Footer />
 		</>
 	);
 };
