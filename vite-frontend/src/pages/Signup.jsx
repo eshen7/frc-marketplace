@@ -30,14 +30,16 @@ const Signup = () => {
           document.getElementById("address-input"),
           {
             types: ["address"],
-            // componentRestrictions: { country: 'US' } // Optional: restrict to US addresses
           }
         );
 
         autocompleteInstance.addListener("place_changed", () => {
           const place = autocompleteInstance.getPlace();
           if (place.formatted_address) {
-            handleChange("address", place.formatted_address);
+            setFormData((prevData) => ({
+              ...prevData,
+              address: place.formatted_address,
+            }));
           }
         });
 
@@ -155,7 +157,6 @@ const Signup = () => {
                 variant="outlined"
                 className="w-full"
                 value={formData.email}
-                
                 onChange={(e) => handleChange("email", e.target.value)}
               />
             </div>
