@@ -155,6 +155,7 @@ const Signup = () => {
                 variant="outlined"
                 className="w-full"
                 value={formData.email}
+                
                 onChange={(e) => handleChange("email", e.target.value)}
               />
             </div>
