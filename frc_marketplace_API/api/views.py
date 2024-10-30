@@ -1,7 +1,7 @@
 import json
 from django.forms import ValidationError
 from django.http import JsonResponse
-from django.contrib.auth import authenticate, login
+from django.contrib.auth import authenticate, login, logout
 from django.shortcuts import render
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
@@ -58,6 +58,13 @@ def login_view(request):
             return JsonResponse({"message": "Login successful", "username": user.email})
         else:
             return JsonResponse({"error": "Invalid credentials"}, status=400)
+    return JsonResponse({"error": "Only POST requests are allowed"}, status=405)
+
+@csrf_exempt
+def logout_view(request):
+    if request.method == "POST":
+        logout(request)
+        return JsonResponse({'message': 'Successfully logged out'}, status=200)
     return JsonResponse({"error": "Only POST requests are allowed"}, status=405)
 
 

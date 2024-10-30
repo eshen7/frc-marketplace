@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import Avatar from '@mui/material/Avatar';
 import Stack from '@mui/material/Stack';
 import SettingsOutlinedIcon from '@mui/icons-material/SettingsOutlined';
@@ -6,11 +6,53 @@ import Person2OutlinedIcon from '@mui/icons-material/Person2Outlined';
 import IosShareOutlinedIcon from '@mui/icons-material/IosShareOutlined';
 import { IconButton } from '@mui/material';
 import Button from '@mui/material/Button';
+import axiosInstance from "../utils/axiosInstance.js";
 import TextField from '@mui/material/TextField';
-import { useState } from 'react';
-
 
 const TopBar = () => {
+    const [isAuthenticated, setIsAuthenticated] = useState(false);
+
+    useEffect(() => {
+        const checkAuthStatus = () => {
+            const token = localStorage.getItem('authToken');
+            setIsAuthenticated(!!token);
+        };
+
+        checkAuthStatus(); // Check on mount
+
+        // Set up an event listener for storage changes
+        window.addEventListener('storage', checkAuthStatus);
+
+        // Clean up the event listener on component unmount
+        return () => {
+            window.removeEventListener('storage', checkAuthStatus);
+        };
+    }, []);
+
+    const handleLogout = async (e) => {
+        localStorage.removeItem('authToken');
+        setIsAuthenticated(false);
+        try {
+            const response = await axiosInstance.post('/logout/', {}, {
+                headers: {
+                    'Content-Type': 'application/json',
+                }
+            });
+
+            if (response.status === 200) {
+                console.log("Logout successful");
+                return { success: true }
+                // Redirect or update state to reflect the user is logged in
+            } else {
+                console.log("Loout failed");
+                return { success: false, error: "An error occured" }
+            }
+        } catch (error) {
+            console.error("An error occurred:", error);
+            return { success: false, error: "An error occured" }
+        }
+    };
+
     return (
         <div className='bg-red-800 top-0 left-0 z-50 w-full shadow-lg'>
             <div className='max-w-none mx-auto px-2 sm:px-4 lg:px-6 min-w-80 grid grid-cols-3 items-center'>
@@ -25,19 +67,33 @@ const TopBar = () => {
                 </div>
                 <div className='h-16 flex items-center justify-end'>
                     <Stack className="justify-center" direction="row" spacing={2}>
-                        <Stack direction="row" spacing={2} className='px-6'>
-                            <Button href="login" variant="contained" color='secondary' className='whitespace-nowrap'>Sign In</Button>
-                            <Button href="signup" variant="outlined" color='secondary'>Register</Button>
-                        </Stack>
-                        <IconButton className='items-center'>
-                            <IosShareOutlinedIcon fontSize='medium' color='secondary' />
-                        </IconButton>
-                        <IconButton className='items-center'>
-                            <SettingsOutlinedIcon fontSize='medium' color='secondary' />
-                        </IconButton>
-                        <IconButton className='items-center'>
-                            <Person2OutlinedIcon fontSize='medium' color='secondary' />
-                        </IconButton>
+                        {isAuthenticated ? (
+                            <Stack direction="row" spacing={2} className='px-6'>
+                                <Button variant="contained" color='secondary' className='whitespace-nowrap' onClick={handleLogout}>
+                                    Log Out
+                                </Button>
+                            </Stack>
+                        ) : (
+                            <Stack direction="row" spacing={2} className='px-6'>
+                                <Button href="login" variant="contained" color='secondary' className='whitespace-nowrap'>Sign In</Button>
+                                <Button href="signup" variant="outlined" color='secondary'>Register</Button>
+                            </Stack>
+                        )}
+                        {isAuthenticated && (
+                            <IconButton className='items-center'>
+                                <IosShareOutlinedIcon fontSize='medium' color='secondary' />
+                            </IconButton>
+                        )}
+                        {isAuthenticated && (
+                            <IconButton className='items-center'>
+                                <SettingsOutlinedIcon fontSize='medium' color='secondary' />
+                            </IconButton>
+                        )}
+                        {isAuthenticated && (
+                            <IconButton className='items-center'>
+                                <Person2OutlinedIcon fontSize='medium' color='secondary' />
+                            </IconButton>
+                        )}
                     </Stack>
                 </div>
             </div>
@@ -45,4 +101,4 @@ const TopBar = () => {
     );
 }
 
-export default TopBar
+export default TopBar;

@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import TopBar from './../components/TopBar.jsx';
 import Container from '@mui/material/Container';
 import { Box, Button } from '@mui/material';
@@ -14,6 +15,8 @@ const Login = () => {
     password: ""
   });
 
+  const navigate = useNavigate()
+
   const handleChange = (name, value) => {
     const updatedFormData = { ...formData, [name]: value };
     setFormData(updatedFormData);
@@ -28,14 +31,30 @@ const Login = () => {
         }
       });
 
+      const { access, refresh } = response.data;
+
       if (response.status === 200) {
         console.log("Login successful:", response.data);
+        return { success: true, access }
         // Redirect or update state to reflect the user is logged in
       } else {
         console.log("Login failed:", response.data.error);
+        return { success: false, error: "Invalid Credentials" }
       }
     } catch (error) {
       console.error("An error occurred:", error);
+      return { success: false, error: "An error occured" }
+    }
+  }
+
+  async function handleSubmit() {
+    const result = await login()
+    if (result.success) {
+      localStorage.setItem('authToken', result.access);
+      window.dispatchEvent(new Event('storage'))
+      navigate('/') // Redirect to homepage
+    } else {
+      console.error("An error occured", result.error)
     }
   }
 
@@ -68,7 +87,7 @@ const Login = () => {
                 <a href='signup' className='text-blue-600 hover:text-blue-800'>Sign Up Instead</a>
               </div>
               <div className='w-1/2 flex justify-center'>
-                <Button variant="contained" className='justify-end w-1/2 whitespace-nowrap' onClick={login} >Sign in</Button>
+                <Button variant="contained" className='justify-end w-1/2 whitespace-nowrap' onClick={handleSubmit} >Sign in</Button>
               </div>
             </div>
           </div>
