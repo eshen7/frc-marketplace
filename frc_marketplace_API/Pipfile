@@ -12,6 +12,7 @@ psycopg2-binary="*"
 python-decouple="*"
 pillow="*"
 googlemaps="*"
+django-cors-headers="*"
 
 [dev-packages]
 

@@ -6,7 +6,7 @@ services:
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_DB: ${POSTGRES_DB}
     ports:
-      - "${POSTGRES_PORT_OUTER}:${POSTGRES_PORT_INNER}" # expose psql ports
+      - "${POSTGRES_PORT_HOST}:${POSTGRES_PORT_CONTAINER}" # expose psql ports
     volumes:
       - pgdata:/var/lib/postgresql/data # for persistent data
 
@@ -16,7 +16,7 @@ services:
       PGADMIN_DEFAULT_EMAIL: ${PGADMIN_USER} # admin login
       PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_PASSWORD} # admin password
     ports:
-      - "${PGADMIN_PORT_OUTER}:${PGADMIN_PORT_INNER}"
+      - "${PGADMIN_PORT_HOST}:${PGADMIN_PORT_CONTAINER}"
     volumes:
       - pgadmin_data:/var/lib/pgadmin # for persistent pgadmin configs
 
@@ -24,13 +24,13 @@ services:
     build: frc_marketplace_API
     container_name: django_app
     command: >
-      sh -c " pipenv run python manage.py makemigrations api && pipenv run python manage.py migrate api && pipenv run python manage.py runserver 0.0.0.0:${DJANGO_PORT_OUTER}"
+      sh -c " pipenv run python manage.py makemigrations api && pipenv run python manage.py migrate api && pipenv run python manage.py runserver 0.0.0.0:${DJANGO_PORT_HOST}"
     ports:
-      - "${DJANGO_PORT_OUTER}:${DJANGO_PORT_INNER}" # expose django ports
+      - "${DJANGO_PORT_HOST}:${DJANGO_PORT_CONTAINER}" # expose django ports
     env_file:
       - .env
     environment:
-      - DATABASE_URL=postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:${POSTGRES_PORT_INNER}/${POSTGRES_DB}
+      - DATABASE_URL=postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:${POSTGRES_PORT_CONTAINER}/${POSTGRES_DB}
       - DJANGO_SETTINGS_MODULE=frc_marketplace_API.settings # points to settings module
     depends_on:
       - db # waits for database to be ready
@@ -39,9 +39,9 @@ services:
     build: vite-frontend
     container_name: vite_frontend
     ports:
-      - "${VITE_PORT_OUTER}:${VITE_PORT_INNER}" # expose vite ports
+      - "${VITE_PORT_HOST}:${VITE_PORT_CONTAINER}" # expose vite ports
     command: >
-      sh -c "npm run dev --host 0.0.0.0 --port ${VITE_PORT_OUTER}"
+      sh -c "npm run dev -- --host"
     env_file:
       - .env
 

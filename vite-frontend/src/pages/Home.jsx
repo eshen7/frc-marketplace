@@ -1,6 +1,9 @@
 import React from 'react';
 import TopBar from '../components/TopBar';
+import Footer from '../components/Footer';
+
 import { useRef, useState } from 'react'
+
 
 const getDaysUntil = (dueDate) => {
 	const now = new Date()
@@ -10,7 +13,7 @@ const getDaysUntil = (dueDate) => {
 }
 
 const recentRequests = [
-	{ id: 1, title: "CIM Motor", team: "Team 1234", distance: 2, dueDate: new Date(2024, 9, 27) },
+	{ id: 1, title: "CIM Motor", team: "Team 1234", distance: 2, dueDate: new Date(2024, 9, 25) },
 	{ id: 2, title: "Pneumatic Cylinder", team: "Team 5678", distance: 5, dueDate: new Date(2024, 9, 28) },
 	{ id: 3, title: "Talon SRX", team: "Team 9101", distance: 10, dueDate: new Date(2024, 9, 27) },
 	{ id: 4, title: "Encoder", team: "Team 2468", distance: 15, dueDate: new Date(2024, 10, 5) },
@@ -35,57 +38,101 @@ const recentSales = [
 	{ id: 10, title: "Aluminum Extrusion", team: "Team 6543", price: 40, distance: 16 },
 ]
 
+const renderRequest = (request) => {
+	const daysUntil = getDaysUntil(request.dueDate);
+	const isUrgent = daysUntil < 5 && daysUntil > 0;
+	const isOverdue = daysUntil < 0;
+	const isDueToday = daysUntil === 0;
+	const absoluteDaysUntil = Math.abs(daysUntil);
+
+	const renderDueDate = () => {
+		return (
+			<p className={`text-sm ${isOverdue || isDueToday ? 'text-red-600 font-bold' : isUrgent ? 'text-orange-600 font-bold' : 'text-gray-500'}`}>
+				{isOverdue ? (
+					<>
+						OVERDUE! ({absoluteDaysUntil} {absoluteDaysUntil === 1 ? "day" : "days"} ago)
+					</>
+				) : isDueToday ? (
+					<>Need Today!</>
+				) : (
+					<>
+						Need By: {request.dueDate.toLocaleDateString()} ({daysUntil} {daysUntil === 1 ? "day" : "days"})
+					</>
+				)}
+			</p>
+		);
+	};
+
+	return (
+		<div key={request.id} className={`flex-none w-[256px] bg-white rounded-lg shadow-md p-6 whitespace-nowrap ${isUrgent ? "border-2 border-orange-600" : isOverdue || isDueToday ? "border-2 border-red-600" : ''}`}>
+			<h3 className="text-xl font-semibold mb-2">{request.title}</h3>
+			<p className="text-gray-600 mb-2">{request.team}</p>
+			{renderDueDate()}
+			<p className="text-sm text-gray-500">{request.distance} miles away</p>
+			<button className="mt-4 bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition-colors">
+				Offer Part
+			</button>
+		</div>
+	)
+};
+
+const renderParts = () => {
+	return (
+		<section className="mb-12 mx-[30px]">
+			<div className="flex justify-between items-center mb-4">
+				<h2 className="text-2xl font-bold">Recent Part Requests Nearby</h2>
+				<a href="requests"><button className='bg-red-800 text-white py-3 px-5 rounded-[5px] hover:bg-red-900 transition-translate duration-100'>
+					See All Requests
+				</button></a>
+			</div>
+			<div className="flex overflow-x-auto space-x-4 pb-4">
+				{recentRequests.map((request) => {
+					return (
+						<>{renderRequest(request)}</>
+					)
+				})}
+			</div>
+		</section>
+	);
+};
+
+const renderSales = () => {
+	return (
+		<section className='mx-[30px]'>
+			<div className="flex justify-between items-center mb-4">
+				<h2 className="text-2xl font-bold">Recent Parts for Sale Nearby</h2>
+				<a href="sales"><button className='bg-red-800 text-white py-3 px-5 rounded-[5px] hover:bg-red-900 transition-translate duration-100'>
+					See All Sales
+				</button></a>
+			</div>
+			<div className="flex overflow-x-auto space-x-4 pb-4 scrollbar-hide">
+				{recentSales.map((sale) => (
+					<div key={sale.id} className="flex-none w-64 bg-white rounded-lg shadow-md p-6">
+						<h3 className="text-xl font-semibold mb-2">{sale.title}</h3>
+						<p className="text-gray-600 mb-2">{sale.team}</p>
+						<p className="text-green-600 font-bold mb-2">${sale.price}</p>
+						<p className="text-sm text-gray-500">{sale.distance} miles away</p>
+						<button className="mt-4 bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 transition-colors">
+							Buy Now
+						</button>
+					</div>
+				))}
+			</div>
+		</section>
+	);
+}
+
 
 const Home = () => {
 	return (
 		<>
+			<TopBar />
 			<div className='bg-gray-100'>
-				<TopBar />
-				<h1 className="text-7xl text-center mt-[80px] mb-[80px] font-paytone text-[#AE0000] font-extrabold text-shadow-md"> FRC MARKETPLACE</h1>
-
-				<section className="mb-12 mx-[30px]">
-					<div className="flex justify-between items-center mb-4">
-						<h2 className="text-2xl font-bold">Recent Part Requests Nearby</h2>
-					</div>
-					<div className="flex overflow-x-auto space-x-4 pb-4">
-						{recentRequests.map((request) => {
-							const daysUntil = getDaysUntil(request.dueDate);
-							const isUrgent = daysUntil < 3;
-							return (
-								<div key={request.id} className="flex-none w-64 bg-white rounded-lg shadow-md p-6">
-									<h3 className="text-xl font-semibold mb-2">{request.title}</h3>
-									<p className="text-gray-600 mb-2">{request.team}</p>
-									<p className={`text-sm ${isUrgent ? 'text-red-600 font-bold' : 'text-gray-500'}`}>
-										Due: {request.dueDate.toLocaleDateString()} ({daysUntil} {daysUntil < 2 ? "day" : "days"})
-									</p>
-									<p className="text-sm text-gray-500">{request.distance} miles away</p>
-									<button className="mt-4 bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition-colors">
-										Offer Part
-									</button>
-								</div>
-							)
-						})}
-					</div>
-				</section>
-				<section className='mx-[30px]'>
-					<div className="flex justify-between items-center mb-4">
-						<h2 className="text-2xl font-bold">Recent Parts for Sale Nearby</h2>
-					</div>
-					<div className="flex overflow-x-auto space-x-4 pb-4 scrollbar-hide">
-						{recentSales.map((sale) => (
-							<div key={sale.id} className="flex-none w-64 bg-white rounded-lg shadow-md p-6">
-								<h3 className="text-xl font-semibold mb-2">{sale.title}</h3>
-								<p className="text-gray-600 mb-2">{sale.team}</p>
-								<p className="text-green-600 font-bold mb-2">${sale.price}</p>
-								<p className="text-sm text-gray-500">{sale.distance} miles away</p>
-								<button className="mt-4 bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 transition-colors">
-									Buy Now
-								</button>
-							</div>
-						))}
-					</div>
-				</section>
+				<h1 className="text-7xl text-center pt-[80px] mb-[80px] font-paytone text-[#AE0000] font-extrabold text-shadow-md"> FRC MARKETPLACE</h1>
+				<>{renderParts()}</>
+				<>{renderSales()}</>
 			</div>
+			<Footer />
 		</>
 	);
 };

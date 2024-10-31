@@ -1,8 +1,12 @@
+import json
 from django.forms import ValidationError
+from django.http import JsonResponse
+from django.contrib.auth import authenticate, login, logout
 from django.shortcuts import render
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework import status
+from django.views.decorators.csrf import csrf_exempt
 from .models import User, Part, PartRequest
 from .serializers import UserSerializer, PartSerializer, PartRequestSerializer
 
@@ -40,6 +44,28 @@ def _get_user(request):
     users = User.objects.all()
     serializer = UserSerializer(users, many=True)
     return Response(serializer.data, status=status.HTTP_200_OK)
+
+@csrf_exempt
+def login_view(request):
+    if request.method == "POST":
+        data = json.loads(request.body)
+        email = data.get("email")
+        password = data.get("password")
+
+        user = authenticate(request, email=email, password=password)
+        if user is not None:
+            login(request, user)
+            return JsonResponse({"message": "Login successful", "username": user.email})
+        else:
+            return JsonResponse({"error": "Invalid credentials"}, status=400)
+    return JsonResponse({"error": "Only POST requests are allowed"}, status=405)
+
+@csrf_exempt
+def logout_view(request):
+    if request.method == "POST":
+        logout(request)
+        return JsonResponse({'message': 'Successfully logged out'}, status=200)
+    return JsonResponse({"error": "Only POST requests are allowed"}, status=405)
 
 
 @api_view(["GET", "POST"])
