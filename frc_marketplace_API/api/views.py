@@ -72,7 +72,7 @@ def logout_view(request):
 def part_views(request):
     """Views for GETTING and CREATING Parts."""
     if request.method == "GET":
-        return _get_parts(request=request)
+        return _get_parts()
     if request.method == "POST":
         return _create_part(request=request)
 
@@ -86,13 +86,13 @@ def _create_part(request):
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-def _get_parts(request):
+def _get_parts():
     """Handle GET requests to list all parts."""
     parts = Part.objects.all()
     serializer = PartSerializer(parts, many=True)
     return Response(serializer.data, status=status.HTTP_200_OK)
 
-
+@csrf_exempt
 @api_view(["GET", "POST"])
 def part_request_views(request):
     """Views for GETTING and CREATING Part Requests."""
@@ -101,12 +101,12 @@ def part_request_views(request):
     if request.method == "POST":
         return _create_part_request(request=request)
 
-
+@csrf_exempt
 def _create_part_request(request):
     """Handle POST requests to create a new part request."""
     serializer = PartRequestSerializer(data=request.data)
     if serializer.is_valid():
-        serializer.save()  # Save the new part request to the database
+        serializer.save(user=request.user)  # Save the new part request to the database
         return Response(serializer.data, status=status.HTTP_201_CREATED)
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 

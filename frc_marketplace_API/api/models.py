@@ -1,6 +1,7 @@
 import uuid
 from django.contrib.auth.base_user import BaseUserManager, AbstractBaseUser
 from django.contrib.auth.models import PermissionsMixin
+from django.conf import settings
 from django.db import models
 from phone_field import PhoneField
 from address.models import AddressField, Address, Locality
@@ -83,6 +84,6 @@ class PartRequest(models.Model):
     
 
     part = models.ForeignKey(Part, on_delete=models.PROTECT, related_name="requests")
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="requests")
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="requests")
     quantity = models.IntegerField(default=1)
     request_date = models.DateField(auto_now_add=True)
