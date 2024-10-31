@@ -12,8 +12,8 @@ export default {
       },
     },
   },
-  plugins: [
+  /*{plugins: [
     require('tailwindcss-textshadow') // Requires a plugin for text shadows
   ],
-}
+}*/}
 
