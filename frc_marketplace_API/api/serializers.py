@@ -127,4 +127,4 @@ class PartRequestSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = PartRequest
-        fields = ["id", "part", "part_id", "quantity", "request_date"]
+        fields = ["id", "part", "part_id", "quantity", "request_date", "needed_date", "needed_for", "additional_info"]

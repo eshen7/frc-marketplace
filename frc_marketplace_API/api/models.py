@@ -87,3 +87,6 @@ class PartRequest(models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="requests")
     quantity = models.IntegerField(default=1)
     request_date = models.DateField(auto_now_add=True)
+    needed_date = models.DateField(null=True, blank=True)
+    needed_for = models.CharField(max_length=255, null=True, blank=True)
+    additional_info = models.TextField(null=True, blank=True)
