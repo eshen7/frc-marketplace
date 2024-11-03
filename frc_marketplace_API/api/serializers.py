@@ -124,10 +124,7 @@ class PartRequestSerializer(serializers.ModelSerializer):
     part_id = serializers.PrimaryKeyRelatedField(
         queryset=Part.objects.all(), source="part", write_only=True
     )
-    user_id = serializers.PrimaryKeyRelatedField(
-        queryset=User.objects.all(), source="user", write_only=True
-    )
 
     class Meta:
         model = PartRequest
-        fields = ["id", "part", "part_id", "user_id", "quantity", "request_date"]
+        fields = ["id", "part", "part_id", "quantity", "request_date", "needed_date", "needed_for", "additional_info"]

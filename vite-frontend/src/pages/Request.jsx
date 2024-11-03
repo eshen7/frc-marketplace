@@ -1,222 +1,280 @@
-import React, { useState } from 'react';
-import TopBar from '../components/TopBar';
-import { 
-  TextField, 
-  Select, 
-  MenuItem, 
-  FormControl, 
-  InputLabel, 
-  RadioGroup, 
-  FormControlLabel, 
-  Radio, 
-  Button,
-  IconButton
+import React, { useState, useEffect } from 'react';
+import {
+    TextField,
+    Button,
+    Select,
+    MenuItem,
+    FormControl,
+    InputLabel,
+    Typography,
+    Container,
+    Box,
+    Snackbar,
+    CircularProgress,
+    Dialog,
+    DialogTitle,
+    DialogContent,
+    DialogActions
 } from '@mui/material';
+import TopBar from './../components/TopBar.jsx';
+import Footer from '../components/Footer.jsx';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import CloseIcon from '@mui/icons-material/Close';
 
-const RequestPage = () => {
-  const [formData, setFormData] = useState({
-    requestName: '',
-    partName: '',
-    teamNumber: '',
-    description: '',
-    needBy: null,
-    needFor: '',
-    condition: '',
-    willPayOrTrade: '',
-    additionalInfo: ''
-  });
+import axiosInstance from '../utils/axiosInstance';
 
-  const [selectedFiles, setSelectedFiles] = useState([]);
+const PartRequestForm = () => {
+    const [parts, setParts] = useState([]);
+    const [selectedPart, setSelectedPart] = useState('');
+    const [date_needed, setDateNeededBy] = useState(null);
+    const [formData, setFormData] = useState({
+        quantity: 1,
+        needed_for: "",
+        additional_info: ""
+    });
+    const [loading, setLoading] = useState(false);
+    const [success, setSuccess] = useState(false);
+    const [error, setError] = useState('');
 
-  const handleInputChange = (event) => {
-    const { name, value } = event.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
-  };
+    const [openNewPartDialog, setOpenNewPartDialog] = useState(false);
+    const [newPartName, setNewPartName] = useState('');
+    const [newPartDescription, setNewPartDescription] = useState('');
 
-  const handleDateChange = (date) => {
-    setFormData(prev => ({ ...prev, needBy: date }));
-  };
+    const handleInputChange = (event) => {
+        const { name, value } = event.target;
+        setFormData(prev => ({ ...prev, [name]: value }));
+    };
 
-  const handleFileChange = (event) => {
-    if (event.target.files) {
-      const filesArray = Array.from(event.target.files);
-      setSelectedFiles(prev => [...prev, ...filesArray]);
+    const handleDateChange = (date) => {
+        setDateNeededBy(date);
+    };
+
+    useEffect(() => {
+        fetchParts();
+    }, []);
+
+    const fetchParts = async () => {
+        try {
+            const response = await axiosInstance.get('/parts/');
+            const data = response.data;
+            setParts(data);
+        } catch (err) {
+            console.log(err);
+            setError('Failed to fetch parts');
+        }
+    };
+
+    function getCSRFToken() {
+        const cookies = document.cookie.split(';');
+        for (let cookie of cookies) {
+            const [name, value] = cookie.trim().split('=');
+            if (name === 'csrftoken') {
+                return value;
+            }
+        }
+        return null;
     }
-  };
 
-  const handleRemoveFile = (index) => {
-    setSelectedFiles(prev => prev.filter((_, i) => i !== index));
-  };
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        setLoading(true);
+        setError('');
 
-  const handleSubmit = (event) => {
-    event.preventDefault();
-    console.log(formData);
-    console.log(selectedFiles);
-    // send data and files to backend
-  };
+        const needed_date = new Date(date_needed).toISOString().split('T')[0];
+        const { quantity, needed_for, additional_info } = formData;
+        console.log(quantity);
 
-  return (
-    <div className='bg-gray-100 min-h-screen'>
-      <TopBar />
-      <h1 className="text-7xl text-center mt-[80px] mb-[80px] font-paytone text-[#AE0000] font-extrabold text-shadow-md">
-        Make a Request
-      </h1>
+        try {
+            const response = await axiosInstance.post(
+                '/requests/',
+                {
+                    part_id: selectedPart,
+                    quantity,
+                    needed_for,
+                    additional_info,
+                    needed_date
+                },
+                {
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': getCSRFToken()
+                    },
+                    withCredentials: true
+                }
+            );
+            setSuccess(true);
+            setSelectedPart('');
+        } catch (err) {
+            console.error('Error response:', err);
+            setError('Failed to submit request');
+        } finally {
+            setLoading(false);
+        }
+    };
 
-      <form onSubmit={handleSubmit} className="max-w-2xl mx-auto bg-white rounded-lg shadow-md p-6">
-        <TextField
-          fullWidth
-          name="requestName"
-          label="Name your request"
-          value={formData.requestName}
-          onChange={handleInputChange}
-          margin="normal"
-        />
+    const handleCreateNewPart = async () => {
+        setLoading(true);
+        setError('');
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
-          <TextField
-            fullWidth
-            name="partName"
-            label="Name of Part"
-            value={formData.partName}
-            onChange={handleInputChange}
-          />
-          
-          <TextField
-            fullWidth
-            name="teamNumber"
-            label="Team #"
-            value={formData.teamNumber}
-            onChange={handleInputChange}
-          />
-        </div>
+        try {
+            const response = await axiosInstance.post(
+                '/parts/',
+                {
+                    name: newPartName,
+                    description: newPartDescription
+                },
+                {
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': getCSRFToken()
+                    },
+                    withCredentials: true
+                }
+            );
 
-        <TextField
-          fullWidth
-          name="description"
-          label="Short description / specifications"
-          multiline
-          rows={4}
-          value={formData.description}
-          onChange={handleInputChange}
-          margin="normal"
-        />
+            const newPart = response.data;
+            setParts([...parts, newPart]);
+            setSelectedPart(newPart.id);
+            setOpenNewPartDialog(false);
+            setNewPartName('');
+            setNewPartDescription('');
+            setSuccess(true);
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
-          <LocalizationProvider dateAdapter={AdapterDateFns}>
-            <DatePicker
-              label="Need the part by*"
-              value={formData.needBy}
-              onChange={handleDateChange}
-              renderInput={(params) => <TextField {...params} fullWidth />}
-            />
-          </LocalizationProvider>
+        } catch (err) {
+            setError('Failed to create part');
+        } finally {
+            setLoading(false);
+        }
+    };
 
-          <TextField
-            fullWidth
-            name="needFor"
-            label="Need it for what"
-            value={formData.needFor}
-            onChange={handleInputChange}
-          />
-        </div>
+    return (
+        <Box sx={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
+            <TopBar />
+            <Box sx={{ flexGrow: 1, mt: 4, mx: 'auto', width: '100%', maxWidth: 600, px: 2 }}>
+                <h1 className="text-7xl text-center mt-[80px] mb-[80px] font-paytone text-[#AE0000] font-extrabold text-shadow-md">
+                    Make a Request
+                </h1>
+                <form onSubmit={handleSubmit}>
+                    <FormControl fullWidth margin="normal">
+                        <InputLabel id="part-select-label">Part</InputLabel>
+                        <Select
+                            labelId="part-select-label"
+                            value={selectedPart}
+                            onChange={(e) => setSelectedPart(e.target.value)}
+                            required
+                        >
+                            {parts.map((part) => (
+                                <MenuItem key={part.id} value={part.id}>
+                                    {part.name}
+                                </MenuItem>
+                            ))}
+                        </Select>
+                    </FormControl>
+                    <Button
+                        variant="outlined"
+                        color="primary"
+                        fullWidth
+                        sx={{ mt: 1, mb: 2 }}
+                        onClick={() => setOpenNewPartDialog(true)}
+                    >
+                        Create New Part
+                    </Button>
+                    <TextField
+                        fullWidth
+                        name="quantity"
+                        margin="normal"
+                        label="Quantity*"
+                        value={formData.quantity}
+                        onChange={handleInputChange}
+                    />
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                        <LocalizationProvider dateAdapter={AdapterDateFns}>
+                            <DatePicker
+                                label="Need the part by*"
+                                value={formData.needed_date}
+                                onChange={handleDateChange}
+                                renderInput={(params) => <TextField {...params} fullWidth />}
+                            />
+                        </LocalizationProvider>
 
-        <FormControl fullWidth margin="normal">
-          <InputLabel>Condition of part*</InputLabel>
-          <Select
-            name="condition"
-            value={formData.condition}
-            onChange={handleInputChange}
-          >
-            <MenuItem value="Excellent">Excellent</MenuItem>
-            <MenuItem value="Good">Good</MenuItem>
-            <MenuItem value="Worn">Worn</MenuItem>
-          </Select>
-        </FormControl>
-
-        <FormControl component="fieldset" margin="normal">
-          <RadioGroup
-            row
-            name="willPayOrTrade"
-            value={formData.willPayOrTrade}
-            onChange={handleInputChange}
-          >
-            <FormControlLabel value="yes" control={<Radio />} label="Willing to pay or trade" />
-            <FormControlLabel value="no" control={<Radio />} label="Not willing to pay or trade" />
-          </RadioGroup>
-        </FormControl>
-
-        <div className="mt-4">
-          <input
-            accept="image/*"
-            style={{ display: 'none' }}
-            id="raised-button-file"
-            multiple
-            type="file"
-            onChange={handleFileChange}
-          />
-          <label htmlFor="raised-button-file">
-            <Button variant="contained" component="span">
-              Upload Images
-            </Button>
-          </label>
-        </div>
-
-        {selectedFiles.length > 0 && (
-          <div className="mt-4">
-            <h3 className="text-lg font-semibold mb-2">Selected Images:</h3>
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-              {selectedFiles.map((file, index) => (
-                <div key={index} className="relative">
-                  <img
-                    src={URL.createObjectURL(file)}
-                    alt={`Preview ${index + 1}`}
-                    className="w-full h-32 object-cover rounded"
-                  />
-                  <IconButton
-                    size="small"
-                    onClick={() => handleRemoveFile(index)}
-                    style={{
-                      position: 'absolute',
-                      top: 4,
-                      right: 4,
-                      backgroundColor: 'white',
-                    }}
-                  >
-                    <CloseIcon fontSize="small" />
-                  </IconButton>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-
-        <TextField
-          fullWidth
-          name="additionalInfo"
-          label="Any other additional info"
-          multiline
-          rows={4}
-          value={formData.additionalInfo}
-          onChange={handleInputChange}
-          margin="normal"
-        />
-
-        <Button 
-          type="submit" 
-          variant="contained" 
-          color="primary" 
-          fullWidth 
-          className="mt-6 bg-blue-600 hover:bg-blue-700"
-        >
-          Submit Request
-        </Button>
-      </form>
-    </div>
-  );
+                        <TextField
+                            fullWidth
+                            name="needed_for"
+                            label="Need it for what"
+                            value={formData.needed_for}
+                            onChange={handleInputChange}
+                        />
+                    </div>
+                    <TextField
+                        fullWidth
+                        name="additional_info"
+                        label="Any other additional info"
+                        multiline
+                        rows={4}
+                        value={formData.additional_info}
+                        onChange={handleInputChange}
+                        margin="normal"
+                    />
+                    <Button
+                        type="submit"
+                        variant="contained"
+                        color="primary"
+                        fullWidth
+                        sx={{ mt: 2, mb: 4 }}
+                        disabled={loading}
+                    >
+                        {loading ? <CircularProgress size={24} /> : 'Submit Request'}
+                    </Button>
+                </form>
+                <Snackbar
+                    open={success}
+                    autoHideDuration={6000}
+                    onClose={() => setSuccess(false)}
+                    message="Operation completed successfully"
+                />
+                <Snackbar
+                    open={!!error}
+                    autoHideDuration={6000}
+                    onClose={() => setError('')}
+                    message={error}
+                />
+                {/* Dialog for creating a new part */}
+                <Dialog open={openNewPartDialog} onClose={() => setOpenNewPartDialog(false)}>
+                    <DialogTitle>Create New Part</DialogTitle>
+                    <DialogContent>
+                        <TextField
+                            autoFocus
+                            margin="dense"
+                            label="Part Name"
+                            type="text"
+                            fullWidth
+                            value={newPartName}
+                            onChange={(e) => setNewPartName(e.target.value)}
+                        />
+                        <TextField
+                            margin="dense"
+                            label="Description"
+                            type="text"
+                            fullWidth
+                            multiline
+                            rows={4}
+                            value={newPartDescription}
+                            onChange={(e) => setNewPartDescription(e.target.value)}
+                        />
+                    </DialogContent>
+                    <DialogActions>
+                        <Button onClick={() => setOpenNewPartDialog(false)}>Cancel</Button>
+                        <Button onClick={handleCreateNewPart} disabled={loading}>
+                            {loading ? <CircularProgress size={24} /> : 'Create'}
+                        </Button>
+                    </DialogActions>
+                </Dialog>
+            </Box>
+            <Footer />
+        </Box>
+    );
 };
 
-export default RequestPage;
+export default PartRequestForm;

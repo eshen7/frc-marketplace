@@ -64,6 +64,9 @@ const TopBar = () => {
                     <Button href="sales" variant="contained" color="secondary">
                         Sales
                     </Button>
+                    <Button href="request" variant="contained" color="secondary">
+                        Make a Request
+                    </Button>
                 </div>
                 <div className='h-16 flex items-center justify-end'>
                     <Stack className="justify-center" direction="row" spacing={2}>
