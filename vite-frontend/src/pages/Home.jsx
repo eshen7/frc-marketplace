@@ -89,7 +89,7 @@ const renderParts = () => {
 			<div className="flex overflow-x-auto space-x-4 pb-4">
 				{recentRequests.map((request) => {
 					return (
-						<>{renderRequest(request)}</>
+						<React.Fragment key={request.id}>{renderRequest(request)}</React.Fragment>
 					)
 				})}
 			</div>
@@ -124,8 +124,9 @@ const renderSales = () => {
 }
 
 const locations = [
-    { name: "TPHS", lat: 32.95747527010932, lng: -117.22508357787281 },
-  ];
+	{ name: "Millennium Falcons", number: "3647", lat: 32.95747527010932, lng: -117.22508357787281 },
+	{ name: "Aluminum Narwhals", number: "3128", lat: 32.95938170096009, lng: -117.18871557507953 },
+];
 
 
 
@@ -135,7 +136,12 @@ const Home = () => {
 			<TopBar />
 			<div className='bg-gray-100'>
 				<h1 className="text-7xl text-center pt-[80px] mb-[80px] font-paytone text-[#AE0000] font-extrabold text-shadow-md"> FRC MARKETPLACE</h1>
-				<Map center={{ lat: 32.95747527010932, lng: -117.22508357787281 }} zoom={10} locations={locations} />
+				<section className='mx-[30px] mb-[30px]'>
+					<div>
+						<h2 className="text-2xl font-bold mb-[30px]">See Nearby Teams</h2>
+						<Map center={{ lat: 32.95747527010932, lng: -117.22508357787281 }} zoom={10} locations={locations} />
+					</div>
+				</section>
 				<>{renderParts()}</>
 				<>{renderSales()}</>
 			</div>
