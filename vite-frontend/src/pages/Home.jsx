@@ -1,6 +1,7 @@
 import React from 'react';
 import TopBar from '../components/TopBar';
 import Footer from '../components/Footer';
+import Map from '../components/Map';
 
 import { useRef, useState } from 'react'
 
@@ -122,6 +123,11 @@ const renderSales = () => {
 	);
 }
 
+const locations = [
+    { name: "TPHS", lat: 32.95747527010932, lng: -117.22508357787281 },
+  ];
+
+
 
 const Home = () => {
 	return (
@@ -129,6 +135,7 @@ const Home = () => {
 			<TopBar />
 			<div className='bg-gray-100'>
 				<h1 className="text-7xl text-center pt-[80px] mb-[80px] font-paytone text-[#AE0000] font-extrabold text-shadow-md"> FRC MARKETPLACE</h1>
+				<Map center={{ lat: 32.95747527010932, lng: -117.22508357787281 }} zoom={10} locations={locations} />
 				<>{renderParts()}</>
 				<>{renderSales()}</>
 			</div>

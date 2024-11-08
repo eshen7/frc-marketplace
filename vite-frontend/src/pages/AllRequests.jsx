@@ -1,6 +1,10 @@
 import React from 'react'
 import TopBar from '../components/TopBar'
 import Footer from '../components/Footer'
+import { useEffect, useState } from 'react';
+import axios from 'axios';
+import axiosInstance from '../utils/axiosInstance';
+
 
 // Helper function to calculate days until due date
 const getDaysUntil = (dueDate) => {
@@ -24,6 +28,40 @@ const allRequests = [
     { id: 10, title: "Limit Switch", team: { number: 2345, name: "Sensor Squad" }, distance: 20, dueDate: new Date(2024, 11, 20), coverPhoto: "/IMG_6769.jpg" },
 ]
 
+const ItemList = () => {
+    const [items, setItems] = useState([]); // Initialize as empty array
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
+  
+    useEffect(() => {
+      const fetchData = async () => {
+        try {
+          const response = await axiosInstance.get('/requests/');
+          console.log(response.data); // Inspect the API response structure
+          setItems(Array.isArray(response.data) ? response.data : []); // Ensure it's an array
+          setLoading(false);
+        } catch (err) {
+          setError('Failed to fetch data');
+          setLoading(false);
+        }
+      };
+  
+      fetchData();
+    }, []);
+  
+    if (loading) return <p>Loading...</p>;
+    if (error) return <p>{error}</p>;
+  
+    return (
+      <ul>
+        {Array.isArray(items) && items.map((item) => (
+          <li key={item.id}>{item.name}</li>
+        ))}
+      </ul>
+    );
+  };
+    
+  
 const AllRequests = () => {
     return (
         <>
@@ -60,6 +98,7 @@ const AllRequests = () => {
                         })}
                     </div>
             </div>
+            {/* {ItemList()} */}
             <Footer />
         </>
 
