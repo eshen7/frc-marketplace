@@ -12,8 +12,8 @@ import {
 import Home from './pages/Home';
 import Login from './pages/Login';
 import Signup from './pages/Signup';
-import Request from './pages/Request'; 
-import Fulfill from './pages/Fulfill'; 
+import Request from './pages/Request';
+import Fulfill from './pages/Fulfill';
 import AllRequests from './pages/AllRequests.jsx';
 import SalesPage from './pages/AllSales.jsx';
 
@@ -60,11 +60,16 @@ const router = createBrowserRouter([
     ],
   },
 ],
-{
-  future: {
-    v7_partialHydration: true,
-  },
-});
+  {
+    future: {
+      v7_partialHydration: true,
+      v7_relativeSplatPath: true,
+      v7_startTransition: true,
+      v7_fetcherPersist: true,
+      v7_normalizeFormMethod: true,
+      v7_skipActionErrorRevalidation: true,
+    },
+  });
 
 const rootElement = document.getElementById('root');
 
@@ -85,7 +90,16 @@ const renderApp = () => {
     root.render(
       <StrictMode>
         <ThemeProvider theme={theme}>
-          <RouterProvider router={router} />
+          <RouterProvider router={router} future={
+            {
+              v7_partialHydration: true,
+              v7_relativeSplatPath: true,
+              v7_startTransition: true,
+              v7_fetcherPersist: true,
+              v7_normalizeFormMethod: true,
+              v7_skipActionErrorRevalidation: true,
+            }
+          } />
         </ThemeProvider>
       </StrictMode>
     );

@@ -5,15 +5,15 @@ const Map = ({ center, zoom, locations }) => {
     const [activeMarker, setActiveMarker] = useState(null);
 
     // const apiKey = process.env.GOOGLE_API_KEY;
-    const apiKey = "";
+    // const apiKey = "";
 
-    const { isLoaded } = useJsApiLoader({
-        googleMapsApiKey: apiKey,
-    });
+    // const { isLoaded } = useJsApiLoader({
+    //     googleMapsApiKey: apiKey,
+    // });
 
-    if (!isLoaded) {
-        return <div>Loading...</div>;
-    }
+    // if (!isLoaded) {
+    //     return <div>Loading...</div>;
+    // }
 
     const handleMarkerClick = (marker) => {
         if (marker === activeMarker) {
