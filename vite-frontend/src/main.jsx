@@ -59,7 +59,12 @@ const router = createBrowserRouter([
       },
     ],
   },
-]);
+],
+{
+  future: {
+    v7_partialHydration: true,
+  },
+});
 
 const rootElement = document.getElementById('root');
 

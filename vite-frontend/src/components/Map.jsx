@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { GoogleMap, Marker, useJsApiLoader, InfoWindow } from '@react-google-maps/api'
+import { GoogleMap, MarkerF, useJsApiLoader, InfoWindowF } from '@react-google-maps/api'
 
 const Map = ({ center, zoom, locations }) => {
     const [activeMarker, setActiveMarker] = useState(null);
@@ -15,30 +15,29 @@ const Map = ({ center, zoom, locations }) => {
         return <div>Loading...</div>;
     }
 
-    const handleActiveMarker = (marker) => {
+    const handleMarkerClick = (marker) => {
         if (marker === activeMarker) {
+            handleCloseClick();
             return;
         }
         setActiveMarker(marker);
+    };
+
+    const handleCloseClick = () => {
+        setActiveMarker(null); // Close InfoWindow.
     };
 
     return (
         <div className=' h-[500px] flex items-center justify-center mx-auto min-w-[500px]'>
             <GoogleMap mapContainerStyle={{ width: '1000px', height: '500px' }} center={center} zoom={zoom}>
                 {locations.map((location, index) => (
-                    <Marker
+                    <MarkerF
                         key={index}
                         position={{ lat: location.lat, lng: location.lng }}
-                        onClick={() => handleActiveMarker(index)}
-                    // label={{
-                    //     text: location.name,
-                    //     color: "black",
-                    //     fontSize: "14px",
-                    //     fontWeight: "bold",
-                    // }}
+                        onClick={() => handleMarkerClick(location)}
                     >
-                        {activeMarker === index ? (
-                            <InfoWindow onCloseClick={() => setActiveMarker(null)}>
+                        {activeMarker == location && (
+                            <InfoWindowF position={{ lat: activeMarker.lat, lng: activeMarker.lng }} onCloseClick={handleCloseClick}>
                                 <div className='items-center text-center'>
                                     <h3 className='font-bold'>{location.name}</h3>
                                     <p>{location.number}</p>
@@ -47,9 +46,9 @@ const Map = ({ center, zoom, locations }) => {
                                         Profile
                                     </button>
                                 </div>
-                            </InfoWindow>
-                        ) : null}
-                    </Marker>
+                            </InfoWindowF>
+                        )};
+                    </MarkerF>
                 ))}
             </GoogleMap>
         </div>
