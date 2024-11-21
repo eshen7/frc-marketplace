@@ -93,22 +93,24 @@ DATABASES = {
     }
 }
 
-SESSION_COOKIE_DOMAIN = '127.0.0.1'
-SESSION_COOKIE_PATH = '/'
+SESSION_COOKIE_DOMAIN = "127.0.0.1"
+SESSION_COOKIE_PATH = "/"
 SESSION_COOKIE_SAMESITE = None  # Allows cross-site usage
-SESSION_COOKIE_SECURE = False   # Allow insecure for local development
+SESSION_COOKIE_SECURE = False  # Allow insecure for local development
 
 CORS_ALLOW_ALL_ORIGINS = True  # Only for development!
 
 # For production, you should specify allowed origins:
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:5173",
-    "http://127.0.0.1:5173"
+    "http://127.0.0.1:5173",
+    "http://127.0.0.1:5174",
 ]
 
 CSRF_TRUSTED_ORIGINS = [
     "http://localhost:5173",
-    "http://127.0.0.1:5173"
+    "http://127.0.0.1:5173",
+    "http://127.0.0.1:5174",
 ]
 
 # Allow credentials if you're using cookies/sessions
@@ -131,6 +133,7 @@ CORS_ALLOW_HEADERS = [
     "user-agent",
     "x-csrftoken",
     "x-requested-with",
+    "x-user-uuid",
 ]
 
 

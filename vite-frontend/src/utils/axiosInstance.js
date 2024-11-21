@@ -1,5 +1,20 @@
 import axios from "axios";
 
+function getCookie(name) {
+  let cookieValue = null;
+  if (document.cookie && document.cookie !== "") {
+    const cookies = document.cookie.split(";");
+    for (let i = 0; i < cookies.length; i++) {
+      const cookie = cookies[i].trim();
+      if (cookie.substring(0, name.length + 1) === name + "=") {
+        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+        break;
+      }
+    }
+  }
+  return cookieValue;
+}
+
 const axiosInstance = axios.create({
   baseURL: "http://127.0.0.1:8000/api",
   headers: {
@@ -9,22 +24,20 @@ const axiosInstance = axios.create({
   withCredentials: true,
 });
 
-axiosInstance.interceptors.response.use(
-  (response) => response,
-  (error) => {
-    // Handle different types of errors
-    if (error.response) {
-      // Server responded with error status
-      console.error("Response error:", error.response.data);
-    } else if (error.request) {
-      // Request was made but no response
-      console.error("Request error:", error.request);
-    } else {
-      // Something else went wrong
-      console.error("Error:", error.message);
+axiosInstance.interceptors.request.use(
+  (config) => {
+    const csrfToken = getCookie("csrftoken");
+    const userUUID = getCookie("user_uuid");
+    if (csrfToken) {
+      config.headers["X-CSRFToken"] = csrfToken;
     }
-    return Promise.reject(error);
-  }
+    if (userUUID) {
+      config.headers["X-User-UUID"] = userUUID;
+    }
+    return config;
+  },
+  (error) => Promise.reject(error)
 );
 
 export default axiosInstance;
+export { getCookie };

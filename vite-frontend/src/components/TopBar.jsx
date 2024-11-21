@@ -41,8 +41,9 @@ const TopBar = () => {
 
             if (response.status === 200) {
                 console.log("Logout successful");
+                window.location.href = "/";
                 return { success: true }
-                // Redirect or update state to reflect the user is logged in
+                
             } else {
                 console.log("Logout failed");
                 return { success: false, error: "An error occured" }
@@ -64,7 +65,7 @@ const TopBar = () => {
                     <Button href="sales" variant="contained" color="secondary">
                         Sales
                     </Button>
-                    <Button href="request" variant="contained" color="secondary">
+                    <Button href={isAuthenticated ? "request": "login"} variant="contained" color="secondary">
                         Make a Request
                     </Button>
                 </div>
@@ -72,7 +73,7 @@ const TopBar = () => {
                     <Stack className="justify-center" direction="row" spacing={2}>
                         {isAuthenticated ? (
                             <Stack direction="row" spacing={2} className='px-6'>
-                                <Button variant="contained" color='secondary' className='whitespace-nowrap' onClick={handleLogout}>
+                                <Button href="" variant="contained" color='secondary' className='whitespace-nowrap' onClick={handleLogout}>
                                     Log Out
                                 </Button>
                             </Stack>

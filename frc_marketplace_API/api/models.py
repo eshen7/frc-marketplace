@@ -80,11 +80,8 @@ class Part(models.Model):
 
 class PartRequest(models.Model):
     """Part Request Model."""
-
-    
-
     part = models.ForeignKey(Part, on_delete=models.PROTECT, related_name="requests")
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="requests")
+    user = models.ForeignKey(User, on_delete=models.PROTECT, related_name="requests")
     quantity = models.IntegerField(default=1)
     request_date = models.DateField(auto_now_add=True)
     needed_date = models.DateField(null=True, blank=True)

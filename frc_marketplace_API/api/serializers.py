@@ -120,11 +120,35 @@ class PartSerializer(serializers.ModelSerializer):
 class PartRequestSerializer(serializers.ModelSerializer):
     """Serializer for the PartRequest model."""
 
-    part = PartSerializer(read_only=True)
+    # Include part_id for write operations
     part_id = serializers.PrimaryKeyRelatedField(
         queryset=Part.objects.all(), source="part", write_only=True
     )
 
     class Meta:
         model = PartRequest
-        fields = ["id", "part", "part_id", "quantity", "request_date", "needed_date", "needed_for", "additional_info"]
+        fields = [
+            "part_id",  # For referencing the part by its ID
+            "quantity",
+            "request_date",
+            "needed_date",
+            "needed_for",
+            "additional_info",
+        ]
+        read_only_fields = ["user", "request_date"]
+
+    def create(self, validated_data):
+        """Add the requesting user to the validated data."""
+        user = self.context["request"].user
+        validated_data["user"] = user
+        return super().create(validated_data)
+
+    def to_representation(self, instance):
+        """Customize the serialized output."""
+        data = super().to_representation(instance)
+
+        # Optionally include `user` or other computed fields here
+        data["user"] = str(
+            instance.user.UUID
+        )  # Example: Show user's UUID in the response
+        return data

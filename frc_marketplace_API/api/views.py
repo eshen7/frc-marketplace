@@ -2,13 +2,13 @@ import json
 from django.forms import ValidationError
 from django.http import JsonResponse
 from django.contrib.auth import authenticate, login, logout
-from django.shortcuts import render
-from rest_framework.decorators import api_view
+from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
 from rest_framework import status
 from django.views.decorators.csrf import csrf_exempt
 from .models import User, Part, PartRequest
 from .serializers import UserSerializer, PartSerializer, PartRequestSerializer
+from rest_framework.permissions import IsAuthenticated
 
 
 # Create your views here.
@@ -16,55 +16,65 @@ from .serializers import UserSerializer, PartSerializer, PartRequestSerializer
 def user_views(request):
     """views for GETTING and CREATING users"""
     if request.method == "GET":
-        return _get_user(request=request)
+        users = User.objects.all()
+        serializer = UserSerializer(users, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
     if request.method == "POST":
-        return _create_user(request=request)
+        try:
+            serializer = UserSerializer(data=request.data)
+            if serializer.is_valid():
+                serializer.save()
+                return Response(serializer.data, status=status.HTTP_201_CREATED)
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        except ValidationError as e:
+            return Response(
+                {"message": "Validation failed", "errors": e.detail},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        except Exception as e:
+            return Response(
+                {"message": "Registration failed", "error": str(e)},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            )
 
 
-def _create_user(request):
-    try:
-        serializer = UserSerializer(data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-    except ValidationError as e:
-        return Response(
-            {"message": "Validation failed", "errors": e.detail},
-            status=status.HTTP_400_BAD_REQUEST,
-        )
-    except Exception as e:
-        return Response(
-            {"message": "Registration failed", "error": str(e)},
-            status=status.HTTP_500_INTERNAL_SERVER_ERROR,
-        )
-
-
-def _get_user(request):
-    users = User.objects.all()
-    serializer = UserSerializer(users, many=True)
-    return Response(serializer.data, status=status.HTTP_200_OK)
-
-@csrf_exempt
+@api_view(["POST"])
 def login_view(request):
     if request.method == "POST":
-        data = json.loads(request.body)
+        data = request.data
         email = data.get("email")
         password = data.get("password")
 
         user = authenticate(request, email=email, password=password)
-        if user is not None:
+        if user:
             login(request, user)
-            return JsonResponse({"message": "Login successful", "username": user.email})
+            uuid_to_set = str(user.UUID)
+            response = JsonResponse(
+                {
+                    "message": "Login successful",
+                    "username": user.email,
+                },
+                status=200,
+            )
+            response.set_cookie(
+                "user_uuid",
+                uuid_to_set,
+                httponly=False,
+                samesite="Lax",
+                path="/",
+            )
+            return response
         else:
             return JsonResponse({"error": "Invalid credentials"}, status=400)
     return JsonResponse({"error": "Only POST requests are allowed"}, status=405)
 
-@csrf_exempt
+
+@api_view(["POST"])
 def logout_view(request):
     if request.method == "POST":
         logout(request)
-        return JsonResponse({'message': 'Successfully logged out'}, status=200)
+        return JsonResponse({"message": "Successfully logged out"}, status=200)
     return JsonResponse({"error": "Only POST requests are allowed"}, status=405)
 
 
@@ -72,47 +82,47 @@ def logout_view(request):
 def part_views(request):
     """Views for GETTING and CREATING Parts."""
     if request.method == "GET":
-        return _get_parts()
+        parts = Part.objects.all()
+        serializer = PartSerializer(parts, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
     if request.method == "POST":
-        return _create_part(request=request)
+        serializer = PartSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()  # Save the new part to the database
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-def _create_part(request):
-    """Handle POST requests to create a new part."""
-    serializer = PartSerializer(data=request.data)
-    if serializer.is_valid():
-        serializer.save()  # Save the new part to the database
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
-    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-
-def _get_parts():
-    """Handle GET requests to list all parts."""
-    parts = Part.objects.all()
-    serializer = PartSerializer(parts, many=True)
-    return Response(serializer.data, status=status.HTTP_200_OK)
-
-@csrf_exempt
+@permission_classes([IsAuthenticated])
 @api_view(["GET", "POST"])
 def part_request_views(request):
     """Views for GETTING and CREATING Part Requests."""
     if request.method == "GET":
-        return _get_part_requests(request=request)
+        part_requests = PartRequest.objects.all()
+        serializer = PartRequestSerializer(part_requests, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
     if request.method == "POST":
-        return _create_part_request(request=request)
+        user_uuid = request.headers.get("X-User-UUID")
+        user_csrftoken = request.headers.get("X-CSRFToken")
+        try:
+            user = User.objects.get(UUID=user_uuid)
+        except User.DoesNotExist:
+            return Response(
+                {"message": f"User with UUID {user_uuid} not found"},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+        except Exception as e:
+            return Response(
+                {"message": "An error occurred", "error": str(e)},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            )
 
-@csrf_exempt
-def _create_part_request(request):
-    """Handle POST requests to create a new part request."""
-    serializer = PartRequestSerializer(data=request.data)
-    if serializer.is_valid():
-        serializer.save(user=request.user)  # Save the new part request to the database
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
-    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        serializer = PartRequestSerializer(
+            data=request.data, context={"request": request}
+        )
 
-
-def _get_part_requests(request):
-    """Handle GET requests to list all part requests."""
-    part_requests = PartRequest.objects.all()
-    serializer = PartRequestSerializer(part_requests, many=True)
-    return Response(serializer.data, status=status.HTTP_200_OK)
+        if serializer.is_valid():
+            serializer.save(user=user)
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
