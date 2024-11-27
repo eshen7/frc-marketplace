@@ -1,54 +1,98 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect } from 'react';
+import PropTypes from 'prop-types';
+// Material UI imports
 import {
-  TextField,
-  Button,
-  Select,
-  MenuItem,
-  FormControl,
-  InputLabel,
-  Typography,
-  Container,
   Box,
-  Snackbar,
+  Button,
   CircularProgress,
   Dialog,
-  DialogTitle,
-  DialogContent,
   DialogActions,
-} from "@mui/material";
-import TopBar from "./../components/TopBar.jsx";
-import Footer from "../components/Footer.jsx";
-import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
-import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
-import { DatePicker } from "@mui/x-date-pickers/DatePicker";
+  DialogContent,
+  DialogTitle,
+  FormControl,
+  InputLabel,
+  MenuItem,
+  Select,
+  TextField,
+} from '@mui/material';
+// Date handling
+import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
+import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
+import { DatePicker } from '@mui/x-date-pickers/DatePicker';
+// Components
+import TopBar from '../components/TopBar';
+import Footer from '../components/Footer';
+import SuccessBanner from '../components/SuccessBanner';
+import ErrorBanner from '../components/ErrorBanner';
+// Utils
+import axiosInstance from '../utils/axiosInstance';
 
-import axiosInstance from "../utils/axiosInstance";
+const INITIAL_FORM_STATE = {
+  quantity: 1,
+  neededFor: '',
+  additionalInfo: '',
+};
+
+const NewPartDialog = ({ open, onClose, onCreate, loading }) => {
+  const [partData, setPartData] = useState({ name: '', description: '' });
+
+  const handleChange = (field) => (event) => {
+    setPartData((prev) => ({ ...prev, [field]: event.target.value }));
+  };
+
+  const handleSubmit = () => {
+    onCreate(partData);
+    setPartData({ name: '', description: '' });
+  };
+
+  return (
+    <Dialog open={open} onClose={onClose} fullWidth maxWidth="sm">
+      <DialogTitle>Create New Part</DialogTitle>
+      <DialogContent>
+        <TextField
+          autoFocus
+          margin="dense"
+          label="Part Name"
+          fullWidth
+          value={partData.name}
+          onChange={handleChange('name')}
+        />
+        <TextField
+          margin="dense"
+          label="Description"
+          fullWidth
+          multiline
+          rows={4}
+          value={partData.description}
+          onChange={handleChange('description')}
+        />
+      </DialogContent>
+      <DialogActions>
+        <Button onClick={onClose}>Cancel</Button>
+        <Button onClick={handleSubmit} disabled={loading}>
+          {loading ? <CircularProgress size={24} /> : 'Create'}
+        </Button>
+      </DialogActions>
+    </Dialog>
+  );
+};
+
+NewPartDialog.propTypes = {
+  open: PropTypes.bool.isRequired,
+  onClose: PropTypes.func.isRequired,
+  onCreate: PropTypes.func.isRequired,
+  loading: PropTypes.bool.isRequired,
+};
 
 const PartRequestForm = () => {
   const [parts, setParts] = useState([]);
-  const [selectedPart, setSelectedPart] = useState("");
-  const [date_needed, setDateNeededBy] = useState(null);
-  const [formData, setFormData] = useState({
-    quantity: 1,
-    needed_for: "",
-    additional_info: "",
-  });
+  const [selectedPart, setSelectedPart] = useState('');
+  const [dateNeeded, setDateNeeded] = useState(null);
+  const [formData, setFormData] = useState(INITIAL_FORM_STATE);
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
-  const [error, setError] = useState("");
-
-  const [openNewPartDialog, setOpenNewPartDialog] = useState(false);
-  const [newPartName, setNewPartName] = useState("");
-  const [newPartDescription, setNewPartDescription] = useState("");
-
-  const handleInputChange = (event) => {
-    const { name, value } = event.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
-  };
-
-  const handleDateChange = (date) => {
-    setDateNeededBy(date);
-  };
+  const [error, setError] = useState('');
+  const [isNewPartDialogOpen, setIsNewPartDialogOpen] = useState(false);
 
   useEffect(() => {
     fetchParts();
@@ -56,82 +100,81 @@ const PartRequestForm = () => {
 
   const fetchParts = async () => {
     try {
-      const response = await axiosInstance.get("/parts/");
-      const data = response.data;
+      const { data } = await axiosInstance.get('/parts/');
       setParts(data);
-    } catch (err) {
-      console.log(err);
-      setError("Failed to fetch parts");
+    } catch (error) {
+      setError('Failed to fetch parts list');
+      console.error('Error fetching parts:', error);
     }
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setLoading(true);
-    setError("");
+  const handleInputChange = (event) => {
+    const { name, value } = event.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
+  };
 
-    const needed_date = new Date(date_needed).toISOString().split("T")[0];
-    const { quantity, needed_for, additional_info } = formData;
-    console.log(quantity);
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+    if (!selectedPart || !dateNeeded) return;
+
+    setLoading(true);
+    setError('');
 
     try {
-      const response = await axiosInstance.post("/requests/", {
+      const requestData = {
         part_id: selectedPart,
-        quantity,
-        needed_for,
-        additional_info,
-        needed_date,
-      });
+        quantity: formData.quantity,
+        needed_for: formData.neededFor,
+        additional_info: formData.additionalInfo,
+        needed_date: new Date(dateNeeded).toISOString().split('T')[0],
+      };
+
+      await axiosInstance.post('/requests/', requestData);
       setSuccess(true);
-      setSelectedPart("");
-    } catch (err) {
-      console.error("Error response:", err);
-      setError("Failed to submit request");
+      setSelectedPart('');
+      setFormData(INITIAL_FORM_STATE);
+      setDateNeeded(null);
+    } catch (error) {
+      setError('Failed to submit request. Please try again.');
+      console.error('Error submitting request:', error);
     } finally {
       setLoading(false);
     }
   };
 
-  const handleCreateNewPart = async () => {
+  const handleCreatePart = async (partData) => {
     setLoading(true);
-    setError("");
-
     try {
-      const response = await axiosInstance.post("/parts/", {
-        name: newPartName,
-        description: newPartDescription,
-      });
-
-      const newPart = response.data;
-      setParts([...parts, newPart]);
+      const { data: newPart } = await axiosInstance.post('/parts/', partData);
+      setParts((prev) => [...prev, newPart]);
       setSelectedPart(newPart.id);
-      setOpenNewPartDialog(false);
-      setNewPartName("");
-      setNewPartDescription("");
+      setIsNewPartDialogOpen(false);
       setSuccess(true);
-    } catch (err) {
-      setError("Failed to create part");
+    } catch (error) {
+      setError('Failed to create new part');
+      console.error('Error creating part:', error);
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <Box sx={{ minHeight: "100vh", display: "flex", flexDirection: "column" }}>
+    <Box sx={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
+      {success && (
+        <SuccessBanner
+          message="Operation completed successfully!"
+          onClose={() => setSuccess(false)}
+        />
+      )}
+      {error && <ErrorBanner message={error} onClose={() => setError('')} />}
+      
       <TopBar />
-      <Box
-        sx={{
-          flexGrow: 1,
-          mt: 4,
-          mx: "auto",
-          width: "100%",
-          maxWidth: 600,
-          px: 2,
-        }}
-      >
+      
+      <Box sx={{ flexGrow: 1, maxWidth: 600, mx: 'auto', px: 2, py: 4 }}>
         <h1 className="text-7xl text-center mt-[80px] mb-[80px] font-paytone text-[#AE0000] font-extrabold text-shadow-md">
           Make a Request
         </h1>
+        
         <form onSubmit={handleSubmit}>
           <FormControl fullWidth margin="normal">
             <InputLabel id="part-select-label">Part</InputLabel>
@@ -153,7 +196,7 @@ const PartRequestForm = () => {
             color="primary"
             fullWidth
             sx={{ mt: 1, mb: 2 }}
-            onClick={() => setOpenNewPartDialog(true)}
+            onClick={() => setIsNewPartDialogOpen(true)}
           >
             Create New Part
           </Button>
@@ -169,27 +212,26 @@ const PartRequestForm = () => {
             <LocalizationProvider dateAdapter={AdapterDateFns}>
               <DatePicker
                 label="Need the part by*"
-                value={formData.needed_date}
-                onChange={handleDateChange}
-                renderInput={(params) => <TextField {...params} fullWidth />}
+                value={dateNeeded}
+                onChange={setDateNeeded}
+                slotProps={{ textField: { fullWidth: true } }}
               />
             </LocalizationProvider>
-
             <TextField
               fullWidth
-              name="needed_for"
+              name="neededFor"
               label="Need it for what"
-              value={formData.needed_for}
+              value={formData.neededFor}
               onChange={handleInputChange}
             />
           </div>
           <TextField
             fullWidth
-            name="additional_info"
+            name="additionalInfo"
             label="Any other additional info"
             multiline
             rows={4}
-            value={formData.additional_info}
+            value={formData.additionalInfo}
             onChange={handleInputChange}
             margin="normal"
           />
@@ -204,53 +246,15 @@ const PartRequestForm = () => {
             {loading ? <CircularProgress size={24} /> : "Submit Request"}
           </Button>
         </form>
-        <Snackbar
-          open={success}
-          autoHideDuration={6000}
-          onClose={() => setSuccess(false)}
-          message="Operation completed successfully"
+
+        <NewPartDialog
+          open={isNewPartDialogOpen}
+          onClose={() => setIsNewPartDialogOpen(false)}
+          onCreate={handleCreatePart}
+          loading={loading}
         />
-        <Snackbar
-          open={!!error}
-          autoHideDuration={6000}
-          onClose={() => setError("")}
-          message={error}
-        />
-        {/* Dialog for creating a new part */}
-        <Dialog
-          open={openNewPartDialog}
-          onClose={() => setOpenNewPartDialog(false)}
-        >
-          <DialogTitle>Create New Part</DialogTitle>
-          <DialogContent>
-            <TextField
-              autoFocus
-              margin="dense"
-              label="Part Name"
-              type="text"
-              fullWidth
-              value={newPartName}
-              onChange={(e) => setNewPartName(e.target.value)}
-            />
-            <TextField
-              margin="dense"
-              label="Description"
-              type="text"
-              fullWidth
-              multiline
-              rows={4}
-              value={newPartDescription}
-              onChange={(e) => setNewPartDescription(e.target.value)}
-            />
-          </DialogContent>
-          <DialogActions>
-            <Button onClick={() => setOpenNewPartDialog(false)}>Cancel</Button>
-            <Button onClick={handleCreateNewPart} disabled={loading}>
-              {loading ? <CircularProgress size={24} /> : "Create"}
-            </Button>
-          </DialogActions>
-        </Dialog>
       </Box>
+      
       <Footer />
     </Box>
   );

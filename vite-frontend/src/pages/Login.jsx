@@ -6,12 +6,19 @@ import { Box, Button } from "@mui/material";
 import TextField from "@mui/material/TextField";
 import axiosInstance from "../utils/axiosInstance.js";
 import Footer from "../components/Footer.jsx";
+import ErrorBanner from "../components/ErrorBanner.jsx";
 
 const Login = () => {
   const [formData, setFormData] = useState({
     email: "",
     password: "",
   });
+
+  const [showErrorBanner, setShowErrorBanner] = useState(false);
+
+  const handleCloseBanner = () => {
+    setShowErrorBanner(false);
+  };
 
   const navigate = useNavigate();
 
@@ -36,6 +43,7 @@ const Login = () => {
         console.log("Login successful", response.data);
         return { success: true, access, userUUID };
       } else {
+        setShowErrorBanner(true);
         return {
           success: false,
           error: "Login response missing required data",
@@ -43,7 +51,8 @@ const Login = () => {
       }
     } catch (error) {
       console.error("An error occurred:", error);
-      return { success: false, error: "An error occurred during login" };
+      setShowErrorBanner(true);
+      return { success: false, error: error.message };
     }
   };
 
@@ -54,7 +63,12 @@ const Login = () => {
       // Store tokens in localStorage
       localStorage.setItem("authToken", result.access);
       window.dispatchEvent(new Event("storage")); // Notify other tabs/windows
-      navigate("/"); // Redirect to homepage
+      navigate("/", {
+        state: {
+          fromLogin: true,
+          message: "Logged in Successfully!",
+        },
+      });
     } else {
       console.error("An error occurred:", result.error);
     }
@@ -62,6 +76,12 @@ const Login = () => {
 
   return (
     <>
+      {showErrorBanner && (
+        <ErrorBanner
+          message="An error occurred during login"
+          onClose={handleCloseBanner}
+        />
+      )}
       <TopBar />
       <div className="flex justify-center bg-gray-100">
         <div className="flex flex-col bg-white min-h-fit container my-20 justify-center w-2/3 mx-auto py-20 rounded-3xl min-w-96 shadow-xl">
@@ -71,20 +91,20 @@ const Login = () => {
           <div className="flex flex-col gap-5">
             <div className="w-2/3 mx-auto">
               <TextField
-                id="outlined-basic"
                 label="Email"
                 variant="outlined"
                 className="w-full"
+                required={true}
                 onChange={(e) => handleChange("email", e.target.value)}
               />
             </div>
             <div className="w-2/3 mx-auto">
               <TextField
-                id="outlined-basic"
                 label="Password"
                 variant="outlined"
                 className="w-full"
                 type="password"
+                required={true}
                 onChange={(e) => handleChange("password", e.target.value)}
               />
             </div>
@@ -99,6 +119,7 @@ const Login = () => {
                   variant="contained"
                   className="justify-end w-1/2 whitespace-nowrap"
                   onClick={handleSubmit}
+                  disabled={formData.email === "" || formData.password === ""}
                 >
                   Sign in
                 </Button>
