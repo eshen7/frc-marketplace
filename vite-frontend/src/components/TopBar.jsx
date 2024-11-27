@@ -29,7 +29,7 @@ const TopBar = () => {
     // Clean up the event listener on component unmount
     return () => {
       window.removeEventListener("storage", checkAuthStatus);
-    };
+};
   }, []);
 
   const handleLogout = async (e) => {
