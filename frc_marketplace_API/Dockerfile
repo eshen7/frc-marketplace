@@ -7,7 +7,7 @@ WORKDIR /usr/local/app
 
 # install python dependencies
 COPY Pipfile* ./
-RUN pipenv install --deploy --ignore-pipfile
+RUN pipenv install --deploy
 
 # copy the entire project
 COPY . /usr/local/app/

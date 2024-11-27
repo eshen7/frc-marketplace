@@ -6,6 +6,7 @@ from address.models import Address
 import googlemaps
 from address.models import State, Country, Locality
 from decouple import config
+from utils.geolocation import get_coordinates 
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -51,12 +52,17 @@ class UserSerializer(serializers.ModelSerializer):
             defaults={"postal_code": get_component("postal_code") or "N/A"},
         )
 
+        lat, lon = get_coordinates(raw_address)
+
+
         # Create address (full or partial)
         address = Address.objects.create(
             street_number=get_component("street_number") or "",
             route=get_component("route") or "",
             locality=locality,
             raw=raw_address,
+            latitude=lat,
+            longitude=lon,
         )
 
         return address
