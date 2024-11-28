@@ -92,19 +92,24 @@ class UserSerializer(serializers.ModelSerializer):
         """Output representation"""
         representation = super().to_representation(instance)
 
-        if instance.address:
-            representation["formatted_address"] = {
-                "street_number": instance.address.street_number,
-                "street": instance.address.route,
-                "city": instance.address.locality.name,
-                "state": instance.address.locality.state.name,
-                "postal_code": instance.address.locality.postal_code,
-                "country": instance.address.locality.state.country.name,
-                "raw": instance.address.raw,
-            }
+        # if instance.address:
+        #     representation["formatted_address"] = {
+        #         "street_number": instance.address.street_number,
+        #         "street": instance.address.route,
+        #         "city": instance.address.locality.name,
+        #         "state": instance.address.locality.state.name,
+        #         "postal_code": instance.address.locality.postal_code,
+        #         "country": instance.address.locality.state.country.name,
+        #         "raw": instance.address.raw,
+        #     }
 
-        # Remove the write-only address field from the output
-        representation.pop("address", None)
+        representation.pop("password", None)
+        representation.pop("is_active", None)
+        representation.pop("is_staff", None)
+        representation.pop("is_superuser", None)
+        representation.pop("date_joined", None)
+        representation.pop("UUID", None)    
+        representation.pop("phone", None)
 
         return representation
 
@@ -148,7 +153,5 @@ class PartRequestSerializer(serializers.ModelSerializer):
         data = super().to_representation(instance)
 
         # Optionally include `user` or other computed fields here
-        data["user"] = str(
-            instance.user.UUID
-        )  # Example: Show user's UUID in the response
+        data["user"] = UserSerializer(instance.user).data
         return data
