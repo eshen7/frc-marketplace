@@ -37,6 +37,26 @@ def user_views(request):
                 {"message": "Registration failed", "error": str(e)},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR,
             )
+        
+@permission_classes([IsAuthenticated])
+@api_view(["GET"])
+def get_logged_in_user_view(request):
+    """
+    View to fetch the currently logged-in user's data.
+    """
+    try:
+        # Get the logged-in user from the request
+        user = request.user
+
+        # Serialize the user's data
+        serializer = UserSerializer(user)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    except Exception as e:
+        return Response(
+            {"message": "An error occurred", "error": str(e)},
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+        )
 
 
 @api_view(["POST"])

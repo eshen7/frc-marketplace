@@ -2,9 +2,8 @@
 from django.forms import ValidationError
 from rest_framework import serializers
 from .models import User, Part, PartRequest
-from address.models import Address
 import googlemaps
-from address.models import State, Country, Locality
+from address.models import State, Country, Locality, Address
 from decouple import config
 from utils.geolocation import get_coordinates 
 
@@ -107,6 +106,8 @@ class UserSerializer(serializers.ModelSerializer):
         #         "postal_code": instance.address.locality.postal_code,
         #         "country": instance.address.locality.state.country.name,
         #         "raw": instance.address.raw,
+        #         "latitude": instance.address.latitude,
+        #         "longitude": instance.address.longitude,
         #     }
 
         representation.pop("password", None)

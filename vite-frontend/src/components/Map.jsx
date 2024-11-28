@@ -1,5 +1,6 @@
 import React, { useState } from 'react'
 import { GoogleMap, MarkerF, useJsApiLoader, InfoWindowF } from '@react-google-maps/api'
+import axiosInstance from '../utils/axiosInstance';
 
 function haversine(lat1, lon1, lat2, lon2) {
     const R = 3958.8; // Radius of Earth in miles
@@ -24,7 +25,29 @@ function haversine(lat1, lon1, lat2, lon2) {
 
 const Map = ({ center, zoom, locations }) => {
     const [activeMarker, setActiveMarker] = useState(null);
+    const [userLat, setUserLat] = useState(null);
+    const [userLon, setUserLon] = useState(null);
 
+    const fetchUserCoords = async () => {
+        try {
+            const response = await axiosInstance.get('/users/self/');
+            const data = response.data;
+
+            if (!data || !data.formatted_address) {
+                throw new Error('Address or coordinates not found');
+            }
+
+            const { latitude, longitude } = data.formatted_address;
+            setUserLat(latitude);
+            setUserLon(longitude);
+        }
+        catch (error) {
+            console.error('Error fetching User Data:', error);
+            throw error; // Rethrow to propagate the error up
+        }
+    };
+
+    fetchUserCoords();
     // const apiKey = process.env.GOOGLE_API_KEY;
     // const apiKey = "";
 
@@ -66,7 +89,7 @@ const Map = ({ center, zoom, locations }) => {
                                     hover:bg-red-900 transition-transform duration-100'>
                                         Profile
                                     </button>
-                                    <p>Distance: {haversine(location.lat, location.lng, location.lat, location.lng).toFixed(1)} Miles</p>
+                                    <p>{haversine(userLat, userLon, location.lat, location.lng).toFixed(1)} Miles</p>
                                 </div>
                             </InfoWindowF>
                         )};
