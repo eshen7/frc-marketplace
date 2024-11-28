@@ -1,6 +1,27 @@
 import React, { useState } from 'react'
 import { GoogleMap, MarkerF, useJsApiLoader, InfoWindowF } from '@react-google-maps/api'
 
+function haversine(lat1, lon1, lat2, lon2) {
+    const R = 3958.8; // Radius of Earth in miles
+
+    // Convert latitude and longitude from degrees to radians
+    const toRadians = (degree) => (degree * Math.PI) / 180;
+    lat1 = toRadians(lat1);
+    lon1 = toRadians(lon1);
+    lat2 = toRadians(lat2);
+    lon2 = toRadians(lon2);
+
+    // Differences in latitude and longitude
+    const dlat = lat2 - lat1;
+    const dlon = lon2 - lon1;
+
+    // Haversine formula
+    const a = Math.sin(dlat / 2) ** 2 + Math.cos(lat1) * Math.cos(lat2) * Math.sin(dlon / 2) ** 2;
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+
+    return R * c; // Distance in miles
+}
+
 const Map = ({ center, zoom, locations }) => {
     const [activeMarker, setActiveMarker] = useState(null);
 
@@ -45,6 +66,7 @@ const Map = ({ center, zoom, locations }) => {
                                     hover:bg-red-900 transition-transform duration-100'>
                                         Profile
                                     </button>
+                                    <p>Distance: {haversine(location.lat, location.lng, location.lat, location.lng).toFixed(1)} Miles</p>
                                 </div>
                             </InfoWindowF>
                         )};

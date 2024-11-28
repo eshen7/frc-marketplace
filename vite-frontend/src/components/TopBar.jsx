@@ -9,9 +9,15 @@ import Button from "@mui/material/Button";
 import axiosInstance from "../utils/axiosInstance.js";
 import TextField from "@mui/material/TextField";
 import { useNavigate } from "react-router-dom";
+import { RxHamburgerMenu } from "react-icons/rx";
+import { FaTimes, FaPlus, FaHandHolding, FaStore, FaWpforms, FaSignInAlt } from "react-icons/fa";
+import { MdHome } from "react-icons/md";
+import { CgProfile } from "react-icons/cg";
+
 
 const TopBar = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isOpen, setIsOpen] = useState(false);
 
   const navigate = useNavigate();
 
@@ -63,22 +69,22 @@ const TopBar = () => {
   };
 
   return (
-    <div className="bg-red-800 top-0 left-0 z-50 w-full shadow-lg">
-      <div className="max-w-none mx-auto px-2 sm:px-4 lg:px-6 min-w-80 flex flex-row items-center justify-between">
-        <a href="/">
-          <img
-            className="h-[40px] hover:cursor-pointer hover:scale-105 transition-translate duration-100"
-            src="https://static.wixstatic.com/media/b46766_7bdb1070a7354b4393d1a759b3f81e71~mv2_d_1504_1860_s_2.png/v1/crop/x_8,y_0,w_1488,h_1860/fill/w_156,h_195,al_c,q_85,usm_0.66_1.00_0.01,enc_auto/MillenniumFalconLogo3647.png"
-            alt="3647 logo"
-          ></img>
-        </a>
-        <div className="flex gap-5 whitespace-nowrap">
-          <Button href="requests" variant="contained" color="secondary">
-            Requests
-          </Button>
-          <Button href="sales" variant="contained" color="secondary">
-            Sales
-          </Button>
+    <div className="bg-red-800 w-screen max-w-none mx-auto px-2 sm:px-4 lg:px-6 min-w-80 flex flex-row place-items-center justify-between py-3">
+      <a href="/">
+        <img
+          className="h-[40px] min-w-[32px] mr-3 hover:cursor-pointer hover:scale-105 transition-translate duration-100"
+          src="https://static.wixstatic.com/media/b46766_7bdb1070a7354b4393d1a759b3f81e71~mv2_d_1504_1860_s_2.png/v1/crop/x_8,y_0,w_1488,h_1860/fill/w_156,h_195,al_c,q_85,usm_0.66_1.00_0.01,enc_auto/MillenniumFalconLogo3647.png"
+          alt="3647 logo"
+        />
+      </a>
+      <div className="gap-5 whitespace-nowrap hidden 525:flex">
+        <Button href="requests" variant="contained" color="secondary">
+          Requests
+        </Button>
+        <Button href="sales" variant="contained" color="secondary">
+          Sales
+        </Button>
+        {isAuthenticated && (
           <Button
             href={isAuthenticated ? "request" : "login"}
             variant="contained"
@@ -86,54 +92,115 @@ const TopBar = () => {
           >
             Make a Request
           </Button>
-        </div>
-        <div className="h-16 flex items-center justify-end">
-          <Stack className="justify-center" direction="row" spacing={2}>
-            {isAuthenticated ? (
-              <Stack direction="row" spacing={2} className="px-6">
-                <Button
-                  href=""
-                  variant="contained"
-                  color="secondary"
-                  className="whitespace-nowrap"
-                  onClick={handleLogout}
-                >
-                  Log Out
-                </Button>
-              </Stack>
-            ) : (
-              <Stack direction="row" spacing={2} className="px-6">
-                <Button
-                  href="login"
-                  variant="contained"
-                  color="secondary"
-                  className="whitespace-nowrap"
-                >
-                  Sign In
-                </Button>
-                <Button href="signup" variant="outlined" color="secondary">
-                  Register
-                </Button>
-              </Stack>
-            )}
-            {isAuthenticated && (
-              <IconButton className="items-center">
-                <IosShareOutlinedIcon fontSize="medium" color="secondary" />
-              </IconButton>
-            )}
-            {isAuthenticated && (
-              <IconButton className="items-center">
-                <SettingsOutlinedIcon fontSize="medium" color="secondary" />
-              </IconButton>
-            )}
-            {isAuthenticated && (
-              <IconButton className="items-center">
-                <Person2OutlinedIcon fontSize="medium" color="secondary" />
-              </IconButton>
-            )}
-          </Stack>
-        </div>
+        )}
       </div>
+      <div className="hidden 525:flex items-center justify-end">
+        <Stack className="justify-center" direction="row" spacing={2}>
+          {isAuthenticated ? (
+            <Stack direction="row" spacing={2} className="px-6">
+              <Button
+                href=""
+                variant="contained"
+                color="secondary"
+                className="whitespace-nowrap"
+                onClick={handleLogout}
+              >
+                Log Out
+              </Button>
+            </Stack>
+          ) : (
+            <Stack direction="row" spacing={2} className="px-6">
+              <Button href="login" variant="contained" color="secondary" className="whitespace-nowrap">
+                Sign In
+              </Button>
+              <Button href="signup" variant="outlined" color="secondary">
+                Register
+              </Button>
+            </Stack>
+          )}
+          {isAuthenticated && (
+            <IconButton className="items-center">
+              <IosShareOutlinedIcon fontSize="medium" color="secondary" />
+            </IconButton>
+          )}
+          {isAuthenticated && (
+            <IconButton className="items-center">
+              <SettingsOutlinedIcon fontSize="medium" color="secondary" />
+            </IconButton>
+          )}
+          {isAuthenticated && (
+            <IconButton className="items-center">
+              <Person2OutlinedIcon fontSize="medium" color="secondary" />
+            </IconButton>
+          )}
+        </Stack>
+      </div>
+
+      <div className="flex 525:hidden">
+        <button onClick={() => setIsOpen(true)}>
+          <RxHamburgerMenu className='w-[35px] h-[35px]'
+            color={"#FFFFFF"}
+          />
+        </button>
+      </div>
+      {/* The Hamburger Bar */}
+      {isOpen ?
+        <div className="fixed top-0 right-0 h-full w-full bg-red-800 z-50 transition-transform duration-300 flex flex-row">
+          <div className="p-4 pl-10 text-white space-y-6 flex flex-col text-[18px] mt-16 justify-left">
+            <a href='/' className="flex place-items-center">
+              <MdHome className='mr-5' />
+              <button className="">Home</button>
+            </a>
+            <a href='requests' className="flex place-items-center">
+              <FaHandHolding className='mr-5' />
+              <button className="">Requests</button>
+            </a>
+            <a href='sales' className="flex place-items-center">
+              <FaStore className='mr-5' />
+              <button className="">Sales</button>
+            </a>
+            {isAuthenticated ? (
+              <>
+                <a href='request' className="flex place-items-center">
+                  <FaPlus className='mr-5' />
+                  <button className="">Make a Request</button>
+                </a>
+                <a href='/profile-section' className="flex place-items-center">
+                  <CgProfile className='mr-5' />
+                  <button className="">Your Profile</button>
+                </a>
+              </>
+
+            ) : (
+              <>
+                <a href='login' className="flex place-items-center">
+                  <FaSignInAlt className='mr-5' />
+                  <button className="">Sign In</button>
+                </a>
+                <a href='signup' className="flex place-items-center">
+                  <FaWpforms className='mr-5' />
+                  <button className="">Register</button>
+                </a>
+              </>
+            )}
+          </div>
+          <div>
+            <a href="/">
+              <img
+                className="absolute top-[12px] left-[8px] h-[40px] min-w-[32px] mr-3 hover:cursor-pointer hover:scale-105 transition-translate duration-100"
+                src="https://static.wixstatic.com/media/b46766_7bdb1070a7354b4393d1a759b3f81e71~mv2_d_1504_1860_s_2.png/v1/crop/x_8,y_0,w_1488,h_1860/fill/w_156,h_195,al_c,q_85,usm_0.66_1.00_0.01,enc_auto/MillenniumFalconLogo3647.png"
+                alt="3647 logo"
+              />
+            </a>
+            <button
+              onClick={() => setIsOpen(false)}
+              className="absolute top-[20px] right-[20px] text-white text-2xl"
+            >
+              <FaTimes className='w-[28px] h-[28px]' />
+            </button>
+          </div>
+        </div> : null
+      }
     </div>
   );
 };

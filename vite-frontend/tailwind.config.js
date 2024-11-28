@@ -12,6 +12,9 @@ export default {
         roboto: ['Roboto', 'sans-serif'],
         paytone: ['Paytone One', 'sans-serif']
       },
+      screens: {
+        "525": "525px",
+      }
     },
   },
   plugins: [

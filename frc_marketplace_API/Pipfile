@@ -13,8 +13,7 @@ python-decouple="*"
 pillow="*"
 googlemaps="*"
 django-cors-headers="*"
-python-dotenv = "*"
-pandas="*"
+python-dotenv="*"
 
 [dev-packages]
 
