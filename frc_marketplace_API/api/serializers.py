@@ -97,8 +97,8 @@ class UserSerializer(serializers.ModelSerializer):
         """Output representation"""
         representation = super().to_representation(instance)
 
-        # if instance.address:
-        #     representation["formatted_address"] = {
+        if instance.address:
+            representation["formatted_address"] = {
         #         "street_number": instance.address.street_number,
         #         "street": instance.address.route,
         #         "city": instance.address.locality.name,
@@ -106,17 +106,17 @@ class UserSerializer(serializers.ModelSerializer):
         #         "postal_code": instance.address.locality.postal_code,
         #         "country": instance.address.locality.state.country.name,
         #         "raw": instance.address.raw,
-        #         "latitude": instance.address.latitude,
-        #         "longitude": instance.address.longitude,
-        #     }
+                "latitude": instance.address.latitude,
+                "longitude": instance.address.longitude,
+            }
 
         representation.pop("password", None)
         representation.pop("is_active", None)
         representation.pop("is_staff", None)
         representation.pop("is_superuser", None)
         representation.pop("date_joined", None)
-        representation.pop("UUID", None)    
-        representation.pop("phone", None)
+        representation.pop("UUID", None)
+        # representation.pop("phone", None)
 
         return representation
 

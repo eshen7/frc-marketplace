@@ -96,8 +96,8 @@ const Signup = () => {
 
   const handleSubmit = async (e) => {
     const emptyFields = Object.entries(formData).filter(([key, value]) => value === "");
-    
-    if (emptyFields.length > 0) {
+
+    if (emptyFields.length > 1) {
       // Create an error message listing the empty fields
       const errorMessage = `Please fill in all required fields: ${emptyFields
         .map(([key]) => key.replace(/_/g, " "))

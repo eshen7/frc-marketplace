@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { GoogleMap, MarkerF, useJsApiLoader, InfoWindowF } from '@react-google-maps/api'
 import axiosInstance from '../utils/axiosInstance';
 
@@ -23,15 +23,20 @@ function haversine(lat1, lon1, lat2, lon2) {
     return R * c; // Distance in miles
 }
 
-const Map = ({ center, zoom, locations }) => {
+const Map = ({ zoom, locations }) => {
     const [activeMarker, setActiveMarker] = useState(null);
     const [userLat, setUserLat] = useState(null);
     const [userLon, setUserLon] = useState(null);
+    const [loadingUserCoords, setLoadingUserCoords] = useState(true); // Added loading state
+    const [error, setError] = useState(null);
+    const [distance, setDistance] = useState();
 
     const fetchUserCoords = async () => {
         try {
             const response = await axiosInstance.get('/users/self/');
+            console.log("response:", response)
             const data = response.data;
+            console.log("data:", data)
 
             if (!data || !data.formatted_address) {
                 throw new Error('Address or coordinates not found');
@@ -40,56 +45,84 @@ const Map = ({ center, zoom, locations }) => {
             const { latitude, longitude } = data.formatted_address;
             setUserLat(latitude);
             setUserLon(longitude);
+            setLoadingUserCoords(false);
         }
         catch (error) {
             console.error('Error fetching User Data:', error);
-            throw error; // Rethrow to propagate the error up
+            setError('Failed to fetch user data. Please reload page and try again.');
+            setLoadingUserCoords(false);
         }
     };
+    useEffect(() => {
+        const checkUserAndFetchCoords = async () => {
+            const token = localStorage.getItem('authToken'); // Or wherever you store the token
 
-    fetchUserCoords();
-    // const apiKey = process.env.GOOGLE_API_KEY;
-    // const apiKey = "";
+            if (!token) {
+                setError('Log in to display distance'); // Display login message if no user
+                setLoadingUserCoords(false);
+                return;
+            }
 
-    // const { isLoaded } = useJsApiLoader({
-    //     googleMapsApiKey: apiKey,
-    // });
+            try {
+                await fetchUserCoords(); // Fetch user data if a token exists
+            } catch (error) {
+                console.error('Error initializing user coordinates:', error);
+            }
+        };
 
-    // if (!isLoaded) {
-    //     return <div>Loading...</div>;
-    // }
+        checkUserAndFetchCoords();
+    }, []); // Runs when user auth changes
 
     const handleMarkerClick = (marker) => {
         if (marker === activeMarker) {
             handleCloseClick();
             return;
         }
+
+        // Calculate distance only when marker is clicked
+        if (userLat !== null && userLon !== null) {
+            const distance = haversine(
+                userLat,
+                userLon,
+                marker.formatted_address.latitude,
+                marker.formatted_address.longitude
+            );
+            setDistance(distance.toFixed(1)); // Set the calculated distance
+        } else {
+            setDistance(null);
+        }
+
         setActiveMarker(marker);
     };
 
     const handleCloseClick = () => {
         setActiveMarker(null); // Close InfoWindow.
+        setDistance(null); // Clear distance when InfoWindow is closed
     };
 
     return (
         <div className=' h-[500px] flex items-center justify-center mx-auto min-w-[500px]'>
-            <GoogleMap mapContainerStyle={{ width: '1000px', height: '500px' }} center={center} zoom={zoom}>
+            <GoogleMap mapContainerStyle={{ width: '1000px', height: '500px' }} center={(userLat && userLon) ? ({ lat: userLat, lng: userLon }) : ({ lat: 32.95747527010932, lng: -117.22508357787281 })} zoom={zoom}>
                 {locations.map((location, index) => (
                     <MarkerF
                         key={index}
-                        position={{ lat: location.lat, lng: location.lng }}
+                        position={{ lat: location.formatted_address.latitude, lng: location.formatted_address.longitude }}
                         onClick={() => handleMarkerClick(location)}
                     >
                         {activeMarker == location && (
-                            <InfoWindowF position={{ lat: activeMarker.lat, lng: activeMarker.lng }} onCloseClick={handleCloseClick}>
+                            <InfoWindowF position={{ lat: activeMarker.formatted_address.latitude, lng: activeMarker.formatted_address.longitude }} onCloseClick={handleCloseClick}>
                                 <div className='items-center text-center'>
-                                    <h3 className='font-bold'>{location.name}</h3>
-                                    <p>{location.number}</p>
+                                    <h3 className='font-bold'>{location.team_name}</h3>
+                                    <p>{location.team_number}</p>
                                     <button className='mt-1 bg-red-800 px-2 py-1 rounded-md text-white font-bold
                                     hover:bg-red-900 transition-transform duration-100'>
                                         Profile
                                     </button>
-                                    <p>{haversine(userLat, userLon, location.lat, location.lng).toFixed(1)} Miles</p>
+                                    {!loadingUserCoords && userLat != null && userLon != null ? (
+                                        <p>{distance ? `${distance} Miles` : 'Calculating...'}</p>
+                                    ) : (
+                                        <p>{error}</p>
+                                    )}
                                 </div>
                             </InfoWindowF>
                         )};
