@@ -10,7 +10,7 @@ import axiosInstance from "../utils/axiosInstance.js";
 import TextField from "@mui/material/TextField";
 import { useNavigate } from "react-router-dom";
 import { RxHamburgerMenu } from "react-icons/rx";
-import { FaTimes, FaPlus, FaHandHolding, FaStore, FaWpforms, FaSignInAlt } from "react-icons/fa";
+import { FaTimes, FaPlus, FaHandHolding, FaStore, FaWpforms, FaSignInAlt, FaSignOutAlt } from "react-icons/fa";
 import { MdHome } from "react-icons/md";
 import { CgProfile } from "react-icons/cg";
 
@@ -69,7 +69,7 @@ const TopBar = () => {
   };
 
   return (
-    <div className="bg-red-800 w-screen max-w-none mx-auto px-2 sm:px-4 lg:px-6 min-w-80 flex flex-row place-items-center justify-between py-3">
+    <div className="bg-red-800 w-screen max-w-none mx-auto px-2 sm:px-4 lg:px-6 flex flex-row place-items-center justify-between py-3">
       <a href="/">
         <img
           className="h-[40px] min-w-[32px] mr-3 hover:cursor-pointer hover:scale-105 transition-translate duration-100"
@@ -77,7 +77,7 @@ const TopBar = () => {
           alt="3647 logo"
         />
       </a>
-      <div className="gap-5 whitespace-nowrap hidden 525:flex">
+      <div className="gap-5 whitespace-nowrap hidden sm:flex">
         <Button href="requests" variant="contained" color="secondary">
           Requests
         </Button>
@@ -94,7 +94,7 @@ const TopBar = () => {
           </Button>
         )}
       </div>
-      <div className="hidden 525:flex items-center justify-end">
+      <div className="hidden sm:flex items-center justify-end">
         <Stack className="justify-center" direction="row" spacing={2}>
           {isAuthenticated ? (
             <Stack direction="row" spacing={2} className="px-6">
@@ -120,23 +120,13 @@ const TopBar = () => {
           )}
           {isAuthenticated && (
             <IconButton className="items-center">
-              <IosShareOutlinedIcon fontSize="medium" color="secondary" />
-            </IconButton>
-          )}
-          {isAuthenticated && (
-            <IconButton className="items-center">
-              <SettingsOutlinedIcon fontSize="medium" color="secondary" />
-            </IconButton>
-          )}
-          {isAuthenticated && (
-            <IconButton className="items-center">
-              <Person2OutlinedIcon fontSize="medium" color="secondary" />
+              <CgProfile className='text-white' />
             </IconButton>
           )}
         </Stack>
       </div>
 
-      <div className="flex 525:hidden">
+      <div className="flex sm:hidden">
         <button onClick={() => setIsOpen(true)}>
           <RxHamburgerMenu className='w-[35px] h-[35px]'
             color={"#FFFFFF"}
@@ -165,12 +155,15 @@ const TopBar = () => {
                   <FaPlus className='mr-5' />
                   <button className="">Make a Request</button>
                 </a>
-                <a href='/profile-section' className="flex place-items-center">
+                <div onClick={handleLogout} className="flex place-items-center">
+                  <FaSignOutAlt className='mr-5' />
+                  <button className="">Log Out</button>
+                </div>
+                <a href='' className="flex place-items-center">
                   <CgProfile className='mr-5' />
                   <button className="">Your Profile</button>
                 </a>
               </>
-
             ) : (
               <>
                 <a href='login' className="flex place-items-center">
