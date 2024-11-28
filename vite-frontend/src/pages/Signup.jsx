@@ -4,6 +4,7 @@ import { Box, Button } from "@mui/material";
 import TextField from "@mui/material/TextField";
 import axiosInstance from "../utils/axiosInstance.js";
 import Footer from "./../components/Footer.jsx";
+import { useNavigate } from "react-router-dom";
 
 const Signup = () => {
   // States here have to be formatted according to the backend Model schema
@@ -21,6 +22,8 @@ const Signup = () => {
 
   const [passwordError, setPasswordError] = useState("");
   const [autocomplete, setAutocomplete] = useState(null);
+
+  const navigate = useNavigate();
 
   useEffect(() => {
     // Initialize Google Places Autocomplete
@@ -94,6 +97,12 @@ const Signup = () => {
       return; // Don't submit if passwords don't match
     }
 
+    // navigate("landingPage", {
+    //   state: {
+    //     fromSignup: true,
+    //     message: "Signup Request Sent!",
+    //   },
+    // });
     axiosInstance
       .post("/users/", formData)
       .then((res) => {
@@ -102,6 +111,8 @@ const Signup = () => {
       .catch((err) => {
         console.log(err);
       });
+
+      navigate("/landingPage");
   };
 
   return (
