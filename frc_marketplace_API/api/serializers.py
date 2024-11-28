@@ -6,6 +6,7 @@ import googlemaps
 from address.models import State, Country, Locality, Address
 from decouple import config
 from utils.geolocation import get_coordinates 
+from utils.blueAlliance import getTeamName
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -89,8 +90,15 @@ class UserSerializer(serializers.ModelSerializer):
 
         except Exception as e:
             raise ValidationError(f"Invalid address: {str(e)}")
-
+    
     def create(self, validated_data):
+        team_number = validated_data.get("team_number")
+
+        # Use the getTeamName function to fetch the team name
+        if team_number:
+            team_name = getTeamName(team_number)
+            validated_data["team_name"] = team_name
+
         return User.objects.create_user(**validated_data)
 
     def to_representation(self, instance):
@@ -109,7 +117,7 @@ class UserSerializer(serializers.ModelSerializer):
                 "latitude": instance.address.latitude,
                 "longitude": instance.address.longitude,
             }
-
+        
         representation.pop("password", None)
         representation.pop("is_active", None)
         representation.pop("is_staff", None)

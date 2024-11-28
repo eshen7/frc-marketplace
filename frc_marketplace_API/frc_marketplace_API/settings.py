@@ -14,7 +14,6 @@ from email.policy import default
 from pathlib import Path
 import os
 from decouple import config
-from dotenv import load_dotenv
 
 from django.conf.global_settings import AUTH_USER_MODEL
 
@@ -26,10 +25,6 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = "django-insecure-vaj&&)r(b638*t&z5l+0cuz*)dkh)3sslmwrzr!br&m^uel$mf"
-
-# GOOGLE API KEY
-load_dotenv()
-GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY")
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True

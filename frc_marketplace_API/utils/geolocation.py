@@ -1,9 +1,10 @@
 import requests
 from django.conf import settings
+from decouple import config
 
 
 def get_coordinates(address):
-    api_key = settings.GOOGLE_API_KEY
+    api_key = config("GOOGLE_API_KEY")
     url = f"https://maps.googleapis.com/maps/api/geocode/json?address={address}&key={api_key}"
     response = requests.get(url)
     data = response.json()
