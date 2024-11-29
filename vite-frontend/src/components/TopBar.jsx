@@ -119,7 +119,7 @@ const TopBar = () => {
             </Stack>
           )}
           {isAuthenticated && (
-            <IconButton className="items-center">
+            <IconButton href="profile" className="items-center">
               <CgProfile className='text-white' />
             </IconButton>
           )}

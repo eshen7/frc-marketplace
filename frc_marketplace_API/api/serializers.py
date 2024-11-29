@@ -17,6 +17,7 @@ class UserSerializer(serializers.ModelSerializer):
         fields = [
             "email",
             "password",
+            "full_name",
             "address",
             "UUID",
             "date_joined",
@@ -113,7 +114,7 @@ class UserSerializer(serializers.ModelSerializer):
         #         "state": instance.address.locality.state.name,
         #         "postal_code": instance.address.locality.postal_code,
         #         "country": instance.address.locality.state.country.name,
-        #         "raw": instance.address.raw,
+                "raw": instance.address.raw,
                 "latitude": instance.address.latitude,
                 "longitude": instance.address.longitude,
             }
