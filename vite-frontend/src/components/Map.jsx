@@ -119,7 +119,15 @@ const Map = ({ zoom, locations }) => {
                                         Profile
                                     </button>
                                     {!loadingUserCoords && userLat != null && userLon != null ? (
-                                        <p>{distance ? `${distance} Miles` : 'Calculating...'}</p>
+                                        <p className='mt-1'>
+                                            {distance && distance != 0 ? (
+                                                `${distance} Miles`
+                                            ) : distance == 0 ? (
+                                                'Self'
+                                            ) : (
+                                                'Calculating...'
+                                            )}
+                                        </p>
                                     ) : (
                                         <p>{error}</p>
                                     )}

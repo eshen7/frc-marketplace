@@ -39,7 +39,7 @@ def user_views(request):
             )
         
 @permission_classes([IsAuthenticated])
-@api_view(["GET"])
+@api_view(["GET", "PUT"])
 def get_logged_in_user_view(request):
     """
     View to fetch the currently logged-in user's data.
@@ -48,9 +48,17 @@ def get_logged_in_user_view(request):
         # Get the logged-in user from the request
         user = request.user
 
-        # Serialize the user's data
-        serializer = UserSerializer(user)
-        return Response(serializer.data, status=status.HTTP_200_OK)
+        if request.method == "GET":
+            # Serialize the user's data
+            serializer = UserSerializer(user)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        if request.method == "PUT":
+            serializer = UserSerializer(user, data=request.data, partial=True)
+            if serializer.is_valid():
+                serializer.save()
+                return Response(serializer.data, status=status.HTTP_200_OK)
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
 
     except Exception as e:
         return Response(

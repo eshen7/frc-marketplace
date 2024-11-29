@@ -91,9 +91,9 @@ const SalesPage = () => {
   ]);
 
   return (
-    <>
+    <div className='min-h-screen flex flex-col'>
       <TopBar />
-      <div className="min-h-screen bg-gray-100 font-sans">
+      <div className="bg-gray-100 font-sans">
         <div className="sticky top-0 z-10 bg-white shadow-md">
           <div className="max-w-7xl mx-auto px-4 py-3">
             <div className="flex flex-col space-y-3">
@@ -180,8 +180,8 @@ const SalesPage = () => {
         </div>
 
         {/* Main content */}
-        <main className="p-8">
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+        <div className="flex flex-col flex-grow p-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 place-items-center">
             {filteredAndSortedItems.map((item) => (
               <ItemCard 
                 key={item.id}
@@ -190,10 +190,10 @@ const SalesPage = () => {
               />
             ))}
           </div>
-        </main>
+        </div>
       </div>
       <Footer />
-    </>
+    </div>
   )
 }
 

@@ -141,7 +141,7 @@ const AllRequests = () => {
   );
 
   return (
-    <>
+    <div className="min-h-screen flex flex-col">
       <TopBar />
       <div className="sticky top-0 z-10 bg-white shadow-md">
         <div className="max-w-7xl mx-auto px-4 py-3">
@@ -233,7 +233,7 @@ const AllRequests = () => {
         </div>
       </div>
 
-      <div className="min-h-screen bg-gray-100 font-sans p-8">
+      <div className="flex flex-col flex-grow bg-gray-100 font-sans p-8">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
           {filteredRequests.map((request) => (
             <ItemCard key={request.id} item={request} type="request" />
@@ -241,8 +241,9 @@ const AllRequests = () => {
         </div>
       </div>
       {/* {ItemList()} */}
+      <ItemList />
       <Footer />
-    </>
+    </div>
   );
 };
 

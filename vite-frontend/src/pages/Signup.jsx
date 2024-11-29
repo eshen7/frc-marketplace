@@ -110,7 +110,7 @@ const Signup = () => {
     if (passwordError) {
       return; // Don't submit if passwords don't match
     }
-    axiosInstance
+    await axiosInstance
       .post("/users/", formData)
       .then((res) => {
         console.log(res);
@@ -133,7 +133,7 @@ const Signup = () => {
           <div className="flex flex-col gap-5">
             <div className="w-2/3 mx-auto">
               <TextField
-                id="outlined-basic"
+                id=""
                 required
                 name="name"
                 autoComplete="name"
@@ -147,7 +147,7 @@ const Signup = () => {
             </div>
             <div className="w-2/3 mx-auto">
               <TextField
-                id="outlined-basic"
+                id=""
                 required
                 type="number"
                 label="Team Number"
@@ -171,7 +171,7 @@ const Signup = () => {
             </div>
             <div className="w-2/3 mx-auto">
               <TextField
-                id="outlined-basic"
+                id=""
                 required
                 label="Email"
                 type="email"
@@ -184,7 +184,7 @@ const Signup = () => {
             </div>
             <div className="w-2/3 mx-auto">
               <TextField
-                id="outlined-basic"
+                id=""
                 required
                 label="Phone Number"
                 type="number"
@@ -196,7 +196,7 @@ const Signup = () => {
             </div>
             <div className="w-2/3 mx-auto">
               <TextField
-                id="outlined-basic"
+                id=""
                 required
                 label="Password"
                 variant="outlined"
@@ -211,7 +211,7 @@ const Signup = () => {
             </div>
             <div className="w-2/3 mx-auto">
               <TextField
-                id="outlined-basic"
+                id=""
                 required
                 label="Re-type Password"
                 variant="outlined"
@@ -228,7 +228,7 @@ const Signup = () => {
             </div>
             <div className="w-2/3 mx-auto">
               <TextField
-                id="outlined-basic"
+                id=""
                 required
                 label="Confirmation Code"
                 variant="outlined"
@@ -263,7 +263,7 @@ const Signup = () => {
       </div >
       <Footer />
       {error && (
-        <ErrorBanner message={error} onClose={() => setError("")}/>
+        <ErrorBanner message={error} onClose={() => setError("")} />
       )}
     </>
   );

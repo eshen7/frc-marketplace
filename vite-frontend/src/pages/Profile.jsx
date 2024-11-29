@@ -4,17 +4,74 @@ import Footer from '../components/Footer';
 import axiosInstance from '../utils/axiosInstance';
 import { useNavigate } from 'react-router-dom';
 import Skeleton from 'react-loading-skeleton'
+import SuccessBanner from '../components/SuccessBanner';
 
 
 const UserProfile = () => {
   const [profileData, setProfileData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [profileChange, setProfileChange] = useState("");
+  const [autocomplete, setAutocomplete] = useState(null);
 
+  const [formData, setFormData] = useState({
+    full_name: "",
+    address: "",
+    phone: "",
+  });
 
   const navigate = useNavigate();
 
+  useEffect(() => {
+    // Initialize Google Places Autocomplete
+    const initAutocomplete = () => {
+      if (window.google && window.google.maps) {
+        const autocompleteInstance = new window.google.maps.places.Autocomplete(
+          document.getElementById("address-input"),
+          {
+            types: ["address"],
+          }
+        );
 
+        autocompleteInstance.addListener("place_changed", () => {
+          const place = autocompleteInstance.getPlace();
+          if (place.formatted_address) {
+            setFormData((prevData) => ({
+              ...prevData,
+              address: place.formatted_address,
+            }));
+          }
+        });
+
+        setAutocomplete(autocompleteInstance);
+      }
+    };
+
+    // Load Google Places script if not already loaded
+    if (!window.google) {
+      const script = document.createElement("script");
+      script.src = `https://maps.googleapis.com/maps/api/js?key=${process.env.GOOGLE_API_KEY}&libraries=places`;
+      script.async = true;
+      script.defer = true;
+      script.onload = initAutocomplete;
+      document.head.appendChild(script);
+    } else {
+      initAutocomplete();
+    }
+
+    // Cleanup
+    return () => {
+      if (autocomplete) {
+        window.google.maps.event.clearInstanceListeners(autocomplete);
+      }
+    };
+  }, []);
+
+
+  const handleInputChange = (name, value) => {
+    const updatedFormData = { ...formData, [name]: value };
+    setFormData(updatedFormData);
+  }
 
   const fetchUser = async () => {
     try {
@@ -24,6 +81,11 @@ const UserProfile = () => {
       console.log('data', data);
 
       setProfileData(data);
+      setFormData({
+        full_name: data.full_name || "",
+        address: data.formatted_address?.raw || "",
+        phone: data.phone || "",
+      });
       setLoading(false);
     }
     catch (error) {
@@ -56,20 +118,41 @@ const UserProfile = () => {
     checkUserAndFetchData();
   }, []);
 
-  const handleSubmit = () => {
 
+
+  const handleSubmit = async (e) => {
+    e.preventDefault(); // Prevent form from refreshing the page
+
+    try {
+      const response = await axiosInstance.put("/users/self/", formData);
+      console.log("Profile updated successfully:", response.data);
+
+      // Optionally, you can update the `profileData` state with the response
+      setProfileData(response.data);
+
+      setProfileChange("Profile Updated Successfully.");
+    } catch (error) {
+      console.error("Error updating profile:", error.response || error.message);
+      alert("Failed to update profile. Please try again.");
+    }
+  };
+
+  const closeProfileChangeSuccessBanner = () => {
+    setProfileChange("");
   }
 
   const handlePasswordChange = () => {
 
   }
 
-  const handleInputChange = () => {
-
-  }
-
   return (
     <div className='min-h-screen flex flex-col'>
+      {profileChange != "" && (
+				<SuccessBanner
+					message={profileChange}
+					onClose={closeProfileChangeSuccessBanner}
+				/>
+			)}
       <TopBar />
       <div className='flex flex-col flex-grow px-20 pt-10'>
         <div className="container mx-auto py-10 px-4">
@@ -87,21 +170,21 @@ const UserProfile = () => {
               <div className="bg-white shadow-md rounded-lg p-6">
                 {loading || !profileData ? (
                   <>
-                    <Skeleton count={11}/>
+                    <Skeleton count={11} />
                   </>
                 ) : (
                   <>
                     <h2 className="text-xl font-semibold mb-4">Editable Information</h2>
                     <form onSubmit={handleSubmit} className="space-y-4">
                       <div>
-                        <label htmlFor="address" className="block text-sm font-medium text-gray-700">Address</label>
+                        <label htmlFor="address-input" className="block text-sm font-medium text-gray-700">Address</label>
                         <input
                           type="text"
-                          id="address"
+                          id="address-input"
                           name="address"
-                          value={profileData.formatted_address.raw}
-                          onChange={handleInputChange}
-                          className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
+                          value={formData.address}
+                          onChange={(e) => handleInputChange("address", e.target.value)}
+                          className="mt-1 block w-full p-2 rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
                         />
                       </div>
                       <div>
@@ -110,9 +193,9 @@ const UserProfile = () => {
                           type="tel"
                           id="phoneNumber"
                           name="phoneNumber"
-                          value={profileData.phone}
-                          onChange={handleInputChange}
-                          className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
+                          value={formData.phone}
+                          onChange={(e) => handleInputChange("phone", e.target.value)}
+                          className="mt-1 block w-full p-2 rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
                         />
                       </div>
                       <div>
@@ -121,9 +204,9 @@ const UserProfile = () => {
                           type="text"
                           id="headCoachName"
                           name="headCoachName"
-                          value={profileData.headCoachName}
-                          onChange={handleInputChange}
-                          className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
+                          value={formData.full_name}
+                          onChange={(e) => handleInputChange("full_name", e.target.value)}
+                          className="mt-1 block w-full p-2 rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
                         />
                       </div>
                       <button type="submit" className="w-full bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
@@ -138,7 +221,7 @@ const UserProfile = () => {
               <div className="bg-white shadow-md rounded-lg p-6">
                 {loading || !profileData ? (
                   <>
-                    <Skeleton className='h-[324px]'/>
+                    <Skeleton className='h-[324px]' />
                   </>
                 ) : (
                   <>
@@ -146,15 +229,15 @@ const UserProfile = () => {
                     <div className="space-y-4">
                       <div>
                         <h3 className="text-sm font-medium text-gray-700">Email</h3>
-                        <p className="mt-1">{profileData.email}</p>
+                        <p className="mt-1 py-2">{profileData.email}</p>
                       </div>
                       <div>
                         <h3 className="text-sm font-medium text-gray-700">Team Name</h3>
-                        <p className="mt-1">{profileData.team_name}</p>
+                        <p className="mt-1 py-2">{profileData.team_name}</p>
                       </div>
                       <div>
                         <h3 className="text-sm font-medium text-gray-700">Team Number</h3>
-                        <p className="mt-1">{profileData.team_number}</p>
+                        <p className="mt-1 py-2">{profileData.team_number}</p>
                       </div>
                     </div>
                   </>
