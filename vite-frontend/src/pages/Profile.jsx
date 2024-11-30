@@ -200,6 +200,33 @@ const UserProfile = () => {
     }
   }
 
+  const handleDeleteAccount = async () => {
+    const confirmDelete = window.confirm(
+      "Are you sure you want to delete your account? This action cannot be undone."
+    );
+
+    if (!confirmDelete) {
+      return; // Exit if the user cancels the confirmation
+    }
+
+    try {
+      const response = await axiosInstance.delete("/users/self/delete/");
+      console.log(response.data);
+
+      // Notify the user of success
+      alert("Account deleted successfully.");
+
+      localStorage.removeItem("authToken");
+
+
+      // Redirect to the home page
+      navigate("/");
+    } catch (error) {
+      console.error("Error deleting account:", error.response || error.message);
+      alert("Failed to delete account. Please try again.");
+    }
+  };
+
   return (
     <div className='min-h-screen flex flex-col'>
       {profileChange == "Profile Updated Successfully." || profileChange == "Password changed successfully." ? (
@@ -227,144 +254,158 @@ const UserProfile = () => {
               </div>
             </>
           ) : (
-            <div className="grid gap-6 md:grid-cols-2">
-              {/* Editable Information */}
-              <div className="bg-white shadow-md rounded-lg p-6">
-                {loading || !profileData ? (
-                  <>
-                    <Skeleton count={13} />
-                  </>
-                ) : (
-                  <>
-                    <h2 className="text-xl font-semibold mb-4">Editable Information</h2>
-                    <form onSubmit={handleSubmit} className="space-y-4">
-                      <div>
-                        <TextField
-                          type="text"
-                          id="address-input"
-                          label="Address"
-                          name="address"
-                          value={formData.address}
-                          onChange={(e) => handleInputChange("address", e.target.value)}
-                          className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
-                        />
-                      </div>
-                      <div>
-                        <TextField
-                          type="tel"
-                          id="phoneNumber"
-                          label="Phone Number"
-                          name="phoneNumber"
-                          value={formData.phone}
-                          onChange={(e) => handleInputChange("phone", e.target.value)}
-                          className="mt-1 block w-full p-2 rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
-                        />
-                      </div>
-                      <div>
-                        <TextField
-                          type="text"
-                          id="headCoachName"
-                          label="Head Coach Name"
-                          name="headCoachName"
-                          value={formData.full_name}
-                          onChange={(e) => handleInputChange("full_name", e.target.value)}
-                          className="mt-1 block w-full p-2 rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
-                        />
-                      </div>
-                      <button type="submit" className="w-full bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
-                        Update Profile
-                      </button>
-                    </form>
-                  </>
-                )}
-              </div>
+            <>
+              <div className="grid gap-6 md:grid-cols-2">
+                {/* Editable Information */}
+                <div className="bg-white shadow-md rounded-lg p-6">
+                  {loading || !profileData ? (
+                    <>
+                      <Skeleton count={13} />
+                    </>
+                  ) : (
+                    <>
+                      <h2 className="text-xl font-semibold mb-4">Editable Information</h2>
+                      <form onSubmit={handleSubmit} className="space-y-4">
+                        <div>
+                          <TextField
+                            type="text"
+                            id="address-input"
+                            label="Address"
+                            name="address"
+                            value={formData.address}
+                            onChange={(e) => handleInputChange("address", e.target.value)}
+                            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
+                          />
+                        </div>
+                        <div>
+                          <TextField
+                            type="tel"
+                            id="phoneNumber"
+                            label="Phone Number"
+                            name="phoneNumber"
+                            value={formData.phone}
+                            onChange={(e) => handleInputChange("phone", e.target.value)}
+                            className="mt-1 block w-full p-2 rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
+                          />
+                        </div>
+                        <div>
+                          <TextField
+                            type="text"
+                            id="headCoachName"
+                            label="Head Coach Name"
+                            name="headCoachName"
+                            value={formData.full_name}
+                            onChange={(e) => handleInputChange("full_name", e.target.value)}
+                            className="mt-1 block w-full p-2 rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
+                          />
+                        </div>
+                        <button type="submit" className="w-full bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
+                          Update Profile
+                        </button>
+                      </form>
+                    </>
+                  )}
+                </div>
 
-              {/* Uneditable Information */}
-              <div className="bg-white shadow-md rounded-lg p-6">
-                {loading || !profileData ? (
-                  <>
-                    <Skeleton className='' />
-                  </>
-                ) : (
-                  <>
-                    <h2 className="text-xl font-semibold mb-4">Uneditable Information</h2>
-                    <div className="space-y-4">
-                      <div>
-                        <h3 className="text-sm font-medium text-gray-700">Email</h3>
-                        <p className="mt-1 py-2">{profileData.email}</p>
+                {/* Uneditable Information */}
+                <div className="bg-white shadow-md rounded-lg p-6">
+                  {loading || !profileData ? (
+                    <>
+                      <Skeleton className='' />
+                    </>
+                  ) : (
+                    <>
+                      <h2 className="text-xl font-semibold mb-4">Uneditable Information</h2>
+                      <div className="space-y-4">
+                        <div>
+                          <h3 className="text-sm font-medium text-gray-700">Email</h3>
+                          <p className="mt-1 py-2">{profileData.email}</p>
+                        </div>
+                        <div>
+                          <h3 className="text-sm font-medium text-gray-700">Team Name</h3>
+                          <p className="mt-1 py-2">{profileData.team_name}</p>
+                        </div>
+                        <div>
+                          <h3 className="text-sm font-medium text-gray-700">Team Number</h3>
+                          <p className="mt-1 py-2">{profileData.team_number}</p>
+                        </div>
                       </div>
-                      <div>
-                        <h3 className="text-sm font-medium text-gray-700">Team Name</h3>
-                        <p className="mt-1 py-2">{profileData.team_name}</p>
-                      </div>
-                      <div>
-                        <h3 className="text-sm font-medium text-gray-700">Team Number</h3>
-                        <p className="mt-1 py-2">{profileData.team_number}</p>
-                      </div>
+                    </>
+                  )}
+
+                </div>
+
+                {/* Password Change */}
+                <div className="bg-white shadow-md rounded-lg p-6">
+                  <h2 className="text-xl font-semibold mb-4">Change Password</h2>
+                  <form className="space-y-4">
+                    <div>
+                      <TextField
+                        type="password"
+                        id="currentPassword"
+                        name="currentPassword"
+                        label="Current Password"
+                        value={passwordData.current}
+                        onChange={(e) => handlePassInputChange("current", e.target.value)}
+                        required
+                        className="mt-1 block w-full p-2 rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
+                      />
                     </div>
-                  </>
-                )}
+                    <div>
+                      <TextField
+                        type="password"
+                        id="newPassword"
+                        name="newPassword"
+                        label="New Password"
+                        value={passwordData.new}
+                        onChange={(e) => handlePassInputChange("new", e.target.value)}
+                        required
+                        error={!!passwordError}
+                        helperText={passwordError}
+                        className="mt-1 block w-full rounded-md p-2 border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
+                      />
+                    </div>
+                    <div>
+                      <TextField
+                        type="password"
+                        id="confirmPassword"
+                        name="confirmPassword"
+                        label="Confirm New Password"
+                        value={passwordData.confirmation}
+                        onChange={(e) => handlePassInputChange("confirmation", e.target.value)}
+                        required
+                        error={!!passwordError}
+                        helperText={passwordError}
+                        className="mt-1 block w-full p-2 rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
+                      />
+                    </div>
+                    <Button
+                      variant="contained"
+                      color='success'
+                      onClick={handlePasswordChange}
+                      className="w-full font-bold py-2 px-4 rounded">
+                      Change Password
+                    </Button>
+                  </form>
+                </div>
 
-              </div>
-
-              {/* Password Change */}
-              <div className="bg-white shadow-md rounded-lg p-6 md:col-span-2">
-                <h2 className="text-xl font-semibold mb-4">Change Password</h2>
-                <form className="space-y-4">
-                  <div>
-                    <TextField
-                      type="password"
-                      id="currentPassword"
-                      name="currentPassword"
-                      label="Current Password"
-                      value={passwordData.current}
-                      onChange={(e) => handlePassInputChange("current", e.target.value)}
-                      required
-                      className="mt-1 block w-full p-2 rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
-                    />
-                  </div>
-                  <div>
-                    <TextField
-                      type="password"
-                      id="newPassword"
-                      name="newPassword"
-                      label="New Password"
-                      value={passwordData.new}
-                      onChange={(e) => handlePassInputChange("new", e.target.value)}
-                      required
-                      error={passwordError}
-                      helperText={passwordError}
-                      className="mt-1 block w-full rounded-md p-2 border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
-                    />
-                  </div>
-                  <div>
-                    <TextField
-                      type="password"
-                      id="confirmPassword"
-                      name="confirmPassword"
-                      label="Confirm New Password"
-                      value={passwordData.confirmation}
-                      onChange={(e) => handlePassInputChange("confirmation", e.target.value)}
-                      required
-                      error={passwordError}
-                      helperText={passwordError}
-                      className="mt-1 block w-full p-2 rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
-                    />
-                  </div>
+                {/* Delete Account */}
+                <div className='bg-white shadow-md rounded-lg p-6'>
+                  <h2 className="text-xl font-semibold mb-4">Delete Account</h2>
+                  <p className='text-sm mb-4'>Actions cannot be undone</p>
                   <Button
-                    type="submit"
-                    variant="contained"
-                    onClick={handlePasswordChange}
-                    className="w-full font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
-                    Change Password
+                    variant='contained'
+                    color='error'
+                    onClick={handleDeleteAccount}
+                    className='w-full py-2 px-4'>
+                    Delete Account
                   </Button>
-                </form>
+                </div>
               </div>
-            </div>
+            </>
           )}
         </div >
       </div >
-
       <Footer />
     </div >
   );

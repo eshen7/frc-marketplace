@@ -101,6 +101,20 @@ def change_password_view(request):
     except Exception as e:
         return Response({"error": str(e)}, status=500)
 
+@permission_classes([IsAuthenticated])
+@api_view(["DELETE"])
+def delete_user_view(request):
+    """
+    Allow the authenticated user to delete their account.
+    """
+    try:
+        user = request.user
+        user.delete()  # Delete the user
+        logout(request)  # Log the user out
+        return Response({"message": "Account deleted successfully."}, status=200)
+    except Exception as e:
+        return Response({"error": str(e)}, status=500)
+
 
 @api_view(["POST"])
 def login_view(request):
