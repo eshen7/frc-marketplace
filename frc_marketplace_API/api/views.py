@@ -65,6 +65,41 @@ def get_logged_in_user_view(request):
             {"message": "An error occurred", "error": str(e)},
             status=status.HTTP_500_INTERNAL_SERVER_ERROR,
         )
+    
+@permission_classes([IsAuthenticated])
+@api_view(["PUT"])
+def change_password_view(request):
+    """
+    Allow the authenticated user to change their password.
+    """
+    user = request.user
+    data = request.data
+
+    current_password = data.get("current")
+    new_password = data.get("new")
+    confirm_password = data.get("confirmation")
+
+    # Check if the current password is correct
+    if not user.check_password(current_password):
+        return Response({"error": "Current password is incorrect."}, status=400)
+
+    # Check if new passwords match
+    if new_password != confirm_password:
+        return Response({"error": "New passwords do not match."}, status=400)
+    
+    if current_password == new_password:
+        return Response({"error": "New password cannot be the same as the current password."}, status=400)
+
+    try:
+        # Update the user's password
+        user.set_password(new_password)
+        user.save()
+
+        login(request, user, backend='django.contrib.auth.backends.ModelBackend')
+
+        return Response({"message": "Password changed successfully."}, status=200)
+    except Exception as e:
+        return Response({"error": str(e)}, status=500)
 
 
 @api_view(["POST"])

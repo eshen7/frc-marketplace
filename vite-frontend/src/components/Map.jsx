@@ -123,7 +123,7 @@ const Map = ({ zoom, locations }) => {
                                             {distance && distance != 0 ? (
                                                 `${distance} Miles`
                                             ) : distance == 0 ? (
-                                                'Self'
+                                                'You'
                                             ) : (
                                                 'Calculating...'
                                             )}

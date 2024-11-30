@@ -5,6 +5,9 @@ import axiosInstance from '../utils/axiosInstance';
 import { useNavigate } from 'react-router-dom';
 import Skeleton from 'react-loading-skeleton'
 import SuccessBanner from '../components/SuccessBanner';
+import TextField from "@mui/material/TextField";
+import ErrorBanner from '../components/ErrorBanner';
+import { Button } from '@mui/material';
 
 
 const UserProfile = () => {
@@ -13,11 +16,17 @@ const UserProfile = () => {
   const [error, setError] = useState(null);
   const [profileChange, setProfileChange] = useState("");
   const [autocomplete, setAutocomplete] = useState(null);
+  const [passwordError, setPasswordError] = useState("");
 
   const [formData, setFormData] = useState({
     full_name: "",
     address: "",
     phone: "",
+  });
+  const [passwordData, setPasswordData] = useState({
+    current: "",
+    new: "",
+    confirmation: "",
   });
 
   const navigate = useNavigate();
@@ -71,6 +80,27 @@ const UserProfile = () => {
   const handleInputChange = (name, value) => {
     const updatedFormData = { ...formData, [name]: value };
     setFormData(updatedFormData);
+  }
+
+  const validatePasswords = (password, confirmation) => {
+    if (!password || !confirmation) {
+      return "";
+    }
+    return password !== confirmation ? "Passwords do not match" : "";
+  };
+
+  const handlePassInputChange = (name, value) => {
+    setPasswordData({ ...passwordData, [name]: value });
+
+    if (name === "new" || name === "confirmation") {
+      const error = validatePasswords(
+        name === "new" ? value : passwordData.new,
+        name === "confirmation"
+          ? value
+          : passwordData.confirmation
+      );
+      setPasswordError(error);
+    }
   }
 
   const fetchUser = async () => {
@@ -131,28 +161,60 @@ const UserProfile = () => {
       setProfileData(response.data);
 
       setProfileChange("Profile Updated Successfully.");
-    } catch (error) {
+    }
+    catch (error) {
       console.error("Error updating profile:", error.response || error.message);
-      alert("Failed to update profile. Please try again.");
+      setProfileChange("Failed to update profile. Please try again.");
     }
   };
 
-  const closeProfileChangeSuccessBanner = () => {
+  const closeProfileChangeBanner = () => {
     setProfileChange("");
   }
 
-  const handlePasswordChange = () => {
+  const handlePasswordChange = async (e) => {
+    e.preventDefault();
 
+    if (!passwordData.current || !passwordData.new || !passwordData.confirmation) {
+      setPasswordError("All fields are required.");
+      return;
+    }
+
+    if (passwordData.new !== passwordData.confirmation) {
+      setPasswordError("New passwords do not match.");
+      return;
+    }
+
+    try {
+      const response = await axiosInstance.put("/change-password/", passwordData)
+
+      console.log("Password changed successfully:", response.data);
+      setPasswordData({ current: "", new: "", confirmation: "" }); // Clear the form
+      setPasswordError(""); // Clear any errors
+      setProfileChange("Password changed successfully.");
+    } catch (error) {
+      console.error("Error updating profile:", error.response || error.message);
+      setPasswordError(
+        error.response?.data?.error || "Failed to change password. Please try again."
+      );
+    }
   }
 
   return (
     <div className='min-h-screen flex flex-col'>
-      {profileChange != "" && (
-				<SuccessBanner
-					message={profileChange}
-					onClose={closeProfileChangeSuccessBanner}
-				/>
-			)}
+      {profileChange == "Profile Updated Successfully." || profileChange == "Password changed successfully." ? (
+        <SuccessBanner
+          message={profileChange}
+          onClose={closeProfileChangeBanner}
+        />
+      ) : profileChange != "" ? (
+        <ErrorBanner
+          message={profileChange}
+          onClose={closeProfileChangeBanner}
+        />
+      ) : (
+        <></>
+      )}
       <TopBar />
       <div className='flex flex-col flex-grow px-20 pt-10'>
         <div className="container mx-auto py-10 px-4">
@@ -170,28 +232,28 @@ const UserProfile = () => {
               <div className="bg-white shadow-md rounded-lg p-6">
                 {loading || !profileData ? (
                   <>
-                    <Skeleton count={11} />
+                    <Skeleton count={13} />
                   </>
                 ) : (
                   <>
                     <h2 className="text-xl font-semibold mb-4">Editable Information</h2>
                     <form onSubmit={handleSubmit} className="space-y-4">
                       <div>
-                        <label htmlFor="address-input" className="block text-sm font-medium text-gray-700">Address</label>
-                        <input
+                        <TextField
                           type="text"
                           id="address-input"
+                          label="Address"
                           name="address"
                           value={formData.address}
                           onChange={(e) => handleInputChange("address", e.target.value)}
-                          className="mt-1 block w-full p-2 rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
+                          className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
                         />
                       </div>
                       <div>
-                        <label htmlFor="phoneNumber" className="block text-sm font-medium text-gray-700">Phone Number</label>
-                        <input
+                        <TextField
                           type="tel"
                           id="phoneNumber"
+                          label="Phone Number"
                           name="phoneNumber"
                           value={formData.phone}
                           onChange={(e) => handleInputChange("phone", e.target.value)}
@@ -199,10 +261,10 @@ const UserProfile = () => {
                         />
                       </div>
                       <div>
-                        <label htmlFor="headCoachName" className="block text-sm font-medium text-gray-700">Head Coach Name</label>
-                        <input
+                        <TextField
                           type="text"
                           id="headCoachName"
+                          label="Head Coach Name"
                           name="headCoachName"
                           value={formData.full_name}
                           onChange={(e) => handleInputChange("full_name", e.target.value)}
@@ -221,7 +283,7 @@ const UserProfile = () => {
               <div className="bg-white shadow-md rounded-lg p-6">
                 {loading || !profileData ? (
                   <>
-                    <Skeleton className='h-[324px]' />
+                    <Skeleton className='' />
                   </>
                 ) : (
                   <>
@@ -248,22 +310,54 @@ const UserProfile = () => {
               {/* Password Change */}
               <div className="bg-white shadow-md rounded-lg p-6 md:col-span-2">
                 <h2 className="text-xl font-semibold mb-4">Change Password</h2>
-                <form onSubmit={handlePasswordChange} className="space-y-4">
+                <form className="space-y-4">
                   <div>
-                    <label htmlFor="currentPassword" className="block text-sm font-medium text-gray-700">Current Password</label>
-                    <input type="password" id="currentPassword" name="currentPassword" className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50" />
+                    <TextField
+                      type="password"
+                      id="currentPassword"
+                      name="currentPassword"
+                      label="Current Password"
+                      value={passwordData.current}
+                      onChange={(e) => handlePassInputChange("current", e.target.value)}
+                      required
+                      className="mt-1 block w-full p-2 rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
+                    />
                   </div>
                   <div>
-                    <label htmlFor="newPassword" className="block text-sm font-medium text-gray-700">New Password</label>
-                    <input type="password" id="newPassword" name="newPassword" className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50" />
+                    <TextField
+                      type="password"
+                      id="newPassword"
+                      name="newPassword"
+                      label="New Password"
+                      value={passwordData.new}
+                      onChange={(e) => handlePassInputChange("new", e.target.value)}
+                      required
+                      error={passwordError}
+                      helperText={passwordError}
+                      className="mt-1 block w-full rounded-md p-2 border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
+                    />
                   </div>
                   <div>
-                    <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700">Confirm New Password</label>
-                    <input type="password" id="confirmPassword" name="confirmPassword" className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50" />
+                    <TextField
+                      type="password"
+                      id="confirmPassword"
+                      name="confirmPassword"
+                      label="Confirm New Password"
+                      value={passwordData.confirmation}
+                      onChange={(e) => handlePassInputChange("confirmation", e.target.value)}
+                      required
+                      error={passwordError}
+                      helperText={passwordError}
+                      className="mt-1 block w-full p-2 rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
+                    />
                   </div>
-                  <button type="submit" className="w-full bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
+                  <Button
+                    type="submit"
+                    variant="contained"
+                    onClick={handlePasswordChange}
+                    className="w-full font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
                     Change Password
-                  </button>
+                  </Button>
                 </form>
               </div>
             </div>
