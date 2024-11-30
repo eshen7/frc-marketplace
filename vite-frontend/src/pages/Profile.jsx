@@ -383,6 +383,7 @@ const UserProfile = () => {
                       variant="contained"
                       color='success'
                       onClick={handlePasswordChange}
+                      disabled={!!passwordError}
                       className="w-full font-bold py-2 px-4 rounded">
                       Change Password
                     </Button>

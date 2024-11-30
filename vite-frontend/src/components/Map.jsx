@@ -30,6 +30,7 @@ const Map = ({ zoom, locations }) => {
     const [loadingUserCoords, setLoadingUserCoords] = useState(true); // Added loading state
     const [error, setError] = useState(null);
     const [distance, setDistance] = useState();
+    const [mapCenter, setMapCenter] = useState({ lat: 32.95747527010932, lng: -117.22508357787281 });
 
     const fetchUserCoords = async () => {
         try {
@@ -45,6 +46,7 @@ const Map = ({ zoom, locations }) => {
             const { latitude, longitude } = data.formatted_address;
             setUserLat(latitude);
             setUserLon(longitude);
+            setMapCenter({ lat: latitude, lng: longitude }); // Set map center to user's location
             setLoadingUserCoords(false);
         }
         catch (error) {
@@ -102,7 +104,11 @@ const Map = ({ zoom, locations }) => {
 
     return (
         <div className=' h-[500px] flex items-center justify-center mx-auto min-w-[500px]'>
-            <GoogleMap mapContainerStyle={{ width: '1000px', height: '500px' }} center={(userLat && userLon) ? ({ lat: userLat, lng: userLon }) : ({ lat: 32.95747527010932, lng: -117.22508357787281 })} zoom={zoom}>
+            <GoogleMap
+                mapContainerStyle={{ width: '1000px', height: '500px' }}
+                //center={(userLat && userLon) ? ({ lat: userLat, lng: userLon }) : ({ lat: 32.95747527010932, lng: -117.22508357787281 })}
+                center={mapCenter}
+                zoom={zoom}>
                 {locations.map((location, index) => (
                     <MarkerF
                         key={index}
@@ -110,8 +116,10 @@ const Map = ({ zoom, locations }) => {
                         onClick={() => handleMarkerClick(location)}
                     >
                         {activeMarker == location && (
-                            <InfoWindowF position={{ lat: activeMarker.formatted_address.latitude, lng: activeMarker.formatted_address.longitude }} onCloseClick={handleCloseClick}>
-                                <div className='items-center text-center'>
+                            <InfoWindowF
+                                position={{ lat: activeMarker.formatted_address.latitude, lng: activeMarker.formatted_address.longitude }}
+                                onCloseClick={handleCloseClick}>
+                                <div className='items-center text-center min-w-[120px]'>
                                     <h3 className='font-bold'>{location.team_name}</h3>
                                     <p>{location.team_number}</p>
                                     <button className='mt-1 bg-red-800 px-2 py-1 rounded-md text-white font-bold

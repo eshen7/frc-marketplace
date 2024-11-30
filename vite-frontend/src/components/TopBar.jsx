@@ -57,6 +57,7 @@ const TopBar = () => {
         navigate("/", {
           state: { fromLogin: true, message: "You have been logged out" },
         });
+        window.location.reload();
         return { success: true };
       } else {
         console.log("Logout failed");
