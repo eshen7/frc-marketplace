@@ -135,7 +135,12 @@ class PartSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Part
-        fields = ["id", "name", "description", "picture"]
+        fields = [
+            "id", 
+            "name", 
+            "description", 
+            "picture",
+        ]
 
 
 class PartRequestSerializer(serializers.ModelSerializer):
@@ -149,6 +154,7 @@ class PartRequestSerializer(serializers.ModelSerializer):
     class Meta:
         model = PartRequest
         fields = [
+            "id", # For referencing the request itself
             "part_id",  # For referencing the part by its ID
             "quantity",
             "request_date",
@@ -169,5 +175,8 @@ class PartRequestSerializer(serializers.ModelSerializer):
         data = super().to_representation(instance)
 
         # Optionally include `user` or other computed fields here
-        data["user"] = UserSerializer(instance.user).data
+        data["part_id"] = instance.part.id  # Include the part's ID in the output
+        data["part_name"] = instance.part.name  # Optionally include the part name
+        data["part_description"] = instance.part.description  # Optionally include the part name
+        data["user"] = UserSerializer(instance.user).data  # Include user details
         return data

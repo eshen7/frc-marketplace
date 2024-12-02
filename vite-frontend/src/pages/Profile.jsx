@@ -77,11 +77,13 @@ const UserProfile = () => {
   }, []);
 
 
+  // Input changing on profile changing fields
   const handleInputChange = (name, value) => {
     const updatedFormData = { ...formData, [name]: value };
     setFormData(updatedFormData);
   }
 
+  // Password Validation
   const validatePasswords = (password, confirmation) => {
     if (!password || !confirmation) {
       return "";
@@ -89,6 +91,7 @@ const UserProfile = () => {
     return password !== confirmation ? "Passwords do not match" : "";
   };
 
+  // Input Changing on password fields
   const handlePassInputChange = (name, value) => {
     setPasswordData({ ...passwordData, [name]: value });
 
@@ -103,6 +106,7 @@ const UserProfile = () => {
     }
   }
 
+  // Fetch self user
   const fetchUser = async () => {
     try {
       const response = await axiosInstance.get("/users/self/");
@@ -149,7 +153,7 @@ const UserProfile = () => {
   }, []);
 
 
-
+  // Changing Profile
   const handleSubmit = async (e) => {
     e.preventDefault(); // Prevent form from refreshing the page
 
@@ -172,6 +176,7 @@ const UserProfile = () => {
     setProfileChange("");
   }
 
+  // Changing Password
   const handlePasswordChange = async (e) => {
     e.preventDefault();
 
@@ -200,6 +205,7 @@ const UserProfile = () => {
     }
   }
 
+  // Account Deletion handling
   const handleDeleteAccount = async () => {
     const confirmDelete = window.confirm(
       "Are you sure you want to delete your account? This action cannot be undone."

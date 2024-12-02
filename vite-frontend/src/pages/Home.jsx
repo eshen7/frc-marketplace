@@ -14,6 +14,27 @@ const getDaysUntil = (dueDate) => {
 	return diffDays;
 };
 
+function haversine(lat1, lon1, lat2, lon2) {
+	const R = 3958.8; // Radius of Earth in miles
+
+	// Convert latitude and longitude from degrees to radians
+	const toRadians = (degree) => (degree * Math.PI) / 180;
+	lat1 = toRadians(lat1);
+	lon1 = toRadians(lon1);
+	lat2 = toRadians(lat2);
+	lon2 = toRadians(lon2);
+
+	// Differences in latitude and longitude
+	const dlat = lat2 - lat1;
+	const dlon = lon2 - lon1;
+
+	// Haversine formula
+	const a = Math.sin(dlat / 2) ** 2 + Math.cos(lat1) * Math.cos(lat2) * Math.sin(dlon / 2) ** 2;
+	const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+
+	return R * c; // Distance in miles
+}
+
 const recentRequests = [
 	{
 		id: 1,
@@ -124,21 +145,34 @@ const recentSales = [
 	},
 ];
 
-const renderRequest = (request) => {
-	const daysUntil = getDaysUntil(request.dueDate);
+const renderRequest = (request, self_user) => {
+	const daysUntil = getDaysUntil(new Date(request.needed_date));
 	const isUrgent = daysUntil < 5 && daysUntil > 0;
 	const isOverdue = daysUntil < 0;
 	const isDueToday = daysUntil === 0;
 	const absoluteDaysUntil = Math.abs(daysUntil);
 
+	let distance_string = "Log in for distance";
+
+	if (self_user && self_user.formatted_address.latitude && self_user.formatted_address.longitude) {
+		const dist = haversine(
+			request.user.formatted_address.latitude,
+			request.user.formatted_address.longitude,
+			self_user.formatted_address.latitude,
+			self_user.formatted_address.longitude
+		);
+
+		distance_string = dist.toFixed(1) + " miles";
+	}
+
 	const renderDueDate = () => {
 		return (
 			<p
 				className={`text-sm ${isOverdue || isDueToday
-						? "text-red-600 font-bold"
-						: isUrgent
-							? "text-orange-600 font-bold"
-							: "text-gray-500"
+					? "text-red-600 font-bold"
+					: isUrgent
+						? "text-orange-600 font-bold"
+						: "text-gray-500"
 					}`}
 			>
 				{isOverdue ? (
@@ -150,7 +184,7 @@ const renderRequest = (request) => {
 					<>Need Today!</>
 				) : (
 					<>
-						Need By: {request.dueDate.toLocaleDateString()} ({daysUntil}{" "}
+						Need By: {new Date(request.needed_date).toLocaleDateString()} ({daysUntil}{" "}
 						{daysUntil === 1 ? "day" : "days"})
 					</>
 				)}
@@ -162,44 +196,20 @@ const renderRequest = (request) => {
 		<div
 			key={request.id}
 			className={`flex-none w-[256px] bg-white rounded-lg shadow-md p-6 whitespace-nowrap ${isUrgent
-					? "border-2 border-orange-600"
-					: isOverdue || isDueToday
-						? "border-2 border-red-600"
-						: ""
+				? "border-2 border-orange-600"
+				: isOverdue || isDueToday
+					? "border-2 border-red-600"
+					: ""
 				}`}
 		>
-			<h3 className="text-xl font-semibold mb-2">{request.title}</h3>
-			<p className="text-gray-600 mb-2">{request.team}</p>
+			<h3 className="text-xl font-semibold mb-2">{request.part_name}</h3>
+			<p className="text-gray-600 mb-2">{request.user.team_number}</p>
 			{renderDueDate()}
-			<p className="text-sm text-gray-500">{request.distance} miles away</p>
+			<p className="text-sm text-gray-500">{distance_string != "0.0 miles" ? distance_string : "Your Listing"}</p>
 			<button className="mt-4 bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition-colors">
 				Offer Part
 			</button>
 		</div>
-	);
-};
-
-const renderParts = () => {
-	return (
-		<section className="mb-12 mx-[30px]">
-			<div className="flex justify-between items-center mb-4">
-				<h2 className="text-2xl font-bold">Recent Part Requests Nearby</h2>
-				<a href="requests">
-					<button className="bg-red-800 text-white py-3 px-5 rounded-[5px] hover:bg-red-900 transition-translate duration-100">
-						See All Requests
-					</button>
-				</a>
-			</div>
-			<div className="flex overflow-x-auto space-x-4 pb-4">
-				{recentRequests.map((request) => {
-					return (
-						<React.Fragment key={request.id}>
-							{renderRequest(request)}
-						</React.Fragment>
-					);
-				})}
-			</div>
-		</section>
 	);
 };
 
@@ -234,27 +244,62 @@ const renderSales = () => {
 	);
 };
 
-const locations = [
-	{
-		name: "Millennium Falcons",
-		number: "3647",
-		lat: 32.95747527010932,
-		lng: -117.22508357787281,
-	},
-	{
-		name: "Aluminum Narwhals",
-		number: "3128",
-		lat: 32.95938170096009,
-		lng: -117.18871557507953,
-	},
-];
-
 const Home = () => {
 	const location = useLocation();
 	const navigate = useNavigate();
 	const [showLoginSuccessBanner, setShowLoginSuccessBanner] = useState(false);
 	const [bannerMessage, setBannerMessage] = useState("");
 	const [allTeams, setAllTeams] = useState([]);
+	const [requests, setRequests] = useState([]);
+	const [user, setUser] = useState(null);
+	const [loadingRequests, setLoadingRequests] = useState(true);
+	const [loadingUser, setLoadingUser] = useState(true);
+
+	const fetchUser = async () => {
+		try {
+			const response = await axiosInstance.get('/users/self/');
+			console.log("response:", response)
+			const data = response.data;
+			console.log("data:", data)
+
+			if (!data || !data.formatted_address) {
+				throw new Error('Address or coordinates not found');
+			}
+
+			setUser(data);
+			setLoadingUser(false);
+		}
+		catch (error) {
+			console.error('Error fetching User Data:', error);
+			setLoadingUser(false);
+		}
+	};
+
+	useEffect(() => {
+		fetchUser();
+	}, []);
+
+	const fetchRequests = async () => {
+		try {
+			const response = await axiosInstance.get("/requests/");
+			const data = response.data;
+
+			if (!data) {
+				throw new Error('Error fetching Reqeusts');
+			}
+
+			setRequests(data);
+			setLoadingRequests(false);
+			console.log("Requests:", data)
+		} catch (err) {
+			console.error("Error fetching Requests:", err);
+			setLoadingRequests(false);
+		}
+	}
+
+	useEffect(() => {
+		fetchRequests();
+	}, []);
 
 	const fetchTeams = async () => {
 		try {
@@ -318,7 +363,33 @@ const Home = () => {
 						/>
 					</div>
 				</section>
-				<>{renderParts()}</>
+				<section className="mb-12 mx-[30px]">
+					<div className="flex justify-between items-center mb-4">
+						<h2 className="text-2xl font-bold">Recent Part Requests Nearby</h2>
+						<a href="requests">
+							<button className="bg-red-800 text-white py-3 px-5 rounded-[5px] hover:bg-red-900 transition-translate duration-100">
+								See All Requests
+							</button>
+						</a>
+					</div>
+					<div className="flex overflow-x-auto space-x-4 pb-4">
+						{!loadingRequests && !loadingUser && user && requests ? (
+							requests
+								.slice(-10)
+								.reverse()
+								.map((request) => {
+									return (
+										<React.Fragment key={request.id}>
+											{renderRequest(request, user)}
+										</React.Fragment>
+									);
+								})
+						) : (
+							<p>hello</p>
+						)
+						}
+					</div>
+				</section>
 				<>{renderSales()}</>
 			</div>
 			<Footer />

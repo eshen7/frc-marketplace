@@ -23,7 +23,7 @@ function haversine(lat1, lon1, lat2, lon2) {
     return R * c; // Distance in miles
 }
 
-const Map = ({ zoom, locations }) => {
+const Map = ({ zoom = 10, locations = [] }) => {
     const [activeMarker, setActiveMarker] = useState(null);
     const [userLat, setUserLat] = useState(null);
     const [userLon, setUserLon] = useState(null);
@@ -106,7 +106,6 @@ const Map = ({ zoom, locations }) => {
         <div className=' h-[500px] flex items-center justify-center mx-auto min-w-[500px]'>
             <GoogleMap
                 mapContainerStyle={{ width: '1000px', height: '500px' }}
-                //center={(userLat && userLon) ? ({ lat: userLat, lng: userLon }) : ({ lat: 32.95747527010932, lng: -117.22508357787281 })}
                 center={mapCenter}
                 zoom={zoom}>
                 {locations.map((location, index) => (
