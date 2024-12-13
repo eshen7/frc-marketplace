@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import TopBar from "../components/TopBar";
 import Footer from "../components/Footer";
 import Map from "../components/Map";
@@ -93,6 +93,44 @@ const renderRequest = (request, self_user) => {
 };
 
 const renderSales = () => {
+	const scrollContainerRef = useRef(null);
+	const [canScrollLeft, setCanScrollLeft] = useState(false);
+	const [canScrollRight, setCanScrollRight] = useState(true);
+
+	const checkScrollButtons = () => {
+		if (scrollContainerRef.current) {
+			const { scrollLeft, scrollWidth, clientWidth } = scrollContainerRef.current;
+			setCanScrollLeft(scrollLeft > 0);
+			setCanScrollRight(scrollLeft + clientWidth < scrollWidth);
+		}
+	};
+
+	useEffect(() => {
+		const container = scrollContainerRef.current;
+		if (container) {
+			container.addEventListener("scroll", checkScrollButtons);
+			return () => container.removeEventListener("scroll", checkScrollButtons);
+		}
+	}, []);
+
+	const scrollLeft = () => {
+		if (scrollContainerRef.current) {
+			scrollContainerRef.current.scrollBy({
+				left: -272, // Adjust the scroll distance as needed
+				behavior: "smooth",
+			});
+		}
+	};
+
+	const scrollRight = () => {
+		if (scrollContainerRef.current) {
+			scrollContainerRef.current.scrollBy({
+				left: 272, // Adjust the scroll distance as needed
+				behavior: "smooth",
+			});
+		}
+	};
+
 	return (
 		<section className="mx-[30px]">
 			<div className="flex justify-between items-center mb-4">
@@ -103,22 +141,43 @@ const renderSales = () => {
 					</button>
 				</a>
 			</div>
-			<div className="flex overflow-x-auto space-x-4 pb-4 scrollbar-hide">
-				{recentSales.map((sale) => (
-					<div
-						key={sale.id}
-						className="flex-none w-64 bg-white rounded-lg shadow-md p-6"
-					>
-						<h3 className="text-xl font-semibold mb-2">{sale.title}</h3>
-						<p className="text-gray-600 mb-2">{sale.team}</p>
-						<p className="text-green-600 font-bold mb-2">${sale.price}</p>
-						<p className="text-sm text-gray-500">{sale.distance} miles away</p>
-						<button className="mt-4 bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 transition-colors">
-							Buy Now
-						</button>
-					</div>
-				))}
+			<div className="relative">
+				{/* Left Scroll Button */}
+				<button
+					onClick={scrollLeft}
+					disabled={!canScrollLeft}
+					className="absolute left-[-15px] top-1/2 transform -translate-y-1/2 bg-gray-800 text-white p-2 rounded-full shadow-lg hover:bg-gray-900 z-10"
+				>
+					&#8592;
+				</button>
+				<div
+					ref={scrollContainerRef}
+					className="flex overflow-x-scroll space-x-4 pb-4">
+					{recentSales.map((sale) => (
+						<div
+							key={sale.id}
+							className="flex-none w-64 bg-white rounded-lg shadow-md p-6"
+						>
+							<h3 className="text-xl font-semibold mb-2">{sale.title}</h3>
+							<p className="text-gray-600 mb-2">{sale.team}</p>
+							<p className="text-green-600 font-bold mb-2">${sale.price}</p>
+							<p className="text-sm text-gray-500">{sale.distance} miles away</p>
+							<button className="mt-4 bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 transition-colors">
+								Buy Now
+							</button>
+						</div>
+					))}
+				</div>
+				{/* Right Scroll Button */}
+				<button
+					onClick={scrollRight}
+					disabled={!canScrollRight}
+					className="absolute right-[-15px] top-1/2 transform -translate-y-1/2 bg-gray-800 text-white p-2 rounded-full shadow-lg hover:bg-gray-900 z-10"
+				>
+					&#8594;
+				</button>
 			</div>
+
 		</section>
 	);
 };
@@ -134,6 +193,25 @@ const Home = () => {
 	const [loadingRequests, setLoadingRequests] = useState(true);
 	const [loadingUser, setLoadingUser] = useState(true);
 
+	const scrollContainerRef = useRef(null);
+
+	const scrollLeft = () => {
+		if (scrollContainerRef.current) {
+			scrollContainerRef.current.scrollBy({
+				left: -272, // Adjust the scroll distance as needed
+				behavior: "smooth",
+			});
+		}
+	};
+
+	const scrollRight = () => {
+		if (scrollContainerRef.current) {
+			scrollContainerRef.current.scrollBy({
+				left: 272, // Adjust the scroll distance as needed
+				behavior: "smooth",
+			});
+		}
+	};
 	const fetchUser = async () => {
 		try {
 			const response = await axiosInstance.get('/users/self/');
@@ -249,22 +327,36 @@ const Home = () => {
 							</button>
 						</a>
 					</div>
-					<div className="flex overflow-x-auto space-x-4 pb-4">
-						{!loadingRequests && !loadingUser && requests ? (
-							requests
-								.slice(-10)
-								.reverse()
-								.map((request) => {
-									return (
-										<React.Fragment key={request.id}>
-											{renderRequest(request, user)}
-										</React.Fragment>
-									);
-								})
-						) : (
-							<p>hello</p>
-						)
-						}
+					<div className="relative">
+						<button onClick={scrollLeft}
+							className="absolute left-[-15px] top-1/2 transform -translate-y-1/2 bg-gray-800 text-white p-2 rounded-full shadow-lg hover:bg-gray-900 z-10"
+						>
+							&#8592;
+						</button>
+						<div
+							ref={scrollContainerRef}
+							className="flex overflow-x-auto space-x-4 pb-4">
+							{!loadingRequests && !loadingUser && requests ? (
+								requests
+									.slice(-10)
+									.reverse()
+									.map((request) => {
+										return (
+											<React.Fragment key={request.id}>
+												{renderRequest(request, user)}
+											</React.Fragment>
+										);
+									})
+							) : (
+								<p>hello</p>
+							)
+							}
+						</div>
+						<button onClick={scrollRight}
+							className="absolute right-[-15px] top-1/2 transform -translate-y-1/2 bg-gray-800 text-white p-2 rounded-full shadow-lg hover:bg-gray-900 z-10"
+						>
+							&#8594;
+						</button>
 					</div>
 				</section>
 				<>{renderSales()}</>
