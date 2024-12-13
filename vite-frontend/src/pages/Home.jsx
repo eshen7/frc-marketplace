@@ -84,7 +84,7 @@ const renderRequest = (request, self_user) => {
 			<p className="text-sm text-gray-500">{distance_string != "0.0 miles" ? distance_string : "Your Listing"}</p>
 			<button className="mt-4 bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition-colors"
 				onClick={() => {
-					window.location.href = `/fulfill/${request.id}`
+					window.location.href = `/requests/${request.id}`
 				}}>
 				Offer Part
 			</button>

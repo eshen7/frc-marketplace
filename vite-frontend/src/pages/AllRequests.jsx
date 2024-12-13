@@ -320,7 +320,7 @@ const AllRequests = () => {
 
       <div className="flex flex-col flex-grow bg-gray-100 font-sans p-8">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-          {filteredRequests && user ? (
+          {filteredRequests && !loadingUser ? (
             <>
               {filteredRequests.map((request) => (
                 <ItemCard key={request.id} currentUser={user} item={request} type="request" />
@@ -337,7 +337,7 @@ const AllRequests = () => {
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-          {items && user && !loading && !loadingUser ? (
+          {items && !loading && !loadingUser ? (
             <>
               {items.map((request) => (
                 <ItemCard key={request.id} currentUser={user} item={request} type="request" />
@@ -354,7 +354,7 @@ const AllRequests = () => {
 
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-          {filteredRequests && user && !loading && !loadingUser ? (
+          {filteredRequests && !loading && !loadingUser ? (
             <>
               {filteredRequests.map((request) => (
                 <ItemCard key={request.id} currentUser={user} item={request} type="request" />

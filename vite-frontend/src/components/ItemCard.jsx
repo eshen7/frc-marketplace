@@ -41,15 +41,17 @@ const ItemCard = ({ item, currentUser, type }) => {
         {isRequest ? (
           <Box>
             <Typography variant="body2" color="text.secondary" gutterBottom>
-              {isRequest ? (
+              {isRequest && currentUser ? (
                 haversine(currentUser.formatted_address.latitude,
                   currentUser.formatted_address.longitude,
                   item.user.formatted_address.latitude,
-                  item.user.formatted_address.longitude).toFixed(1)
-              ) : item.distance} miles away
+                  item.user.formatted_address.longitude).toFixed(1) + " miles"
+              ) : isRequest && !currentUser ? (
+                "Please log in to view distance"
+              ) : item.distance}
             </Typography>
             {(() => {
-              let temp_date = item.neededDate;
+              let temp_date = item.needed_date;
               if (!isDate(temp_date)) {
                 temp_date = new Date(temp_date);
               }
@@ -88,6 +90,9 @@ const ItemCard = ({ item, currentUser, type }) => {
             '&:hover': {
               bgcolor: isRequest ? 'primary.dark' : 'error.darker',
             },
+          }}
+          onClick={() => {
+            window.location.href = `/requests/${item.id}`
           }}
         >
           {isRequest ? "Offer Part" : "Buy"}

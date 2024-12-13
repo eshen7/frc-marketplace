@@ -45,7 +45,7 @@ const router = createBrowserRouter([
         element: <Request />,
       },
       {
-        path: 'fulfill/:request_id',
+        path: 'requests/:request_id',
         element: <Fulfill />,
       },
       {
