@@ -37,6 +37,16 @@ def user_views(request):
                 {"message": "Registration failed", "error": str(e)},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR,
             )
+
+@api_view(["GET"])
+def user_by_uuid_view(request, team_number):
+    """Fetch a specific user's details by UUID."""
+    try:
+        user = User.objects.get(team_number=team_number)
+        serializer = UserSerializer(user)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+    except User.DoesNotExist:
+        return Response({"error": "User frc{team_number} not found"}, status=status.HTTP_404_NOT_FOUND)
         
 @permission_classes([IsAuthenticated])
 @api_view(["GET", "PUT"])
@@ -203,3 +213,13 @@ def part_request_views(request):
             serializer.save(user=user)
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+@api_view(["GET"])
+def request_view(request, request_id):
+    """Fetch a specific user's details by UUID."""
+    try:
+        part_request = PartRequest.objects.get(id=request_id)
+        serializer = PartRequestSerializer(part_request)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+    except PartRequest.DoesNotExist:
+        return Response({"error": "Part Request not found"}, status=status.HTTP_404_NOT_FOUND)

@@ -79,15 +79,15 @@ const TopBar = () => {
         />
       </a>
       <div className="gap-5 whitespace-nowrap hidden sm:flex">
-        <Button href="requests" variant="contained" color="secondary">
+        <Button href="/requests" variant="contained" color="secondary">
           Requests
         </Button>
-        <Button href="sales" variant="contained" color="secondary">
+        <Button href="/sales" variant="contained" color="secondary">
           Sales
         </Button>
         {isAuthenticated && (
           <Button
-            href={isAuthenticated ? "request" : "login"}
+            href={isAuthenticated ? "/request" : "/login"}
             variant="contained"
             color="secondary"
           >
@@ -111,16 +111,16 @@ const TopBar = () => {
             </Stack>
           ) : (
             <Stack direction="row" spacing={2} className="px-6">
-              <Button href="login" variant="contained" color="secondary" className="whitespace-nowrap">
+              <Button href="/login" variant="contained" color="secondary" className="whitespace-nowrap">
                 Sign In
               </Button>
-              <Button href="signup" variant="outlined" color="secondary">
+              <Button href="/signup" variant="outlined" color="secondary">
                 Register
               </Button>
             </Stack>
           )}
           {isAuthenticated && (
-            <IconButton href="profile" className="items-center">
+            <IconButton href="/profile" className="items-center">
               <CgProfile className='text-white' />
             </IconButton>
           )}
@@ -142,17 +142,17 @@ const TopBar = () => {
               <MdHome className='mr-5' />
               <button className="">Home</button>
             </a>
-            <a href='requests' className="flex place-items-center">
+            <a href='/requests' className="flex place-items-center">
               <FaHandHolding className='mr-5' />
               <button className="">Requests</button>
             </a>
-            <a href='sales' className="flex place-items-center">
+            <a href='/sales' className="flex place-items-center">
               <FaStore className='mr-5' />
               <button className="">Sales</button>
             </a>
             {isAuthenticated ? (
               <>
-                <a href='request' className="flex place-items-center">
+                <a href='/request' className="flex place-items-center">
                   <FaPlus className='mr-5' />
                   <button className="">Make a Request</button>
                 </a>
@@ -160,18 +160,18 @@ const TopBar = () => {
                   <FaSignOutAlt className='mr-5' />
                   <button className="">Log Out</button>
                 </div>
-                <a href='' className="flex place-items-center">
+                <a href='/profile' className="flex place-items-center">
                   <CgProfile className='mr-5' />
                   <button className="">Your Profile</button>
                 </a>
               </>
             ) : (
               <>
-                <a href='login' className="flex place-items-center">
+                <a href='/login' className="flex place-items-center">
                   <FaSignInAlt className='mr-5' />
                   <button className="">Sign In</button>
                 </a>
-                <a href='signup' className="flex place-items-center">
+                <a href='/signup' className="flex place-items-center">
                   <FaWpforms className='mr-5' />
                   <button className="">Register</button>
                 </a>

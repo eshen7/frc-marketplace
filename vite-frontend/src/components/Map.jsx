@@ -122,7 +122,10 @@ const Map = ({ zoom = 10, locations = [] }) => {
                                     <h3 className='font-bold'>{location.team_name}</h3>
                                     <p>{location.team_number}</p>
                                     <button className='mt-1 bg-red-800 px-2 py-1 rounded-md text-white font-bold
-                                    hover:bg-red-900 transition-transform duration-100'>
+                                    hover:bg-red-900 transition-transform duration-100'
+                                    onClick={() => {
+                                        window.location.href = `/profile/frc/${location.team_number}`
+                                        }}>
                                         Profile
                                     </button>
                                     {!loadingUserCoords && userLat != null && userLon != null ? (

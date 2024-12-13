@@ -18,6 +18,7 @@ import AllRequests from './pages/AllRequests.jsx';
 import SalesPage from './pages/AllSales.jsx';
 import LandingPage from './pages/LandingPage.jsx';
 import UserProfile from './pages/Profile.jsx';
+import PublicProfilePage from './pages/PublicProfile.jsx';
 
 const ErrorPage = () => <p> Sorry, this page does not exist</p>;
 
@@ -44,7 +45,7 @@ const router = createBrowserRouter([
         element: <Request />,
       },
       {
-        path: 'fulfill',
+        path: 'fulfill/:request_id',
         element: <Fulfill />,
       },
       {
@@ -62,6 +63,10 @@ const router = createBrowserRouter([
       {
         path: 'profile',
         element: <UserProfile />,
+      },
+      {
+        path: 'profile/frc/:teamNumber',
+        element: <PublicProfilePage />,
       },
       {
         path: '*',

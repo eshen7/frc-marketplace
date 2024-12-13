@@ -6,107 +6,7 @@ import SuccessBanner from "../components/SuccessBanner";
 
 import { useLocation, useNavigate } from "react-router-dom";
 import axiosInstance from '../utils/axiosInstance';
-
-const getDaysUntil = (dueDate) => {
-	const now = new Date();
-	const diffTime = dueDate.getTime() - now.getTime();
-	const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-	return diffDays;
-};
-
-function haversine(lat1, lon1, lat2, lon2) {
-	const R = 3958.8; // Radius of Earth in miles
-
-	// Convert latitude and longitude from degrees to radians
-	const toRadians = (degree) => (degree * Math.PI) / 180;
-	lat1 = toRadians(lat1);
-	lon1 = toRadians(lon1);
-	lat2 = toRadians(lat2);
-	lon2 = toRadians(lon2);
-
-	// Differences in latitude and longitude
-	const dlat = lat2 - lat1;
-	const dlon = lon2 - lon1;
-
-	// Haversine formula
-	const a = Math.sin(dlat / 2) ** 2 + Math.cos(lat1) * Math.cos(lat2) * Math.sin(dlon / 2) ** 2;
-	const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-
-	return R * c; // Distance in miles
-}
-
-const recentRequests = [
-	{
-		id: 1,
-		title: "CIM Motor",
-		team: "Team 1234",
-		distance: 2,
-		dueDate: new Date(2024, 9, 25),
-	},
-	{
-		id: 2,
-		title: "Pneumatic Cylinder",
-		team: "Team 5678",
-		distance: 5,
-		dueDate: new Date(2024, 9, 28),
-	},
-	{
-		id: 3,
-		title: "Talon SRX",
-		team: "Team 9101",
-		distance: 10,
-		dueDate: new Date(2024, 9, 27),
-	},
-	{
-		id: 4,
-		title: "Encoder",
-		team: "Team 2468",
-		distance: 15,
-		dueDate: new Date(2024, 10, 5),
-	},
-	{
-		id: 5,
-		title: "Battery",
-		team: "Team 1357",
-		distance: 8,
-		dueDate: new Date(2024, 10, 2),
-	},
-	{
-		id: 6,
-		title: "Wheels",
-		team: "Team 3690",
-		distance: 12,
-		dueDate: new Date(2024, 10, 10),
-	},
-	{
-		id: 7,
-		title: "Gearbox",
-		team: "Team 4812",
-		distance: 18,
-		dueDate: new Date(2024, 10, 15),
-	},
-	{
-		id: 8,
-		title: "Camera",
-		team: "Team 7531",
-		distance: 7,
-		dueDate: new Date(2024, 10, 8),
-	},
-	{
-		id: 9,
-		title: "Servo Motor",
-		team: "Team 9876",
-		distance: 3,
-		dueDate: new Date(2024, 9, 29),
-	},
-	{
-		id: 10,
-		title: "Limit Switch",
-		team: "Team 2345",
-		distance: 20,
-		dueDate: new Date(2024, 10, 20),
-	},
-];
+import { haversine, getDaysUntil } from "../utils/utils";
 
 const recentSales = [
 	{ id: 1, title: "NEO Motor", team: "Team 2468", price: 50, distance: 3 },
@@ -114,35 +14,11 @@ const recentSales = [
 	{ id: 3, title: "Victor SPX", team: "Team 3690", price: 30, distance: 12 },
 	{ id: 4, title: "PDP", team: "Team 9876", price: 60, distance: 5 },
 	{ id: 5, title: "Spark MAX", team: "Team 1234", price: 45, distance: 9 },
-	{
-		id: 6,
-		title: "Ultrasonic Sensor",
-		team: "Team 5678",
-		price: 25,
-		distance: 14,
-	},
-	{
-		id: 7,
-		title: "Pneumatic Tubing",
-		team: "Team 4321",
-		price: 15,
-		distance: 18,
-	},
+	{ id: 6, title: "Ultrasonic Sensor", team: "Team 5678", price: 25, distance: 14, },
+	{ id: 7, title: "Pneumatic Tubing", team: "Team 4321", price: 15, distance: 18, },
 	{ id: 8, title: "Joystick", team: "Team 8765", price: 35, distance: 6 },
-	{
-		id: 9,
-		title: "Voltage Regulator",
-		team: "Team 2109",
-		price: 20,
-		distance: 11,
-	},
-	{
-		id: 10,
-		title: "Aluminum Extrusion",
-		team: "Team 6543",
-		price: 40,
-		distance: 16,
-	},
+	{ id: 9, title: "Voltage Regulator", team: "Team 2109", price: 20, distance: 11, },
+	{ id: 10, title: "Aluminum Extrusion", team: "Team 6543", price: 40, distance: 16, },
 ];
 
 const renderRequest = (request, self_user) => {
@@ -206,7 +82,10 @@ const renderRequest = (request, self_user) => {
 			<p className="text-gray-600 mb-2">{request.user.team_number}</p>
 			{renderDueDate()}
 			<p className="text-sm text-gray-500">{distance_string != "0.0 miles" ? distance_string : "Your Listing"}</p>
-			<button className="mt-4 bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition-colors">
+			<button className="mt-4 bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition-colors"
+				onClick={() => {
+					window.location.href = `/fulfill/${request.id}`
+				}}>
 				Offer Part
 			</button>
 		</div>
@@ -258,9 +137,7 @@ const Home = () => {
 	const fetchUser = async () => {
 		try {
 			const response = await axiosInstance.get('/users/self/');
-			console.log("response:", response)
 			const data = response.data;
-			console.log("data:", data)
 
 			if (!data || !data.formatted_address) {
 				throw new Error('Address or coordinates not found');
@@ -373,7 +250,7 @@ const Home = () => {
 						</a>
 					</div>
 					<div className="flex overflow-x-auto space-x-4 pb-4">
-						{!loadingRequests && !loadingUser && user && requests ? (
+						{!loadingRequests && !loadingUser && requests ? (
 							requests
 								.slice(-10)
 								.reverse()
