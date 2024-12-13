@@ -6,14 +6,7 @@ import axiosInstance from "../utils/axiosInstance";
 import { FiSearch, FiSliders } from "react-icons/fi";
 import Fuse from "fuse.js";
 import ItemCard from "../components/ItemCard";
-
-// Helper function to calculate days until due date
-const getDaysUntil = (dueDate) => {
-  const now = new Date();
-  const diffTime = dueDate.getTime() - now.getTime();
-  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-  return diffDays;
-};
+import { getDaysUntil } from "../utils/utils";
 
 axiosInstance
   .get("/requests/")
@@ -26,26 +19,115 @@ axiosInstance
 
 // Mock data for requests
 const allRequests = [
-  // { id: 1, title: "CIM Motor", team: { number: 1234, name: "Robo Wizards" }, distance: 2, dueDate: new Date(2024, 10, 30), coverPhoto: "/IMG_6769.jpg" },
-  // { id: 2, title: "Pneumatic Cylinder", team: { number: 5678, name: "Tech Titans" }, distance: 5, dueDate: new Date(2024, 10, 28), coverPhoto: "/IMG_6769.jpg" },
-  // { id: 3, title: "Talon SRX", team: { number: 9101, name: "Gear Guardians" }, distance: 10, dueDate: new Date(2024, 10, 27), coverPhoto: "/IMG_6769.jpg" },
-  // { id: 4, title: "Encoder", team: { number: 2468, name: "Binary Builders" }, distance: 15, dueDate: new Date(2024, 11, 5), coverPhoto: "/IMG_6769.jpg" },
-  // { id: 5, title: "Battery", team: { number: 1357, name: "Power Pioneers" }, distance: 8, dueDate: new Date(2024, 11, 2), coverPhoto: "/IMG_6769.jpg" },
-  // { id: 6, title: "Wheels", team: { number: 3690, name: "Rolling Rangers" }, distance: 12, dueDate: new Date(2024, 11, 10), coverPhoto: "/IMG_6769.jpg" },
-  // { id: 7, title: "Gearbox", team: { number: 4812, name: "Torque Troopers" }, distance: 18, dueDate: new Date(2024, 11, 15), coverPhoto: "/IMG_6769.jpg" },
-  // { id: 8, title: "Camera", team: { number: 7531, name: "Vision Voyagers" }, distance: 7, dueDate: new Date(2024, 11, 8), coverPhoto: "/IMG_6769.jpg" },
-  // { id: 9, title: "Servo Motor", team: { number: 9876, name: "Precision Pilots" }, distance: 3, dueDate: new Date(2024, 10, 29), coverPhoto: "/IMG_6769.jpg" },
-  // { id: 10, title: "Limit Switch", team: { number: 2345, name: "Sensor Squad" }, distance: 20, dueDate: new Date(2024, 11, 20), coverPhoto: "/IMG_6769.jpg" },
-];
+    // {
+    //   id: 1, part_name: "CIM Motor", user: {
+    //     team_number: 1234, team_name: "Robo Wizards", "formatted_address": {
+    //       "raw": "5951 Village Center Loop Rd, San Diego, CA 92130, USA",
+    //       "latitude": 32.9582122,
+    //       "longitude": -117.189548
+    //     },
+    //   }, distance: 2, needed_date: new Date(2024, 10, 30), coverPhoto: "/IMG_6769.jpg"
+    // },
+    // {
+    //   id: 2, part_name: "Pneumatic Cylinder", user: {
+    //     team_number: 5678, team_name: "Tech Titans", "formatted_address": {
+    //       "raw": "5951 Village Center Loop Rd, San Diego, CA 92130, USA",
+    //       "latitude": 32.9582122,
+    //       "longitude": -117.189548
+    //     },
+    //   }, distance: 5, needed_date: new Date(2024, 10, 28), coverPhoto: "/IMG_6769.jpg"
+    // },
+    // {
+    //   id: 3, part_name: "Talon SRX", user: {
+    //     team_number: 9101, team_name: "Gear Guardians", "formatted_address": {
+    //       "raw": "5951 Village Center Loop Rd, San Diego, CA 92130, USA",
+    //       "latitude": 32.9582122,
+    //       "longitude": -117.189548
+    //     },
+    //   }, distance: 10, needed_date: new Date(2024, 10, 27), coverPhoto: "/IMG_6769.jpg"
+    // },
+    // {
+    //   id: 4, part_name: "Encoder", user: {
+    //     team_number: 2468, team_name: "Binary Builders", "formatted_address": {
+    //       "raw": "5951 Village Center Loop Rd, San Diego, CA 92130, USA",
+    //       "latitude": 32.9582122,
+    //       "longitude": -117.189548
+    //     },
+    //   }, distance: 15, needed_date: new Date(2024, 11, 5), coverPhoto: "/IMG_6769.jpg"
+    // },
+    // {
+    //   id: 5, part_name: "Battery", user: {
+    //     team_number: 1357, team_name: "Power Pioneers", "formatted_address": {
+    //       "raw": "5951 Village Center Loop Rd, San Diego, CA 92130, USA",
+    //       "latitude": 32.9582122,
+    //       "longitude": -117.189548
+    //     },
+    //   }, distance: 8, needed_date: new Date(2024, 11, 2), coverPhoto: "/IMG_6769.jpg"
+    // },
+    // {
+    //   id: 6, part_name: "Wheels", user: {
+    //     team_number: 3690, team_name: "Rolling Rangers", "formatted_address": {
+    //       "raw": "5951 Village Center Loop Rd, San Diego, CA 92130, USA",
+    //       "latitude": 32.9582122,
+    //       "longitude": -117.189548
+    //     },
+    //   }, distance: 12, needed_date: new Date(2024, 11, 10), coverPhoto: "/IMG_6769.jpg"
+    // },
+    // {
+    //   id: 7, part_name: "Gearbox", user: {
+    //     team_number: 4812, team_name: "Torque Troopers", "formatted_address": {
+    //       "raw": "5951 Village Center Loop Rd, San Diego, CA 92130, USA",
+    //       "latitude": 32.9582122,
+    //       "longitude": -117.189548
+    //     },
+    //   }, distance: 18, needed_date: new Date(2024, 11, 15), coverPhoto: "/IMG_6769.jpg"
+    // },
+    // {
+    //   id: 8, part_name: "Camera", user: {
+    //     team_number: 7531, team_name: "Vision Voyagers", "formatted_address": {
+    //       "raw": "5951 Village Center Loop Rd, San Diego, CA 92130, USA",
+    //       "latitude": 32.9582122,
+    //       "longitude": -117.189548
+    //     },
+    //   }, distance: 7, needed_date: new Date(2024, 11, 8), coverPhoto: "/IMG_6769.jpg"
+    // },
+    // {
+    //   id: 9, part_name: "Servo Motor", user: {
+    //     team_number: 9876, team_name: "Precision Pilots", "formatted_address": {
+    //       "raw": "5951 Village Center Loop Rd, San Diego, CA 92130, USA",
+    //       "latitude": 32.9582122,
+    //       "longitude": -117.189548
+    //     },
+    //   }, distance: 3, needed_date: new Date(2024, 10, 29), coverPhoto: "/IMG_6769.jpg"
+    // },
+    // {
+    //   id: 10, part_name: "Limit Switch", user: {
+    //     team_number: 2345, team_name: "Sensor Squad", "formatted_address": {
+    //       "raw": "5951 Village Center Loop Rd, San Diego, CA 92130, USA",
+    //       "latitude": 32.9582122,
+    //       "longitude": -117.189548
+    //     },
+    //   }, distance: 20, needed_date: new Date(2024, 11, 20), coverPhoto: "/IMG_6769.jpg"
+    // },
+  ];
 
 // Fuse.js options
 const fuseOptions = {
-  keys: ["title", "team.name", "team.number"],
+  keys: ["part_name", "user.team_name", "user.team_number"],
   threshold: 0.3,
   ignoreLocation: true,
 };
 
-const ItemList = () => {
+const AllRequests = () => {
+  const [searchTerm, setSearchTerm] = useState("");
+  const [distance, setDistance] = useState(50);
+  const [sortBy, setSortBy] = useState("newest");
+  const [showFilters, setShowFilters] = useState(false);
+  const [selectedCategories, setSelectedCategories] = useState([]);
+
+  const [user, setUser] = useState(null);
+  const [loadingUser, setLoadingUser] = useState(true);
+
   const [items, setItems] = useState([]); // Initialize as empty array
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -66,23 +148,27 @@ const ItemList = () => {
     fetchData();
   }, []);
 
-  if (loading) return <p>Loading...</p>;
-  if (error) return <p>{error}</p>;
+  const fetchUser = async () => {
+    try {
+      const response = await axiosInstance.get('/users/self/');
+      const data = response.data;
 
-  return (
-    <ul>
-      {Array.isArray(items) &&
-        items.map((item) => <li key={item.id}>{item.name}</li>)}
-    </ul>
-  );
-};
+      if (!data || !data.formatted_address) {
+        throw new Error('Address or coordinates not found');
+      }
 
-const AllRequests = () => {
-  const [searchTerm, setSearchTerm] = useState("");
-  const [distance, setDistance] = useState(50);
-  const [sortBy, setSortBy] = useState("newest");
-  const [showFilters, setShowFilters] = useState(false);
-  const [selectedCategories, setSelectedCategories] = useState([]);
+      setUser(data);
+      setLoadingUser(false);
+    }
+    catch (error) {
+      console.error('Error fetching User Data:', error);
+      setLoadingUser(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchUser();
+  }, []);
 
   const categories = [
     "Motors",
@@ -96,11 +182,11 @@ const AllRequests = () => {
   ];
 
   // Create a memoized instance of Fuse
-  const fuse = useMemo(() => new Fuse(allRequests, fuseOptions), []);
+  const fuse = useMemo(() => new Fuse(items, fuseOptions), []);
 
   // Get filtered results based on search term and other filters
   const getFilteredResults = () => {
-    let results = [...allRequests];
+    let results = [...items];
 
     // Apply fuzzy search if search term exists
     if (searchTerm) {
@@ -216,11 +302,10 @@ const AllRequests = () => {
                               : [...prev, category]
                           );
                         }}
-                        className={`px-3 py-1 rounded-full text-sm ${
-                          selectedCategories.includes(category)
-                            ? "bg-blue-500 text-white"
-                            : "bg-gray-100 text-gray-800"
-                        }`}
+                        className={`px-3 py-1 rounded-full text-sm ${selectedCategories.includes(category)
+                          ? "bg-blue-500 text-white"
+                          : "bg-gray-100 text-gray-800"
+                          }`}
                       >
                         {category}
                       </button>
@@ -235,13 +320,57 @@ const AllRequests = () => {
 
       <div className="flex flex-col flex-grow bg-gray-100 font-sans p-8">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-          {filteredRequests.map((request) => (
-            <ItemCard key={request.id} item={request} type="request" />
-          ))}
+          {filteredRequests && user ? (
+            <>
+              {filteredRequests.map((request) => (
+                <ItemCard key={request.id} currentUser={user} item={request} type="request" />
+              ))}
+            </>
+          ) : loadingUser ? (
+            <p>Loading</p>
+          ) : error ? (
+            <p>Error... {error} </p>
+          ) : (
+            <p>blah blah ig</p>
+          )
+          }
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+          {items && user && !loading && !loadingUser ? (
+            <>
+              {items.map((request) => (
+                <ItemCard key={request.id} currentUser={user} item={request} type="request" />
+              ))}
+            </>
+          ) : loadingUser || loading ? (
+            <p>Loading</p>
+          ) : error ? (
+            <p>Error... {error} </p>
+          ) : (
+            <p>blah blah ig</p>
+          )
+          }
+
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+          {filteredRequests && user && !loading && !loadingUser ? (
+            <>
+              {filteredRequests.map((request) => (
+                <ItemCard key={request.id} currentUser={user} item={request} type="request" />
+              ))}
+            </>
+          ) : loadingUser || loading ? (
+            <p>Loading</p>
+          ) : error ? (
+            <p>Error... {error} </p>
+          ) : (
+            <p>blah blah ig</p>
+          )
+          }
+
         </div>
       </div>
-      {/* {ItemList()} */}
-      <ItemList />
       <Footer />
     </div>
   );

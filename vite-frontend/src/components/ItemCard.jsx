@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import PropTypes from "prop-types";
 import {
   Card,
@@ -8,43 +8,52 @@ import {
   Button,
   Box,
 } from "@mui/material";
+import { getDaysUntil, haversine, isDate } from "../utils/utils";
 
-const ItemCard = ({ item, type }) => {
+const ItemCard = ({ item, currentUser, type }) => {
   const isRequest = type === "request";
-
-  const getDaysUntil = (dueDate) => {
-    const now = new Date();
-    const diffTime = dueDate.getTime() - now.getTime();
-    return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-  };
 
   return (
     <Card sx={{ maxWidth: 345, height: "100%" }}>
       <CardMedia
         component="img"
         height="200"
-        image={isRequest ? item.coverPhoto : item.image}
-        alt={item.title}
+        image={isRequest ? (
+          // item.coverPhoto
+          "/IMG_6769.jpg"
+        ) : (
+          item.image
+        )}
+        alt={item.part_name}
         sx={{ objectFit: "cover" }}
       />
       <CardContent>
         <Typography variant="h6" gutterBottom>
-          {item.title}
+          {item.part_name}
         </Typography>
 
         <Typography variant="body2" color="text.secondary" gutterBottom>
           {isRequest
-            ? `Team ${item.team.number} - ${item.team.name}`
-            : item.team}
+            ? `Team ${item.user.team_number} - ${item.user.team_name}`
+            : item.user}
         </Typography>
 
         {isRequest ? (
           <Box>
             <Typography variant="body2" color="text.secondary" gutterBottom>
-              {item.distance} miles away
+              {isRequest ? (
+                haversine(currentUser.formatted_address.latitude,
+                  currentUser.formatted_address.longitude,
+                  item.user.formatted_address.latitude,
+                  item.user.formatted_address.longitude).toFixed(1)
+              ) : item.distance} miles away
             </Typography>
             {(() => {
-              const daysUntil = getDaysUntil(item.dueDate);
+              let temp_date = item.neededDate;
+              if (!isDate(temp_date)) {
+                temp_date = new Date(temp_date);
+              }
+              const daysUntil = getDaysUntil(temp_date);
               const isUrgent = daysUntil < 3;
               return (
                 <Typography
@@ -52,7 +61,7 @@ const ItemCard = ({ item, type }) => {
                   color={isUrgent ? "error" : "text.secondary"}
                   sx={{ fontWeight: isUrgent ? 'bold' : 'regular', mb: 2 }}
                 >
-                  Due: {item.dueDate.toLocaleDateString()} ({daysUntil} days)
+                  Due: {temp_date.toLocaleDateString()} ({daysUntil} days)
                 </Typography>
               );
             })()}
@@ -91,19 +100,26 @@ const ItemCard = ({ item, type }) => {
 ItemCard.propTypes = {
   item: PropTypes.shape({
     id: PropTypes.number.isRequired,
-    title: PropTypes.string.isRequired,
-    team: PropTypes.oneOfType([
+    part_name: PropTypes.string.isRequired,
+    user: PropTypes.oneOfType([
       PropTypes.string,
       PropTypes.shape({
-        number: PropTypes.number,
-        name: PropTypes.string,
+        team_number: PropTypes.number,
+        team_name: PropTypes.string,
+        formatted_address: PropTypes.shape({
+          raw: PropTypes.string,
+          latitude: PropTypes.number,
+          longitude: PropTypes.number,
+        })
       }),
     ]).isRequired,
     coverPhoto: PropTypes.string,
     image: PropTypes.string,
     distance: PropTypes.number,
-    dueDate: PropTypes.instanceOf(Date),
-    price: PropTypes.number,
+    needed_date: PropTypes.oneOfType([
+      PropTypes.instanceOf(Date), // Accepts Date object
+      PropTypes.string,           // Accepts string
+    ]), price: PropTypes.number,
     condition: PropTypes.string,
   }).isRequired,
   type: PropTypes.oneOf(["request", "sale"]).isRequired,
