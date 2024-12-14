@@ -8,15 +8,6 @@ import Fuse from "fuse.js";
 import ItemCard from "../components/ItemCard";
 import { getDaysUntil } from "../utils/utils";
 
-axiosInstance
-  .get("/requests/")
-  .then((response) => {
-    console.log(response.data);
-  })
-  .catch((error) => {
-    console.error(error);
-  });
-
 // Mock data for requests
 const allRequests = [
     // {
@@ -136,7 +127,6 @@ const AllRequests = () => {
     const fetchData = async () => {
       try {
         const response = await axiosInstance.get("/requests/");
-        console.log(response.data); // Inspect the API response structure
         setItems(Array.isArray(response.data) ? response.data : []); // Ensure it's an array
         setLoading(false);
       } catch (err) {
