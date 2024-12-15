@@ -19,6 +19,7 @@ import SalesPage from './pages/AllSales.jsx';
 import LandingPage from './pages/LandingPage.jsx';
 import UserProfile from './pages/Profile.jsx';
 import PublicProfilePage from './pages/PublicProfile.jsx';
+import Chat from './pages/Messaging.jsx';
 
 const ErrorPage = () => <p> Sorry, this page does not exist</p>;
 
@@ -67,6 +68,10 @@ const router = createBrowserRouter([
       {
         path: 'profile/frc/:teamNumber',
         element: <PublicProfilePage />,
+      },
+      {
+        path: "/chat/:roomName",
+        element: <Chat />,
       },
       {
         path: '*',

@@ -13,6 +13,7 @@ import { RxHamburgerMenu } from "react-icons/rx";
 import { FaTimes, FaPlus, FaHandHolding, FaStore, FaWpforms, FaSignInAlt, FaSignOutAlt } from "react-icons/fa";
 import { MdHome } from "react-icons/md";
 import { CgProfile } from "react-icons/cg";
+import { LuMessageCircle } from "react-icons/lu";
 
 
 const TopBar = () => {
@@ -35,7 +36,7 @@ const TopBar = () => {
     // Clean up the event listener on component unmount
     return () => {
       window.removeEventListener("storage", checkAuthStatus);
-};
+    };
   }, []);
 
   const handleLogout = async (e) => {
@@ -120,9 +121,14 @@ const TopBar = () => {
             </Stack>
           )}
           {isAuthenticated && (
-            <IconButton href="/profile" className="items-center">
-              <CgProfile className='text-white' />
-            </IconButton>
+            <>
+              <IconButton href="/chat/room" className="items-center">
+                <LuMessageCircle className='text-white' />
+              </IconButton>
+              <IconButton href="/profile" className="items-center">
+                <CgProfile className='text-white' />
+              </IconButton>
+            </>
           )}
         </Stack>
       </div>
@@ -156,14 +162,18 @@ const TopBar = () => {
                   <FaPlus className='mr-5' />
                   <button className="">Make a Request</button>
                 </a>
-                <div onClick={handleLogout} className="flex place-items-center">
-                  <FaSignOutAlt className='mr-5' />
-                  <button className="">Log Out</button>
-                </div>
+                <a href='/chat/room' className="flex place-items-center">
+                  <LuMessageCircle className='mr-5' />
+                  <button className="">Messages</button>
+                </a>
                 <a href='/profile' className="flex place-items-center">
                   <CgProfile className='mr-5' />
                   <button className="">Your Profile</button>
                 </a>
+                <div onClick={handleLogout} className="flex place-items-center">
+                  <FaSignOutAlt className='mr-5' />
+                  <button className="">Log Out</button>
+                </div>
               </>
             ) : (
               <>
