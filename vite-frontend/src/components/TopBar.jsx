@@ -71,7 +71,7 @@ const TopBar = () => {
   };
 
   return (
-    <div className="bg-red-800 w-screen max-w-none mx-auto px-2 sm:px-4 lg:px-6 flex flex-row place-items-center justify-between py-3">
+    <div className="top-bar bg-red-800 w-screen max-w-none mx-auto px-2 sm:px-4 lg:px-6 flex flex-row place-items-center justify-between py-3">
       <a href="/">
         <img
           className="h-[40px] min-w-[32px] mr-3 hover:cursor-pointer hover:scale-105 transition-translate duration-100"
@@ -122,7 +122,7 @@ const TopBar = () => {
           )}
           {isAuthenticated && (
             <>
-              <IconButton href="/chat/room" className="items-center">
+              <IconButton href="/chat" className="items-center">
                 <LuMessageCircle className='text-white' />
               </IconButton>
               <IconButton href="/profile" className="items-center">
@@ -162,7 +162,7 @@ const TopBar = () => {
                   <FaPlus className='mr-5' />
                   <button className="">Make a Request</button>
                 </a>
-                <a href='/chat/room' className="flex place-items-center">
+                <a href='/chat' className="flex place-items-center">
                   <LuMessageCircle className='mr-5' />
                   <button className="">Messages</button>
                 </a>
@@ -192,7 +192,7 @@ const TopBar = () => {
             <a href="/">
               <img
                 className="absolute top-[12px] left-[8px] h-[40px] min-w-[32px] mr-3 hover:cursor-pointer hover:scale-105 transition-translate duration-100"
-                src="https://static.wixstatic.com/media/b46766_7bdb1070a7354b4393d1a759b3f81e71~mv2_d_1504_1860_s_2.png/v1/crop/x_8,y_0,w_1488,h_1860/fill/w_156,h_195,al_c,q_85,usm_0.66_1.00_0.01,enc_auto/MillenniumFalconLogo3647.png"
+                src="/MillenniumFalconLogo3647.png"
                 alt="3647 logo"
               />
             </a>

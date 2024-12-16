@@ -216,7 +216,7 @@ def part_request_views(request):
 
 @api_view(["GET"])
 def request_view(request, request_id):
-    """Fetch a specific user's details by UUID."""
+    """Fetch a specific request's details by UUID."""
     try:
         part_request = PartRequest.objects.get(id=request_id)
         serializer = PartRequestSerializer(part_request)

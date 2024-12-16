@@ -70,6 +70,10 @@ const router = createBrowserRouter([
         element: <PublicProfilePage />,
       },
       {
+        path: "/chat/",
+        element: <Chat />,
+      },
+      {
         path: "/chat/:roomName",
         element: <Chat />,
       },
