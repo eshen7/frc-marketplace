@@ -6,9 +6,10 @@ from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
 from rest_framework import status
 from django.views.decorators.csrf import csrf_exempt
-from .models import User, Part, PartRequest
-from .serializers import UserSerializer, PartSerializer, PartRequestSerializer
+from .models import User, Part, PartRequest, Message
+from .serializers import MessageSerializer, UserSerializer, PartSerializer, PartRequestSerializer
 from rest_framework.permissions import IsAuthenticated
+from django.db import models
 
 
 # Create your views here.
@@ -39,7 +40,7 @@ def user_views(request):
             )
 
 @api_view(["GET"])
-def user_by_uuid_view(request, team_number):
+def user_by_team_number_view(request, team_number):
     """Fetch a specific user's details by UUID."""
     try:
         user = User.objects.get(team_number=team_number)
@@ -223,3 +224,68 @@ def request_view(request, request_id):
         return Response(serializer.data, status=status.HTTP_200_OK)
     except PartRequest.DoesNotExist:
         return Response({"error": "Part Request not found"}, status=status.HTTP_404_NOT_FOUND)
+    
+@permission_classes([IsAuthenticated])
+@api_view(["GET"])
+def message_get_view(request, team_number):
+    """
+    View for handling direct messages (DMs):
+    - GET: Retrieve messages between the logged-in user and a specific user.
+    """
+    # Fetch messages between the logged-in user and another user
+    try:
+        receiver = User.objects.get(team_number=team_number)
+    except User.DoesNotExist:
+        return Response({"error": f"User with # {team_number} not found."}, status=status.HTTP_404_NOT_FOUND)
+
+    sender = request.user
+
+    # Retrieve messages sent between the logged-in user and the other user
+    messages = Message.objects.filter(
+        (models.Q(sender=sender) & models.Q(receiver=receiver)) |
+        (models.Q(sender=receiver) & models.Q(receiver=sender))
+    ).order_by('timestamp')
+
+    serializer = MessageSerializer(messages, many=True)
+    return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+@permission_classes([IsAuthenticated])
+@api_view(["POST"])
+def message_post_view(request):
+    """
+    View for handling direct messages (DMs):
+    - POST: Send a new direct message.
+    """
+    # Send a new direct message
+    data = request.data
+    message_id = data.get('id')
+    message = data.get('message')
+    sender = request.user
+    receiver_team_number = data.get('receiver')
+
+    if Message.objects.filter(id=message_id).exists():
+        return JsonResponse({"detail": "Message already exists"}, status=status.HTTP_200_OK)
+
+    if not (message and sender and receiver_team_number):
+        return Response({"error": "Missing 'id', 'message', 'sender', or 'receiver'."}, status=status.HTTP_400_BAD_REQUEST)
+
+    try:
+        # Fetch sender and receiver users from the provided JSON data
+        # sender = User.objects.get(team_number=sender_data.get('team_number'))
+        receiver = User.objects.get(team_number=receiver_team_number)
+
+        # Create a new message instance with the provided ID
+        message = Message.objects.create(
+            id=message_id,
+            sender=sender,
+            receiver=receiver,
+            message=message,
+        )
+
+        serializer = MessageSerializer(message)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+    except User.DoesNotExist:
+        return Response({"error": "Sender or receiver not found."}, status=status.HTTP_404_NOT_FOUND)
+    except Exception as e:
+        return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

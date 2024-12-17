@@ -213,6 +213,14 @@ const Home = () => {
 		}
 	};
 	const fetchUser = async () => {
+
+		const token = localStorage.getItem('authToken');
+
+		if (!token) {
+			setLoadingUser(false);
+			return;
+		}
+
 		try {
 			const response = await axiosInstance.get('/users/self/');
 			const data = response.data;

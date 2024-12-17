@@ -90,7 +90,11 @@ class PartRequest(models.Model):
 
 class Message(models.Model):
     """Message Model."""
+    id = models.UUIDField(primary_key=True, unique=True)
     sender = models.ForeignKey(User, related_name='sent_messages', on_delete=models.CASCADE)
     receiver = models.ForeignKey(User, related_name='received_messages', on_delete=models.CASCADE)
-    content = models.TextField()
+    message = models.TextField()
     timestamp = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f'{self.sender} to {self.receiver}: {self.message}'

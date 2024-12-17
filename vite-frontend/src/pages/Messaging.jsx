@@ -6,10 +6,11 @@ import { IoMdSend } from "react-icons/io";
 import axiosInstance from '../utils/axiosInstance';
 import { v4 as uuidv4 } from 'uuid'; // Add this at the top (install `uuid` if necessary)
 
-const MessageSent = ({ message }) => {
+const MessageSent = ({ message, allTeams }) => {
+    const senderTeam = allTeams.find(team => team.team_number === message.sender);
     return (
         <div className='text-right flex flex-col place-items-end px-[20px] py-[10px]'>
-            <p className='text-xs px-[12px]'>{message.sender.full_name}</p>
+            <p className='text-xs px-[12px]'>{senderTeam ? senderTeam.full_name : 'Unknown Team'}</p>
             <div className='bg-red-800 rounded-3xl text-left w-fit shadow-md max-w-[50%] overflow-hidden break-words'>
                 <p className='text-white px-[20px]'>{message.message}</p>
             </div>
@@ -17,10 +18,11 @@ const MessageSent = ({ message }) => {
     );
 };
 
-const MessageReceived = ({ message }) => {
+const MessageReceived = ({ message, allTeams }) => {
+    const senderTeam = allTeams.find(team => team.team_number === message.sender);
     return (
         <div className='text-left flex flex-col place-items-start px-[20px] py-[10px]'>
-            <p className='text-xs px-[12px]'>{message.sender.full_name}</p>
+            <p className='text-xs px-[12px]'>{senderTeam ? senderTeam.full_name : 'Unknown Team'}</p>
             <div className='bg-gray-200 rounded-3xl text-left w-fit shadow-md max-w-[50%] overflow-hidden break-words'>
                 <p className='text-red-800 px-[20px]'>{message.message}</p>
             </div>
@@ -32,7 +34,6 @@ const Chat = () => {
     const navigate = useNavigate();
 
     const { roomName } = useParams(); // Get roomName from the URL
-    const [messages, setMessages] = useState([]);
     const [messagesByRoom, setMessagesByRoom] = useState({});
     const [newMessage, setNewMessage] = useState('');
     const socketRef = useRef(null);
@@ -52,36 +53,33 @@ const Chat = () => {
             const topBarHeight = document.querySelector('.top-bar').offsetHeight;
             const footerHeight = document.querySelector('.footer').offsetHeight;
             const messagesSection = document.querySelector('.messages-section');
-        
+
             const maxHeight = `calc(100vh - ${topBarHeight}px - ${footerHeight}px)`;
             messagesSection.style.maxHeight = maxHeight;
         }
-        
+
         messageMaxHeight();
     }, [loading]);
-
-    const fetchTeams = async () => {
-        try {
-            const response = await axiosInstance.get('/users/');
-            // console.log("response:", response)
-            const data = response.data;
-            // console.log("data:", data)
-
-            if (!data) {
-                throw new Error('Error getting Teams');
-            }
-
-            setAllTeams(data);
-            // console.log(allTeams)
-            setLoadingTeams(false);
-        }
-        catch (error) {
-            console.error('Error fetching User Data:', error);
-            setLoadingTeams(false);
-        }
-    };
-
     useEffect(() => {
+        const fetchTeams = async () => {
+            try {
+                const response = await axiosInstance.get('/users/');
+                const data = response.data;
+
+                if (!data) {
+                    throw new Error('Error getting Teams');
+                }
+
+                setAllTeams(data);
+                // console.log(allTeams)
+                setLoadingTeams(false);
+            }
+            catch (error) {
+                console.error('Error fetching User Data:', error);
+                setLoadingTeams(false);
+            }
+        };
+
         fetchTeams();
     }, []);
 
@@ -198,15 +196,37 @@ const Chat = () => {
         }
     }, [messagesByRoom, roomName])
 
-    const sendMessage = () => {
+    useEffect(() => {
+        const fetchMessages = async () => {
+            if (!roomName || !user) return;
+
+            try {
+                const response = await axiosInstance.get(`/message/${roomName}/`);
+                const data = response.data;
+                console.log(data);
+
+                setMessagesByRoom((prevMessages) => ({
+                    ...prevMessages,
+                    [roomName]: data,
+                }));
+            } catch (err) {
+                console.error("Error fetching messages:", err);
+            }
+        };
+
+        fetchMessages();
+    }, [roomName, user]);
+
+    const sendMessage = async () => {
         if (socketRef.current) {
             const newMessageObj = {
                 id: uuidv4(),
                 message: newMessage,
-                sender: user,
-                receiver: receiverUser, // Replace with actual receiver ID
+                sender: user.team_number,
+                receiver: receiverUser.team_number, // Replace with actual receiver ID
             };
 
+            // Send the message via websocket
             socketRef.current.send(JSON.stringify(newMessageObj));
 
             // Add the message to the current room's messages
@@ -222,6 +242,18 @@ const Chat = () => {
                 }
                 return updatedMessages;
             });
+
+            try {
+                const response = await axiosInstance.post('/message/', newMessageObj);
+
+                if (response.status === 200 && response.data.detail === "Message already exists") {
+                    console.log("Message already exists in the database");
+                } else if (response.status === 201) {
+                    console.log("Message saved successfully");
+                }
+            } catch (err) {
+                console.error("Error saving message to database:", err);
+            }
 
             setNewMessage('');
         }
@@ -281,18 +313,27 @@ const Chat = () => {
                             </div>
                             {/* Messages Section */}
                             <div className='overflow-y-auto flex-grow'>
-                                {(messagesByRoom[roomName] || []).map((msg, index) => (
-                                    <div key={index}>
-                                        {msg.sender.full_name === user.full_name ? (
-                                            <MessageSent message={msg} />
-                                        ) : msg.receiver.full_name === user.full_name ? (
-                                            <MessageReceived message={msg} />
-                                        ) : (
-                                            <>
-                                            </>
-                                        )}
-                                    </div>
-                                ))}
+                                {!loadingTeams && allTeams ? (
+                                    <>
+                                        {(messagesByRoom[roomName] || []).map((msg, index) => (
+                                            <div key={index}>
+                                                {msg.sender === user.team_number ? (
+                                                    <MessageSent message={msg} allTeams={allTeams} />
+                                                ) : msg.receiver === user.team_number ? (
+                                                    <MessageReceived message={msg} allTeams={allTeams}/>
+                                                ) : (
+                                                    <>
+                                                        <p>Loading...</p>
+                                                    </>
+                                                )}
+                                            </div>
+                                        ))}
+                                    </>
+                                ) : (
+                                    <>
+                                        <p>Loading Messages</p>
+                                    </>
+                                )}
 
                                 <div ref={messagesEndRef} />
                             </div>

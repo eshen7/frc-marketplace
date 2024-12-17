@@ -52,10 +52,12 @@ services:
     image: redis:latest
     container_name: redis-server
     ports:
-      - "6379:6379"
+      - "${REDIS_PORT_HOST}:${REDIS_PORT_CONTAINER}"
     volumes:
       - redis-data:/data # Persist Redis data
     command: ["redis-server", "--loglevel", "verbose"]
+    env_file:
+      - .env
     restart: always # Restart automatically if the container stops
 
 volumes:
