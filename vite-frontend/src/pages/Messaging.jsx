@@ -297,8 +297,8 @@ const Chat = () => {
         }
     }, [messagesByRoom, roomName])
 
-    const fetchMessages = async (offset = 0, limit = 25) => {
-        if (!roomName || loadingMoreMessages || !hasMoreMessages) return;
+    const fetchMessages = async (offset = 0, limit = 25, initialFetch = false) => {
+        if (!roomName || loadingMoreMessages || (!hasMoreMessages && !initialFetch)) return;
 
         setLoadingMoreMessages(true);
 
@@ -349,40 +349,33 @@ const Chat = () => {
         }
     };
 
-    // Fetch Messages
-    // useEffect(() => {
-    //     const fetchMessages = async () => {
-    //         if (!roomName || !user) return;
-
-    //         try {
-    //             const response = await axiosInstance.get(`/message/${roomName}/`);
-    //             const data = response.data;
-    //             console.log(data);
-
-    //             setMessagesByRoom((prevMessages) => ({
-    //                 ...prevMessages,
-    //                 [roomName]: data,
-    //             }));
-    //         } catch (err) {
-    //             console.error("Error fetching messages:", err);
-    //         }
-    //     };
-
-    //     fetchMessages();
-    // }, [roomName, user]);
-
     useEffect(() => {
-        const fetchInitialMessages = async () => {
-            if (!roomName || !user) return;
-
-            try {
-                await fetchMessages(0); // Fetch only the most recent 25 messages
-            } catch (err) {
-                console.error("Error fetching initial messages:", err);
+        const resetAndFetchMessages = async () => {
+            // Reset states
+            setHasMoreMessages(true);
+            setCurrentOffset(0);
+    
+            // Clear messages for the new room
+            setMessagesByRoom((prevMessages) => {
+                const updatedMessages = { ...prevMessages };
+                updatedMessages[roomName] = [];
+                return updatedMessages;
+            });
+    
+            // Wait for the reset to complete before fetching
+            await new Promise((resolve) => setTimeout(resolve, 0));
+    
+            // Fetch initial messages
+            if (roomName && user) {
+                try {
+                    await fetchMessages(0, 25, true); // Pass the initial state of `hasMoreMessages`
+                } catch (err) {
+                    console.error("Error fetching initial messages:", err);
+                }
             }
         };
-
-        fetchInitialMessages();
+    
+        resetAndFetchMessages();    
     }, [roomName, user]);
 
     const sendMessage = async () => {
