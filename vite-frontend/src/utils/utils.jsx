@@ -29,3 +29,14 @@ export function getDaysUntil(dueDate) {
 export function isDate(value) {
     return Object.prototype.toString.call(value) === '[object Date]';
 }
+
+export function formatTimestamp(isoTimestamp) {
+    const date = new Date(isoTimestamp);
+    return date.toLocaleString('en-US', {
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: true,
+        month: 'short',
+        day: 'numeric',
+    });
+}

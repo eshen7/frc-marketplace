@@ -5,15 +5,17 @@ import Footer from '../components/Footer';
 import { IoMdSend } from "react-icons/io";
 import axiosInstance from '../utils/axiosInstance';
 import { v4 as uuidv4 } from 'uuid'; // Add this at the top (install `uuid` if necessary)
+import { formatTimestamp } from '../utils/utils';
 
 const MessageSent = ({ message, allTeams }) => {
     const senderTeam = allTeams.find(team => team.team_number === message.sender);
     return (
         <div className='text-right flex flex-col place-items-end px-[20px] py-[10px]'>
-            <p className='text-xs px-[12px]'>{senderTeam ? senderTeam.full_name : 'Unknown Team'}</p>
+            <p className='text-xs px-[2px]'>{senderTeam ? senderTeam.full_name : 'Unknown Team'}</p>
             <div className='bg-red-800 rounded-3xl text-left w-fit shadow-md max-w-[50%] overflow-hidden break-words'>
                 <p className='text-white px-[20px]'>{message.message}</p>
             </div>
+            <p className='text-xs text-gray-500'>{message.timestamp ? formatTimestamp(message.timestamp) : "..."}</p>
         </div>
     );
 };
@@ -22,10 +24,11 @@ const MessageReceived = ({ message, allTeams }) => {
     const senderTeam = allTeams.find(team => team.team_number === message.sender);
     return (
         <div className='text-left flex flex-col place-items-start px-[20px] py-[10px]'>
-            <p className='text-xs px-[12px]'>{senderTeam ? senderTeam.full_name : 'Unknown Team'}</p>
+            <p className='text-xs px-[2px]'>{senderTeam ? senderTeam.full_name : 'Unknown Team'}</p>
             <div className='bg-gray-200 rounded-3xl text-left w-fit shadow-md max-w-[50%] overflow-hidden break-words'>
                 <p className='text-red-800 px-[20px]'>{message.message}</p>
             </div>
+            <p className='text-xs text-gray-500'>{message.timestamp ? formatTimestamp(message.timestamp) : "..."}</p>
         </div>
     );
 };
@@ -141,6 +144,51 @@ const Chat = () => {
         getReceiver();
     }, [roomName])
 
+    const retryFetchFullMessage = async (messageId, maxRetries = 5, delay = 500) => {
+        let retries = 0;
+    
+        while (retries < maxRetries) {
+            try {
+                const response = await axiosInstance.get(`/message/id/${messageId}/`);
+                const fullMessage = response.data;
+    
+                // Update the state with the fetched message
+                setMessagesByRoom((prevMessages) => {
+                    const updatedMessages = { ...prevMessages };
+    
+                    // Find the messages array for the current room
+                    const roomMessages = updatedMessages[roomName] || [];
+    
+                    // Find the index of the message that matches the ID
+                    const messageIndex = roomMessages.findIndex((msg) => msg.id === messageId);
+    
+                    if (messageIndex !== -1) {
+                        // Replace the message with the full message (including timestamp)
+                        roomMessages[messageIndex] = fullMessage;
+                    } else {
+                        // Add the message if it's not already in the list
+                        roomMessages.push(fullMessage);
+                    }
+    
+                    // Update the messages for the current room
+                    updatedMessages[roomName] = roomMessages;
+    
+                    return updatedMessages;
+                });
+    
+                // If the fetch is successful, exit the retry loop
+                return;
+            } catch (err) {
+                retries++;
+                console.warn(`Retrying fetch for message ID ${messageId}... Attempt ${retries}`);
+                // Wait before retrying
+                await new Promise((resolve) => setTimeout(resolve, delay));
+            }
+        }
+    
+        console.error(`Failed to fetch message ID ${messageId} after ${maxRetries} retries`);
+    };
+
     useEffect(() => {
         const connectWebSocket = () => {
             if (!user || !roomName || !receiverUser) return; // Ensure `user` and `roomName` are available
@@ -158,21 +206,36 @@ const Chat = () => {
 
             socketRef.current.onopen = () => console.log("WebSocket opened");
 
-            socketRef.current.onmessage = (event) => {
+            socketRef.current.onmessage = async (event) => {
                 console.log("Received message:", event.data);
                 const data = JSON.parse(event.data);
-
+            
                 setMessagesByRoom((prevMessages) => {
                     const updatedMessages = { ...prevMessages };
-
+            
                     if (!updatedMessages[roomName]) {
                         updatedMessages[roomName] = [];
                     }
-
-                    const isDuplicate = updatedMessages[roomName].some((msg) => msg.id === data.id);
-                    if (!isDuplicate) {
+            
+                    const messageIndex = updatedMessages[roomName].findIndex(
+                        (msg) => msg.id === data.id
+                    );
+            
+                    if (messageIndex !== -1) {
+                        // Message already exists - Check if timestamp is missing
+                        if (!updatedMessages[roomName][messageIndex].timestamp) {
+                            // Retry fetching full message if timestamp is missing
+                            retryFetchFullMessage(data.id);
+                        }
+                    } else {
+                        // Add new message
                         updatedMessages[roomName].push(data);
+                        // If timestamp is missing, retry fetching full message
+                        if (!data.timestamp) {
+                            retryFetchFullMessage(data.id);
+                        }
                     }
+            
                     return updatedMessages;
                 });
             };
@@ -190,12 +253,14 @@ const Chat = () => {
         };
     }, [roomName, user]); // Re-run effect when roomName or user changes
 
+    // Autoscroll
     useEffect(() => {
         if (messagesEndRef.current) {
             messagesEndRef.current.scrollIntoView({ behavior: 'auto' });
         }
     }, [messagesByRoom, roomName])
 
+    // Fetch Messages
     useEffect(() => {
         const fetchMessages = async () => {
             if (!roomName || !user) return;
@@ -251,6 +316,31 @@ const Chat = () => {
                 } else if (response.status === 201) {
                     console.log("Message saved successfully");
                 }
+
+                const singleMessage = await axiosInstance.get(`/message/id/${newMessageObj.id}/`);
+                setMessagesByRoom((prevMessages) => {
+                    const updatedMessages = { ...prevMessages };
+
+                    // Find the messages array for the current room
+                    const roomMessages = updatedMessages[roomName] || [];
+
+                    // Find the index of the message that matches the ID
+                    const messageIndex = roomMessages.findIndex((msg) => msg.id === newMessageObj.id);
+
+                    // If the message is found, replace it with the updated singleMessage
+                    if (messageIndex !== -1) {
+                        roomMessages[messageIndex] = singleMessage.data;
+                    } else {
+                        // If the message doesn't exist (new message), push it
+                        roomMessages.push(singleMessage.data);
+                    }
+
+
+                    // Update the messages for the current room
+                    updatedMessages[roomName] = roomMessages;
+
+                    return updatedMessages;
+                });
             } catch (err) {
                 console.error("Error saving message to database:", err);
             }
@@ -320,7 +410,7 @@ const Chat = () => {
                                                 {msg.sender === user.team_number ? (
                                                     <MessageSent message={msg} allTeams={allTeams} />
                                                 ) : msg.receiver === user.team_number ? (
-                                                    <MessageReceived message={msg} allTeams={allTeams}/>
+                                                    <MessageReceived message={msg} allTeams={allTeams} />
                                                 ) : (
                                                     <>
                                                         <p>Loading...</p>

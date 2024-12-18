@@ -227,7 +227,7 @@ def request_view(request, request_id):
     
 @permission_classes([IsAuthenticated])
 @api_view(["GET"])
-def message_get_view(request, team_number):
+def messages_by_user_get_view(request, team_number):
     """
     View for handling direct messages (DMs):
     - GET: Retrieve messages between the logged-in user and a specific user.
@@ -245,9 +245,30 @@ def message_get_view(request, team_number):
         (models.Q(sender=sender) & models.Q(receiver=receiver)) |
         (models.Q(sender=receiver) & models.Q(receiver=sender))
     ).order_by('timestamp')
-
+    
     serializer = MessageSerializer(messages, many=True)
     return Response(serializer.data, status=status.HTTP_200_OK)
+
+@permission_classes([IsAuthenticated])
+@api_view(["GET"])
+def message_by_id_get_view(request, message_id):
+    """
+    View for handling direct messages (DMs):
+    - GET: Retrieve messages between the logged-in user and a specific user.
+    """
+    # Fetch messages between the logged-in user and another user
+    try:
+        message = Message.objects.get(id=message_id)
+    except User.DoesNotExist:
+        return Response({"error": f"Message with # {message_id} not found."}, status=status.HTTP_404_NOT_FOUND)
+
+    sender = request.user
+
+    if (sender == message.sender or sender == message.receiver):
+        serializer = MessageSerializer(message)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+    else:
+        return Response({"error": f"User not validated"}, status=status.HTTP_401_UNAUTHORIZED)
 
 
 @permission_classes([IsAuthenticated])
