@@ -125,7 +125,7 @@ class UserSerializer(serializers.ModelSerializer):
         representation.pop("is_superuser", None)
         representation.pop("date_joined", None)
         representation.pop("UUID", None)
-        representation.pop("phone", None)
+        # representation.pop("phone", None)
 
         return representation
 

@@ -10,6 +10,7 @@ from .models import User, Part, PartRequest, Message
 from .serializers import MessageSerializer, UserSerializer, PartSerializer, PartRequestSerializer
 from rest_framework.permissions import IsAuthenticated
 from django.db import models
+from django.core.paginator import Paginator
 
 
 # Create your views here.
@@ -232,6 +233,11 @@ def messages_by_user_get_view(request, team_number):
     View for handling direct messages (DMs):
     - GET: Retrieve messages between the logged-in user and a specific user.
     """
+
+    limit = int(request.query_params.get("limit", 25))  # Default to 25
+    offset = int(request.query_params.get("offset", 0))  # Default to 0
+
+
     # Fetch messages between the logged-in user and another user
     try:
         receiver = User.objects.get(team_number=team_number)
@@ -244,9 +250,11 @@ def messages_by_user_get_view(request, team_number):
     messages = Message.objects.filter(
         (models.Q(sender=sender) & models.Q(receiver=receiver)) |
         (models.Q(sender=receiver) & models.Q(receiver=sender))
-    ).order_by('timestamp')
+    ).order_by('-timestamp')
+    paginator = Paginator(messages, limit)
+    paginated_messages = paginator.page(1) if offset == 0 else paginator.page(offset // limit + 1)
     
-    serializer = MessageSerializer(messages, many=True)
+    serializer = MessageSerializer(paginated_messages, many=True)
     return Response(serializer.data, status=status.HTTP_200_OK)
 
 @permission_classes([IsAuthenticated])

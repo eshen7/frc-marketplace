@@ -50,6 +50,42 @@ const Chat = () => {
     const [allTeams, setAllTeams] = useState([]);
     const [loadingTeams, setLoadingTeams] = useState(true);
 
+    const [currentOffset, setCurrentOffset] = useState(0);
+    const [hasMoreMessages, setHasMoreMessages] = useState(true);
+    const [loadingMoreMessages, setLoadingMoreMessages] = useState(false);
+    const messagesContainerRef = useRef(null);
+    const [isAtBottom, setIsAtBottom] = useState(true);
+
+    const handleScroll = () => {
+        if (!hasMoreMessages || loadingMoreMessages) return;
+
+        const container = messagesContainerRef.current;
+        if (container) {
+            const { scrollTop, scrollHeight, clientHeight } = container;
+
+            // Check if user is at the bottom
+            setIsAtBottom(scrollTop + clientHeight >= scrollHeight - 5);
+
+            // Fetch older messages if near the top
+            if (scrollTop < 50) {
+                fetchMessages(currentOffset); // Fetch older messages
+            }
+        }
+    };
+
+    useEffect(() => {
+        const container = messagesContainerRef.current;
+        if (container) {
+            container.addEventListener("scroll", handleScroll);
+        }
+
+        return () => {
+            if (container) {
+                container.removeEventListener("scroll", handleScroll);
+            }
+        };
+    }, [hasMoreMessages, loadingMoreMessages, currentOffset, roomName]);
+
     useEffect(() => {
         const messageMaxHeight = () => {
             if (loading) return;
@@ -63,6 +99,7 @@ const Chat = () => {
 
         messageMaxHeight();
     }, [loading]);
+
     useEffect(() => {
         const fetchTeams = async () => {
             try {
@@ -146,22 +183,22 @@ const Chat = () => {
 
     const retryFetchFullMessage = async (messageId, maxRetries = 5, delay = 500) => {
         let retries = 0;
-    
+
         while (retries < maxRetries) {
             try {
                 const response = await axiosInstance.get(`/message/id/${messageId}/`);
                 const fullMessage = response.data;
-    
+
                 // Update the state with the fetched message
                 setMessagesByRoom((prevMessages) => {
                     const updatedMessages = { ...prevMessages };
-    
+
                     // Find the messages array for the current room
                     const roomMessages = updatedMessages[roomName] || [];
-    
+
                     // Find the index of the message that matches the ID
                     const messageIndex = roomMessages.findIndex((msg) => msg.id === messageId);
-    
+
                     if (messageIndex !== -1) {
                         // Replace the message with the full message (including timestamp)
                         roomMessages[messageIndex] = fullMessage;
@@ -169,13 +206,13 @@ const Chat = () => {
                         // Add the message if it's not already in the list
                         roomMessages.push(fullMessage);
                     }
-    
+
                     // Update the messages for the current room
                     updatedMessages[roomName] = roomMessages;
-    
+
                     return updatedMessages;
                 });
-    
+
                 // If the fetch is successful, exit the retry loop
                 return;
             } catch (err) {
@@ -185,13 +222,13 @@ const Chat = () => {
                 await new Promise((resolve) => setTimeout(resolve, delay));
             }
         }
-    
+
         console.error(`Failed to fetch message ID ${messageId} after ${maxRetries} retries`);
     };
 
     useEffect(() => {
         const connectWebSocket = () => {
-            if (!user || !roomName || !receiverUser) return; // Ensure `user` and `roomName` are available
+            if (!user || !roomName) return; // Ensure `user` and `roomName` are available
 
             // Generate the universal room name based on user and roomName
             let universalWS = "";
@@ -209,18 +246,18 @@ const Chat = () => {
             socketRef.current.onmessage = async (event) => {
                 console.log("Received message:", event.data);
                 const data = JSON.parse(event.data);
-            
+
                 setMessagesByRoom((prevMessages) => {
                     const updatedMessages = { ...prevMessages };
-            
+
                     if (!updatedMessages[roomName]) {
                         updatedMessages[roomName] = [];
                     }
-            
+
                     const messageIndex = updatedMessages[roomName].findIndex(
                         (msg) => msg.id === data.id
                     );
-            
+
                     if (messageIndex !== -1) {
                         // Message already exists - Check if timestamp is missing
                         if (!updatedMessages[roomName][messageIndex].timestamp) {
@@ -235,7 +272,7 @@ const Chat = () => {
                             retryFetchFullMessage(data.id);
                         }
                     }
-            
+
                     return updatedMessages;
                 });
             };
@@ -255,31 +292,97 @@ const Chat = () => {
 
     // Autoscroll
     useEffect(() => {
-        if (messagesEndRef.current) {
+        if (messagesEndRef.current && isAtBottom) {
             messagesEndRef.current.scrollIntoView({ behavior: 'auto' });
         }
     }, [messagesByRoom, roomName])
 
+    const fetchMessages = async (offset = 0, limit = 25) => {
+        if (!roomName || loadingMoreMessages || !hasMoreMessages) return;
+
+        setLoadingMoreMessages(true);
+
+        try {
+            const container = messagesContainerRef.current;
+
+            // Save current scroll position and height
+            const previousScrollHeight = container.scrollHeight;
+            const previousScrollTop = container.scrollTop;
+
+
+            const response = await axiosInstance.get(`/message/${roomName}/`, {
+                params: { limit, offset },
+            });
+            const data = response.data;
+
+            // Check if there are more messages to load
+            if (data.length < limit) {
+                setHasMoreMessages(false);
+            }
+
+            setMessagesByRoom((prevMessages) => {
+                const updatedMessages = { ...prevMessages };
+                const roomMessages = updatedMessages[roomName] || [];
+
+                // Combine new and existing messages
+                const combinedMessages = [...data.reverse(), ...roomMessages];
+
+                // Sort messages by timestamp
+                combinedMessages.sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
+
+                // Update the state with sorted messages
+                updatedMessages[roomName] = combinedMessages;
+
+                return updatedMessages;
+            });
+
+            setCurrentOffset((prevOffset) => prevOffset + limit);
+
+            setTimeout(() => {
+                const newScrollHeight = container.scrollHeight;
+                container.scrollTop = newScrollHeight - previousScrollHeight + previousScrollTop;
+            }, 0); // Use a timeout to ensure DOM updates are applied before calculating the new scroll    
+        } catch (err) {
+            console.error("Error fetching messages:", err);
+        } finally {
+            setLoadingMoreMessages(false);
+        }
+    };
+
     // Fetch Messages
+    // useEffect(() => {
+    //     const fetchMessages = async () => {
+    //         if (!roomName || !user) return;
+
+    //         try {
+    //             const response = await axiosInstance.get(`/message/${roomName}/`);
+    //             const data = response.data;
+    //             console.log(data);
+
+    //             setMessagesByRoom((prevMessages) => ({
+    //                 ...prevMessages,
+    //                 [roomName]: data,
+    //             }));
+    //         } catch (err) {
+    //             console.error("Error fetching messages:", err);
+    //         }
+    //     };
+
+    //     fetchMessages();
+    // }, [roomName, user]);
+
     useEffect(() => {
-        const fetchMessages = async () => {
+        const fetchInitialMessages = async () => {
             if (!roomName || !user) return;
 
             try {
-                const response = await axiosInstance.get(`/message/${roomName}/`);
-                const data = response.data;
-                console.log(data);
-
-                setMessagesByRoom((prevMessages) => ({
-                    ...prevMessages,
-                    [roomName]: data,
-                }));
+                await fetchMessages(0); // Fetch only the most recent 25 messages
             } catch (err) {
-                console.error("Error fetching messages:", err);
+                console.error("Error fetching initial messages:", err);
             }
         };
 
-        fetchMessages();
+        fetchInitialMessages();
     }, [roomName, user]);
 
     const sendMessage = async () => {
@@ -402,7 +505,8 @@ const Chat = () => {
                                 </h1>
                             </div>
                             {/* Messages Section */}
-                            <div className='overflow-y-auto flex-grow'>
+                            <div className='overflow-y-auto flex-grow'
+                                ref={messagesContainerRef}>
                                 {!loadingTeams && allTeams ? (
                                     <>
                                         {(messagesByRoom[roomName] || []).map((msg, index) => (
