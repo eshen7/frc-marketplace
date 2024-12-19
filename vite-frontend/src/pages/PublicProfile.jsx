@@ -3,9 +3,50 @@ import { useParams } from "react-router-dom";
 import axiosInstance from "../utils/axiosInstance";
 import TopBar from '../components/TopBar';
 import Footer from '../components/Footer';
-import { FaRobot, FaUser, FaExternalLinkAlt } from 'react-icons/fa';
+import { FaRobot, FaUser, FaExternalLinkAlt, FaComments } from 'react-icons/fa';
+import ItemCard from '../components/ItemCard';
 
 const PublicProfileComponent = ({ user }) => {
+    const [requests, setRequests] = useState([]);
+    const [loadingRequests, setLoadingRequests] = useState(true);
+
+    const [currentUser, setCurrentUser] = useState(null);
+    const [loadingUser, setLoadingUser] = useState(true);
+
+    useEffect(() => {
+        const fetchRequests = async () => {
+            try {
+                const response = await axiosInstance.get(`/requests/user/${user.team_number}`)
+                const data = response.data;
+
+                setRequests(data);
+            } catch (err) {
+                console.error("Error fetching user's requests:", err);
+            } finally {
+                setLoadingRequests(false);
+            }
+        };
+
+        const fetchUser = async () => {
+            try {
+                const token = localStorage.getItem('authToken'); // Or wherever you store the token
+
+                if (token) {
+                    const response = await axiosInstance.get("/users/self");
+                    const data = response.data;
+
+                    setCurrentUser(data);
+                }
+            } catch (err) {
+                console.error("Error fetching current user:", err);
+            } finally {
+                setLoadingUser(false);
+            }
+        };
+
+        fetchUser();
+        fetchRequests();
+    }, []);
 
     return (
         <>
@@ -37,6 +78,7 @@ const PublicProfileComponent = ({ user }) => {
                                 </div>
                             </div>
 
+                            {/* Blue Alliance Link */}
                             <div className="flex justify-center">
                                 <a
                                     href={`https://www.thebluealliance.com/team/${user.team_number}`}
@@ -48,6 +90,19 @@ const PublicProfileComponent = ({ user }) => {
                                     View on The Blue Alliance
                                 </a>
                             </div>
+
+                            {/* Chat Button */}
+                            {currentUser?.team_number !== user.team_number && (
+                                <div className="mt-4 flex justify-center">
+                                    <a
+                                        href={`/chat/${user.team_number}`}
+                                        className="inline-flex items-center px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors duration-200"
+                                    >
+                                        <FaComments className="mr-2" />
+                                        Chat with {user.team_name}
+                                    </a>
+                                </div>
+                            )}
                         </div>
                     </div>
                 </div>
@@ -56,8 +111,31 @@ const PublicProfileComponent = ({ user }) => {
                     <h1 className="text-3xl font-bold text-left text-gray-800">
                         Requests
                     </h1>
-                    <div className=''>
-
+                    <div>
+                        {requests && !loadingRequests ? (
+                            <div className='flex justify-center'>
+                                {requests.length !== 0 ? (
+                                    <div className='grid grid-cols-1 lg:grid-cols-4 md:grid-cols-3 sm:grid-cols-2 place-items-center'>
+                                        {requests.map((request) => (
+                                            <div className='p-3'>
+                                                <ItemCard item={request} currentUser={currentUser} type='request' />
+                                            </div>
+                                        ))}
+                                    </div>
+                                ) : (
+                                    <>
+                                        <p>Team {user.team_number} doesn't have any requests!</p>
+                                    </>
+                                )}
+                            </div>
+                        ) : loadingRequests ? (
+                            <>
+                                <p>Loading</p>
+                            </>
+                        ) : (
+                            <>
+                            </>
+                        )}
                     </div>
                 </div>
             </div>
@@ -69,6 +147,7 @@ const PublicProfilePage = () => {
     const { teamNumber } = useParams();
     const [user, setUser] = useState(null);
     const [error, setError] = useState(null);
+    const [loadingUser, setLoadingUser] = useState(true);
 
     useEffect(() => {
         const fetchUser = async () => {
@@ -79,6 +158,8 @@ const PublicProfilePage = () => {
             } catch (error) {
                 console.error("Error fetching user:", error);
                 setError("Failed to load user data.");
+            } finally {
+                setLoadingUser(false);
             }
         };
 
@@ -88,10 +169,10 @@ const PublicProfilePage = () => {
     return (
         <div className='min-h-screen flex flex-col'>
             <TopBar />
-            <div className='flex-grow'>
+            <div className='flex-grow bg-gray-100'>
                 {!error && user ? (
                     <PublicProfileComponent user={user} />
-                ) : !error && !user ? (
+                ) : loadingUser ? (
                     <>
                         <p>Loading...</p>
                     </>

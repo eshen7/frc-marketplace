@@ -225,6 +225,22 @@ def request_view(request, request_id):
         return Response(serializer.data, status=status.HTTP_200_OK)
     except PartRequest.DoesNotExist:
         return Response({"error": "Part Request not found"}, status=status.HTTP_404_NOT_FOUND)
+
+@api_view(["GET"])
+def requests_by_user_view(request, team_number):
+    """Fetch all requests by a user."""
+    try:
+        # Fetch the user by team_number
+        user = User.objects.get(team_number=team_number)
+    except User.DoesNotExist:
+        return Response(
+            {"error": f"User with team number {team_number} not found."},
+            status=status.HTTP_404_NOT_FOUND
+        )    
+    part_request = PartRequest.objects.filter(user_id=user)
+    serializer = PartRequestSerializer(part_request, many=True)
+    return Response(serializer.data, status=status.HTTP_200_OK)
+
     
 @permission_classes([IsAuthenticated])
 @api_view(["GET"])
@@ -301,7 +317,6 @@ def message_post_view(request):
 
     try:
         # Fetch sender and receiver users from the provided JSON data
-        # sender = User.objects.get(team_number=sender_data.get('team_number'))
         receiver = User.objects.get(team_number=receiver_team_number)
 
         # Create a new message instance with the provided ID
