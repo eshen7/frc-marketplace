@@ -5,6 +5,7 @@ import TopBar from '../components/TopBar';
 import Footer from '../components/Footer';
 import { FaRobot, FaUser, FaExternalLinkAlt, FaComments } from 'react-icons/fa';
 import ItemCard from '../components/ItemCard';
+import { MdOutlineEdit } from "react-icons/md";
 
 const PublicProfileComponent = ({ user }) => {
     const [requests, setRequests] = useState([]);
@@ -52,7 +53,18 @@ const PublicProfileComponent = ({ user }) => {
         <>
             <div className="h-full bg-gray-100 flex flex-col p-4">
                 <div className='flex items-center justify-center'>
-                    <div className="bg-white shadow-lg rounded-lg w-full max-w-2xl">
+                    <div className="bg-white shadow-lg rounded-lg w-full max-w-2xl relative">
+                        {/* Edit Button */}
+                        {currentUser?.team_number === user.team_number && (
+                            <a href='/profile'>
+                                <div className='absolute top-[15px] right-[15px] rounded-full bg-gray-100 text-blue-500 text-[30px] w-fit p-2
+                                        hover:scale-105 transition duration-100 hover:cursor-pointer'>
+                                    <MdOutlineEdit />
+                                </div>
+                            </a>
+                        )}
+
+                        {/* Main Profile Content */}
                         <div className="p-6 space-y-6">
                             <div className="flex items-center justify-center">
                                 <FaRobot className="text-6xl text-blue-500" />
