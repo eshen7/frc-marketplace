@@ -74,6 +74,8 @@ class Part(models.Model):
     """Part Model."""
 
     name = models.CharField(max_length=255)
+    manufacturer = models.CharField(max_length=255,null=True, blank=True)
+    part_id = models.CharField(max_length=255,null=True, blank=True)
     description = models.CharField(null=True, blank=True)
     picture = models.ImageField(upload_to="parts/", null=True, blank=True)
 

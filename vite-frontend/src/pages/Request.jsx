@@ -1,14 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import PropTypes from 'prop-types';
 // Material UI imports
 import {
   Box,
   Button,
   CircularProgress,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogTitle,
   FormControl,
   InputLabel,
   MenuItem,
@@ -24,64 +19,15 @@ import TopBar from '../components/TopBar';
 import Footer from '../components/Footer';
 import SuccessBanner from '../components/SuccessBanner';
 import ErrorBanner from '../components/ErrorBanner';
+import NewPartForm from '../components/NewPartForm';
 // Utils
 import axiosInstance from '../utils/axiosInstance';
+
 
 const INITIAL_FORM_STATE = {
   quantity: 1,
   neededFor: '',
   additionalInfo: '',
-};
-
-const NewPartDialog = ({ open, onClose, onCreate, loading }) => {
-  const [partData, setPartData] = useState({ name: '', description: '' });
-
-  const handleChange = (field) => (event) => {
-    setPartData((prev) => ({ ...prev, [field]: event.target.value }));
-  };
-
-  const handleSubmit = () => {
-    onCreate(partData);
-    setPartData({ name: '', description: '' });
-  };
-
-  return (
-    <Dialog open={open} onClose={onClose} fullWidth maxWidth="sm">
-      <DialogTitle>Create New Part</DialogTitle>
-      <DialogContent>
-        <TextField
-          autoFocus
-          margin="dense"
-          label="Part Name"
-          fullWidth
-          value={partData.name}
-          onChange={handleChange('name')}
-        />
-        <TextField
-          margin="dense"
-          label="Description"
-          fullWidth
-          multiline
-          rows={4}
-          value={partData.description}
-          onChange={handleChange('description')}
-        />
-      </DialogContent>
-      <DialogActions>
-        <Button onClick={onClose}>Cancel</Button>
-        <Button onClick={handleSubmit} disabled={loading}>
-          {loading ? <CircularProgress size={24} /> : 'Create'}
-        </Button>
-      </DialogActions>
-    </Dialog>
-  );
-};
-
-NewPartDialog.propTypes = {
-  open: PropTypes.bool.isRequired,
-  onClose: PropTypes.func.isRequired,
-  onCreate: PropTypes.func.isRequired,
-  loading: PropTypes.bool.isRequired,
 };
 
 const PartRequestForm = () => {
@@ -92,7 +38,7 @@ const PartRequestForm = () => {
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState('');
-  const [isNewPartDialogOpen, setIsNewPartDialogOpen] = useState(false);
+  const [isNewPartFormOpen, setIsNewPartFormOpen] = useState(false);
 
   useEffect(() => {
     fetchParts();
@@ -148,7 +94,7 @@ const PartRequestForm = () => {
       const { data: newPart } = await axiosInstance.post('/parts/', partData);
       setParts((prev) => [...prev, newPart]);
       setSelectedPart(newPart.id);
-      setIsNewPartDialogOpen(false);
+      setIsNewPartFormOpen(false);
       setSuccess(true);
     } catch (error) {
       setError('Failed to create new part');
@@ -196,7 +142,7 @@ const PartRequestForm = () => {
             color="primary"
             fullWidth
             sx={{ mt: 1, mb: 2 }}
-            onClick={() => setIsNewPartDialogOpen(true)}
+            onClick={() => setIsNewPartFormOpen(true)}
           >
             Create New Part
           </Button>
@@ -247,9 +193,9 @@ const PartRequestForm = () => {
           </Button>
         </form>
 
-        <NewPartDialog
-          open={isNewPartDialogOpen}
-          onClose={() => setIsNewPartDialogOpen(false)}
+        <NewPartForm
+          open={isNewPartFormOpen}
+          onClose={() => setIsNewPartFormOpen(false)}
           onCreate={handleCreatePart}
           loading={loading}
         />

@@ -24,7 +24,7 @@ services:
     build: frc_marketplace_API
     container_name: django_app
     command: >
-      sh -c " pipenv run python manage.py makemigrations api && pipenv run python manage.py migrate api && pipenv run python manage.py runserver 0.0.0.0:${DJANGO_PORT_HOST}"
+      sh -c "pipenv run python manage.py runserver 0.0.0.0:${DJANGO_PORT_HOST}"
     ports:
       - "${DJANGO_PORT_HOST}:${DJANGO_PORT_CONTAINER}" # expose django ports
     env_file:
@@ -34,17 +34,20 @@ services:
       - DJANGO_SETTINGS_MODULE=frc_marketplace_API.settings # points to settings module
     depends_on:
       - db # waits for database to be ready
+    volumes:
+      - django_migrations:/usr/local/app/api/migrations
   
-  frontend_app:
-    build: vite-frontend
-    container_name: vite_frontend
-    ports:
-      - "${VITE_PORT_HOST}:${VITE_PORT_CONTAINER}" # expose vite ports
-    command: >
-      sh -c "npm run dev -- --host"
-    env_file:
-      - .env
+  # frontend_app:
+  #   build: vite-frontend
+  #   container_name: vite_frontend
+  #   ports:
+  #     - "${VITE_PORT_HOST}:${VITE_PORT_CONTAINER}" # expose vite ports
+  #   command: >
+  #     sh -c "npm run dev -- --host"
+  #   env_file:
+  #     - .env
 
 volumes:
   pgdata:
   pgadmin_data:
+  django_migrations:
