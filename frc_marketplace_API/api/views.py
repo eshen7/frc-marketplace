@@ -6,8 +6,15 @@ from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
 from rest_framework import status
 from django.views.decorators.csrf import csrf_exempt
-from .models import User, Part, PartRequest, Message
-from .serializers import MessageSerializer, UserSerializer, PartSerializer, PartRequestSerializer
+from .models import User, Part, PartRequest, Message, PartCategory, PartManufacturer
+from .serializers import (
+    MessageSerializer,
+    UserSerializer,
+    PartSerializer,
+    PartRequestSerializer,
+    PartCategorySerializer,
+    PartManufacturerSerializer,
+)
 from rest_framework.permissions import IsAuthenticated
 from django.db import models
 from django.core.paginator import Paginator
@@ -40,6 +47,7 @@ def user_views(request):
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR,
             )
 
+
 @api_view(["GET"])
 def user_by_team_number_view(request, team_number):
     """Fetch a specific user's details by UUID."""
@@ -48,8 +56,12 @@ def user_by_team_number_view(request, team_number):
         serializer = UserSerializer(user)
         return Response(serializer.data, status=status.HTTP_200_OK)
     except User.DoesNotExist:
-        return Response({"error": "User frc{team_number} not found"}, status=status.HTTP_404_NOT_FOUND)
-        
+        return Response(
+            {"error": "User frc{team_number} not found"},
+            status=status.HTTP_404_NOT_FOUND,
+        )
+
+
 @permission_classes([IsAuthenticated])
 @api_view(["GET", "PUT"])
 def get_logged_in_user_view(request):
@@ -71,13 +83,13 @@ def get_logged_in_user_view(request):
                 return Response(serializer.data, status=status.HTTP_200_OK)
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-
     except Exception as e:
         return Response(
             {"message": "An error occurred", "error": str(e)},
             status=status.HTTP_500_INTERNAL_SERVER_ERROR,
         )
-    
+
+
 @permission_classes([IsAuthenticated])
 @api_view(["PUT"])
 def change_password_view(request):
@@ -98,20 +110,24 @@ def change_password_view(request):
     # Check if new passwords match
     if new_password != confirm_password:
         return Response({"error": "New passwords do not match."}, status=400)
-    
+
     if current_password == new_password:
-        return Response({"error": "New password cannot be the same as the current password."}, status=400)
+        return Response(
+            {"error": "New password cannot be the same as the current password."},
+            status=400,
+        )
 
     try:
         # Update the user's password
         user.set_password(new_password)
         user.save()
 
-        login(request, user, backend='django.contrib.auth.backends.ModelBackend')
+        login(request, user, backend="django.contrib.auth.backends.ModelBackend")
 
         return Response({"message": "Password changed successfully."}, status=200)
     except Exception as e:
         return Response({"error": str(e)}, status=500)
+
 
 @permission_classes([IsAuthenticated])
 @api_view(["DELETE"])
@@ -168,6 +184,32 @@ def logout_view(request):
 
 
 @api_view(["GET", "POST"])
+def manufacturer_view(request):
+    """GET/POST for part manufacturers."""
+    if request.method == "GET":
+        manufacturers = PartManufacturer.objects.all()
+        serializer = PartManufacturerSerializer(manufacturers, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+    if request.method == "POST":
+        serializer = PartManufacturerSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+
+
+@api_view(["GET", "POST"])
+def category_view(request):
+    """GET/POST for part categories."""
+    if request.method == "GET":
+        categories = PartCategory.objects.all()
+        serializer = PartCategorySerializer(categories, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+    if request.method == "POST":
+        serializer = PartCategorySerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+
+
+@api_view(["GET", "POST"])
 def part_views(request):
     """Views for GETTING and CREATING Parts."""
     if request.method == "GET":
@@ -216,6 +258,7 @@ def part_request_views(request):
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+
 @api_view(["GET"])
 def request_view(request, request_id):
     """Fetch a specific request's details by UUID."""
@@ -224,7 +267,10 @@ def request_view(request, request_id):
         serializer = PartRequestSerializer(part_request)
         return Response(serializer.data, status=status.HTTP_200_OK)
     except PartRequest.DoesNotExist:
-        return Response({"error": "Part Request not found"}, status=status.HTTP_404_NOT_FOUND)
+        return Response(
+            {"error": "Part Request not found"}, status=status.HTTP_404_NOT_FOUND
+        )
+
 
 @api_view(["GET"])
 def requests_by_user_view(request, team_number):
@@ -235,13 +281,13 @@ def requests_by_user_view(request, team_number):
     except User.DoesNotExist:
         return Response(
             {"error": f"User with team number {team_number} not found."},
-            status=status.HTTP_404_NOT_FOUND
-        )    
+            status=status.HTTP_404_NOT_FOUND,
+        )
     part_request = PartRequest.objects.filter(user_id=user)
     serializer = PartRequestSerializer(part_request, many=True)
     return Response(serializer.data, status=status.HTTP_200_OK)
 
-    
+
 @permission_classes([IsAuthenticated])
 @api_view(["GET"])
 def messages_by_user_get_view(request, team_number):
@@ -253,25 +299,30 @@ def messages_by_user_get_view(request, team_number):
     limit = int(request.query_params.get("limit", 25))  # Default to 25
     offset = int(request.query_params.get("offset", 0))  # Default to 0
 
-
     # Fetch messages between the logged-in user and another user
     try:
         receiver = User.objects.get(team_number=team_number)
     except User.DoesNotExist:
-        return Response({"error": f"User with # {team_number} not found."}, status=status.HTTP_404_NOT_FOUND)
+        return Response(
+            {"error": f"User with # {team_number} not found."},
+            status=status.HTTP_404_NOT_FOUND,
+        )
 
     sender = request.user
 
     # Retrieve messages sent between the logged-in user and the other user
     messages = Message.objects.filter(
-        (models.Q(sender=sender) & models.Q(receiver=receiver)) |
-        (models.Q(sender=receiver) & models.Q(receiver=sender))
-    ).order_by('-timestamp')
+        (models.Q(sender=sender) & models.Q(receiver=receiver))
+        | (models.Q(sender=receiver) & models.Q(receiver=sender))
+    ).order_by("-timestamp")
     paginator = Paginator(messages, limit)
-    paginated_messages = paginator.page(1) if offset == 0 else paginator.page(offset // limit + 1)
-    
+    paginated_messages = (
+        paginator.page(1) if offset == 0 else paginator.page(offset // limit + 1)
+    )
+
     serializer = MessageSerializer(paginated_messages, many=True)
     return Response(serializer.data, status=status.HTTP_200_OK)
+
 
 @permission_classes([IsAuthenticated])
 @api_view(["GET"])
@@ -284,15 +335,20 @@ def message_by_id_get_view(request, message_id):
     try:
         message = Message.objects.get(id=message_id)
     except User.DoesNotExist:
-        return Response({"error": f"Message with # {message_id} not found."}, status=status.HTTP_404_NOT_FOUND)
+        return Response(
+            {"error": f"Message with # {message_id} not found."},
+            status=status.HTTP_404_NOT_FOUND,
+        )
 
     sender = request.user
 
-    if (sender == message.sender or sender == message.receiver):
+    if sender == message.sender or sender == message.receiver:
         serializer = MessageSerializer(message)
         return Response(serializer.data, status=status.HTTP_200_OK)
     else:
-        return Response({"error": f"User not validated"}, status=status.HTTP_401_UNAUTHORIZED)
+        return Response(
+            {"error": f"User not validated"}, status=status.HTTP_401_UNAUTHORIZED
+        )
 
 
 @permission_classes([IsAuthenticated])
@@ -304,16 +360,21 @@ def message_post_view(request):
     """
     # Send a new direct message
     data = request.data
-    message_id = data.get('id')
-    message = data.get('message')
+    message_id = data.get("id")
+    message = data.get("message")
     sender = request.user
-    receiver_team_number = data.get('receiver')
+    receiver_team_number = data.get("receiver")
 
     if Message.objects.filter(id=message_id).exists():
-        return JsonResponse({"detail": "Message already exists"}, status=status.HTTP_200_OK)
+        return JsonResponse(
+            {"detail": "Message already exists"}, status=status.HTTP_200_OK
+        )
 
     if not (message and sender and receiver_team_number):
-        return Response({"error": "Missing 'id', 'message', 'sender', or 'receiver'."}, status=status.HTTP_400_BAD_REQUEST)
+        return Response(
+            {"error": "Missing 'id', 'message', 'sender', or 'receiver'."},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
 
     try:
         # Fetch sender and receiver users from the provided JSON data
@@ -330,6 +391,8 @@ def message_post_view(request):
         serializer = MessageSerializer(message)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
     except User.DoesNotExist:
-        return Response({"error": "Sender or receiver not found."}, status=status.HTTP_404_NOT_FOUND)
+        return Response(
+            {"error": "Sender or receiver not found."}, status=status.HTTP_404_NOT_FOUND
+        )
     except Exception as e:
         return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

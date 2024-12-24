@@ -1,11 +1,11 @@
 # serializers.py
 from django.forms import ValidationError
 from rest_framework import serializers
-from .models import User, Part, PartRequest, Message
+from .models import User, Part, PartRequest, Message, PartManufacturer, PartCategory
 import googlemaps
 from address.models import State, Country, Locality, Address
 from decouple import config
-from utils.geolocation import get_coordinates 
+from utils.geolocation import get_coordinates
 from utils.blueAlliance import getTeamName
 
 
@@ -55,7 +55,6 @@ class UserSerializer(serializers.ModelSerializer):
 
         lat, lon = get_coordinates(raw_address)
 
-
         # Create address (full or partial)
         address = Address.objects.create(
             street_number=get_component("street_number") or "",
@@ -91,7 +90,7 @@ class UserSerializer(serializers.ModelSerializer):
 
         except Exception as e:
             raise ValidationError(f"Invalid address: {str(e)}")
-    
+
     def create(self, validated_data):
         team_number = validated_data.get("team_number")
 
@@ -108,17 +107,17 @@ class UserSerializer(serializers.ModelSerializer):
 
         if instance.address:
             representation["formatted_address"] = {
-        #         "street_number": instance.address.street_number,
-        #         "street": instance.address.route,
-        #         "city": instance.address.locality.name,
-        #         "state": instance.address.locality.state.name,
-        #         "postal_code": instance.address.locality.postal_code,
-        #         "country": instance.address.locality.state.country.name,
+                #         "street_number": instance.address.street_number,
+                #         "street": instance.address.route,
+                #         "city": instance.address.locality.name,
+                #         "state": instance.address.locality.state.name,
+                #         "postal_code": instance.address.locality.postal_code,
+                #         "country": instance.address.locality.state.country.name,
                 "raw": instance.address.raw,
                 "latitude": instance.address.latitude,
                 "longitude": instance.address.longitude,
             }
-        
+
         representation.pop("password", None)
         representation.pop("is_active", None)
         representation.pop("is_staff", None)
@@ -136,11 +135,29 @@ class PartSerializer(serializers.ModelSerializer):
     class Meta:
         model = Part
         fields = [
-            "id", 
-            "name", 
-            "description", 
+            "id",
+            "name",
+            "part_id",
+            "manufacturer",
+            "category",
+            "description",
             "picture",
         ]
+
+
+class PartManufacturerSerializer(serializers.ModelSerializer):
+    """Serializer for the PartManufacturer model."""
+
+    class Meta:
+        model = PartManufacturer
+        fields = ["name", "website","contact"]
+
+class PartCategorySerializer(serializers.ModelSerializer):
+    """Serializer for the PartCategory model."""
+
+    class Meta:
+        model = PartCategory
+        fields = ["name"]
 
 
 class PartRequestSerializer(serializers.ModelSerializer):
@@ -154,7 +171,7 @@ class PartRequestSerializer(serializers.ModelSerializer):
     class Meta:
         model = PartRequest
         fields = [
-            "id", # For referencing the request itself
+            "id",  # For referencing the request itself
             "part_id",  # For referencing the part by its ID
             "quantity",
             "request_date",
@@ -177,9 +194,12 @@ class PartRequestSerializer(serializers.ModelSerializer):
         # Optionally include `user` or other computed fields here
         data["part_id"] = instance.part.id  # Include the part's ID in the output
         data["part_name"] = instance.part.name  # Optionally include the part name
-        data["part_description"] = instance.part.description  # Optionally include the part name
+        data["part_description"] = (
+            instance.part.description
+        )  # Optionally include the part name
         data["user"] = UserSerializer(instance.user).data  # Include user details
         return data
+
 
 class MessageSerializer(serializers.ModelSerializer):
     sender = serializers.SerializerMethodField()
@@ -202,7 +222,5 @@ class MessageSerializer(serializers.ModelSerializer):
         receiver = User.objects.get(UUID=receiver_uuid)
 
         return Message.objects.create(
-            sender_id=sender_uuid,
-            receiver=receiver,
-            **validated_data
+            sender_id=sender_uuid, receiver=receiver, **validated_data
         )
