@@ -213,6 +213,14 @@ const Home = () => {
 		}
 	};
 	const fetchUser = async () => {
+
+		const token = localStorage.getItem('authToken');
+
+		if (!token) {
+			setLoadingUser(false);
+			return;
+		}
+
 		try {
 			const response = await axiosInstance.get('/users/self/');
 			const data = response.data;
@@ -336,7 +344,7 @@ const Home = () => {
 						<div
 							ref={scrollContainerRef}
 							className="flex overflow-x-auto space-x-4 pb-4">
-							{!loadingRequests && !loadingUser && requests ? (
+							{!loadingRequests && !loadingUser && requests.length !== 0 ? (
 								requests
 									.slice(-10)
 									.reverse()
@@ -347,10 +355,12 @@ const Home = () => {
 											</React.Fragment>
 										);
 									})
+							) : requests.length === 0 ? (
+								<p className="text-center">No teams need your help!</p>
 							) : (
-								<p>hello</p>
-							)
-							}
+								<>
+								</>
+							)}
 						</div>
 						<button onClick={scrollRight}
 							className="absolute right-[-15px] top-1/2 transform -translate-y-1/2 bg-gray-800 text-white p-2 rounded-full shadow-lg hover:bg-gray-900 z-10"

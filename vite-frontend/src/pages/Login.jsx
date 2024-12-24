@@ -88,44 +88,52 @@ const Login = () => {
           <h1 className="text-5xl text-red-800 font-bold font-roboto text-center mb-32">
             Sign in
           </h1>
-          <div className="flex flex-col gap-5">
-            <div className="w-2/3 mx-auto">
-              <TextField
-                label="Email"
-                variant="outlined"
-                className="w-full"
-                required={true}
-                onChange={(e) => handleChange("email", e.target.value)}
-              />
-            </div>
-            <div className="w-2/3 mx-auto">
-              <TextField
-                label="Password"
-                variant="outlined"
-                className="w-full"
-                type="password"
-                required={true}
-                onChange={(e) => handleChange("password", e.target.value)}
-              />
-            </div>
-            <div className="flex flex-row mx-10 justify-center">
-              <div className="w-1/2 flex justify-center">
-                <a href="signup" className="text-blue-600 hover:text-blue-800">
-                  Sign Up Instead
-                </a>
+          <form
+            onSubmit={(e) => {
+              e.preventDefault(); // Prevent default form submission behavior
+              handleSubmit(); // Call your handleSubmit function
+            }}
+          >
+            <div className="flex flex-col gap-5">
+              <div className="w-2/3 mx-auto">
+                <TextField
+                  label="Email"
+                  variant="outlined"
+                  className="w-full"
+                  required={true}
+                  onChange={(e) => handleChange("email", e.target.value)}
+                />
               </div>
-              <div className="w-1/2 flex justify-center">
-                <Button
-                  variant="contained"
-                  className="justify-end w-1/2 whitespace-nowrap"
-                  onClick={handleSubmit}
-                  disabled={formData.email === "" || formData.password === ""}
-                >
-                  Sign in
-                </Button>
+              <div className="w-2/3 mx-auto">
+                <TextField
+                  label="Password"
+                  variant="outlined"
+                  className="w-full"
+                  type="password"
+                  required={true}
+                  onChange={(e) => handleChange("password", e.target.value)}
+                />
+              </div>
+              <div className="flex flex-row mx-10 justify-center">
+                <div className="w-1/2 flex justify-center">
+                  <a href="signup" className="text-blue-600 hover:text-blue-800">
+                    Sign Up Instead
+                  </a>
+                </div>
+                <div className="w-1/2 flex justify-center">
+                  <Button
+                    type="submit"
+                    variant="contained"
+                    className="justify-end w-1/2 whitespace-nowrap"
+                    onClick={handleSubmit}
+                    disabled={formData.email === "" || formData.password === ""}
+                  >
+                    Sign in
+                  </Button>
+                </div>
               </div>
             </div>
-          </div>
+          </form>
         </div>
       </div>
       <Footer />

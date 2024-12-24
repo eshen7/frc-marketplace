@@ -20,6 +20,6 @@ def getTeamName(team_number):
         return data["nickname"]
     except requests.exceptions.RequestException as e:
         print(f"Error fetching data for team {team_number}: {e}")
-        return None
+        return f'Team {team_number}'
 
 

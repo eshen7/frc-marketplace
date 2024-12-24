@@ -13,6 +13,7 @@ import { RxHamburgerMenu } from "react-icons/rx";
 import { FaTimes, FaPlus, FaHandHolding, FaStore, FaWpforms, FaSignInAlt, FaSignOutAlt } from "react-icons/fa";
 import { MdHome } from "react-icons/md";
 import { CgProfile } from "react-icons/cg";
+import { LuMessageCircle } from "react-icons/lu";
 
 
 const TopBar = () => {
@@ -35,7 +36,7 @@ const TopBar = () => {
     // Clean up the event listener on component unmount
     return () => {
       window.removeEventListener("storage", checkAuthStatus);
-};
+    };
   }, []);
 
   const handleLogout = async (e) => {
@@ -70,7 +71,7 @@ const TopBar = () => {
   };
 
   return (
-    <div className="bg-red-800 w-screen max-w-none mx-auto px-2 sm:px-4 lg:px-6 flex flex-row place-items-center justify-between py-3">
+    <div className="top-bar bg-red-800 w-screen max-w-none mx-auto px-2 sm:px-4 lg:px-6 flex flex-row place-items-center justify-between py-3">
       <a href="/">
         <img
           className="h-[40px] min-w-[32px] mr-3 hover:cursor-pointer hover:scale-105 transition-translate duration-100"
@@ -120,9 +121,14 @@ const TopBar = () => {
             </Stack>
           )}
           {isAuthenticated && (
-            <IconButton href="/profile" className="items-center">
-              <CgProfile className='text-white' />
-            </IconButton>
+            <>
+              <IconButton href="/chat" className="items-center">
+                <LuMessageCircle className='text-white' />
+              </IconButton>
+              <IconButton href="/profile" className="items-center">
+                <CgProfile className='text-white' />
+              </IconButton>
+            </>
           )}
         </Stack>
       </div>
@@ -156,14 +162,18 @@ const TopBar = () => {
                   <FaPlus className='mr-5' />
                   <button className="">Make a Request</button>
                 </a>
-                <div onClick={handleLogout} className="flex place-items-center">
-                  <FaSignOutAlt className='mr-5' />
-                  <button className="">Log Out</button>
-                </div>
+                <a href='/chat' className="flex place-items-center">
+                  <LuMessageCircle className='mr-5' />
+                  <button className="">Messages</button>
+                </a>
                 <a href='/profile' className="flex place-items-center">
                   <CgProfile className='mr-5' />
                   <button className="">Your Profile</button>
                 </a>
+                <div onClick={handleLogout} className="flex place-items-center">
+                  <FaSignOutAlt className='mr-5' />
+                  <button className="">Log Out</button>
+                </div>
               </>
             ) : (
               <>
@@ -182,7 +192,7 @@ const TopBar = () => {
             <a href="/">
               <img
                 className="absolute top-[12px] left-[8px] h-[40px] min-w-[32px] mr-3 hover:cursor-pointer hover:scale-105 transition-translate duration-100"
-                src="https://static.wixstatic.com/media/b46766_7bdb1070a7354b4393d1a759b3f81e71~mv2_d_1504_1860_s_2.png/v1/crop/x_8,y_0,w_1488,h_1860/fill/w_156,h_195,al_c,q_85,usm_0.66_1.00_0.01,enc_auto/MillenniumFalconLogo3647.png"
+                src="/MillenniumFalconLogo3647.png"
                 alt="3647 logo"
               />
             </a>

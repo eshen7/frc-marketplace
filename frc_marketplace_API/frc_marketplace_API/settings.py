@@ -46,6 +46,7 @@ INSTALLED_APPS = [
     "rest_framework",  # For rest api framework
     "api",  # django app
     "corsheaders",  # For cross-origin requests
+    "channels",
 ]
 
 MIDDLEWARE = [
@@ -76,6 +77,39 @@ TEMPLATES = [
         },
     },
 ]
+
+ASGI_APPLICATION = 'frc_marketplace_API.asgi.application'
+
+CHANNEL_LAYERS = {
+    'default': {
+        'BACKEND': 'channels_redis.core.RedisChannelLayer',
+        'CONFIG': {
+            'hosts': [('redis', 6379)],  # Use 'redis' as the host
+        },
+    },
+}
+
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'handlers': {
+        'console': {
+            'class': 'logging.StreamHandler',
+        },
+    },
+    'loggers': {
+        'channels': {
+            'handlers': ['console'],
+            'level': 'DEBUG',
+        },
+        'channels_redis': {
+            'handlers': ['console'],
+            'level': 'DEBUG',
+        },
+    },
+}
+
 
 WSGI_APPLICATION = "frc_marketplace_API.wsgi.application"
 

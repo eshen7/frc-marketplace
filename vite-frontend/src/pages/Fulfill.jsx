@@ -91,7 +91,7 @@ export default function FulfillRequest() {
   useEffect(() => {
     const fetchRequest = async () => {
       try {
-        const response = await axiosInstance.get(`/requests/${request_id}/`)
+        const response = await axiosInstance.get(`/requests/id/${request_id}/`)
         setRequest(response.data);
       } catch (err) {
         console.error("Error fetching Part Request:", err);

@@ -24,7 +24,7 @@ services:
     build: frc_marketplace_API
     container_name: django_app
     command: >
-      sh -c "pipenv run python manage.py runserver 0.0.0.0:${DJANGO_PORT_HOST}"
+      sh -c "pipenv run daphne -b 0.0.0.0 -p ${DJANGO_PORT_HOST} frc_marketplace_API.asgi:application"
     ports:
       - "${DJANGO_PORT_HOST}:${DJANGO_PORT_CONTAINER}" # expose django ports
     env_file:
@@ -34,20 +34,32 @@ services:
       - DJANGO_SETTINGS_MODULE=frc_marketplace_API.settings # points to settings module
     depends_on:
       - db # waits for database to be ready
-    volumes:
-      - django_migrations:/usr/local/app/api/migrations
+      - redis
   
-  # frontend_app:
-  #   build: vite-frontend
-  #   container_name: vite_frontend
-  #   ports:
-  #     - "${VITE_PORT_HOST}:${VITE_PORT_CONTAINER}" # expose vite ports
-  #   command: >
-  #     sh -c "npm run dev -- --host"
-  #   env_file:
-  #     - .env
+  frontend_app:
+    build: vite-frontend
+    container_name: vite_frontend
+    ports:
+      - "${VITE_PORT_HOST}:${VITE_PORT_CONTAINER}" # expose vite ports
+    command: >
+      sh -c "npm run dev -- --host"
+    env_file:
+      - .env
+  
+  redis:
+    image: redis:latest
+    container_name: redis-server
+    ports:
+      - "${REDIS_PORT_HOST}:${REDIS_PORT_CONTAINER}"
+    volumes:
+      - redis-data:/data # Persist Redis data
+    command: ["redis-server", "--loglevel", "verbose"]
+    env_file:
+      - .env
+    restart: always # Restart automatically if the container stops
 
 volumes:
   pgdata:
   pgadmin_data:
+  redis-data:
   django_migrations:

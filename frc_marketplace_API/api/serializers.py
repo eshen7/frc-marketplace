@@ -1,7 +1,7 @@
 # serializers.py
 from django.forms import ValidationError
 from rest_framework import serializers
-from .models import User, Part, PartRequest
+from .models import User, Part, PartRequest, Message
 import googlemaps
 from address.models import State, Country, Locality, Address
 from decouple import config
@@ -125,7 +125,7 @@ class UserSerializer(serializers.ModelSerializer):
         representation.pop("is_superuser", None)
         representation.pop("date_joined", None)
         representation.pop("UUID", None)
-        representation.pop("phone", None)
+        # representation.pop("phone", None)
 
         return representation
 
@@ -180,3 +180,29 @@ class PartRequestSerializer(serializers.ModelSerializer):
         data["part_description"] = instance.part.description  # Optionally include the part name
         data["user"] = UserSerializer(instance.user).data  # Include user details
         return data
+
+class MessageSerializer(serializers.ModelSerializer):
+    sender = serializers.SerializerMethodField()
+    receiver = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Message
+        fields = ["id", "sender", "receiver", "message", "timestamp"]
+
+    def get_sender(self, obj):
+        return obj.sender.team_number
+
+    def get_receiver(self, obj):
+        return obj.receiver.team_number
+
+    def create(self, validated_data):
+        # For POST requests, use UUIDs for sender and receiver
+        sender_uuid = self.context["request"].user.UUID
+        receiver_uuid = validated_data.pop("receiver_uuid")
+        receiver = User.objects.get(UUID=receiver_uuid)
+
+        return Message.objects.create(
+            sender_id=sender_uuid,
+            receiver=receiver,
+            **validated_data
+        )
