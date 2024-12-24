@@ -77,14 +77,13 @@ class Part(models.Model):
     part_id = models.CharField(max_length=255,null=True, blank=True)
     description = models.CharField(null=True, blank=True)
     picture = models.ImageField(upload_to="parts/", null=True, blank=True)
-    category = models.ForeignKey("PartCategory", on_delete=models.PROTECT, related_name="parts")
-    manufacturer = models.ForeignKey("PartManufacturer", on_delete=models.PROTECT, related_name="parts")
+    category = models.ForeignKey("PartCategory", null=True, on_delete=models.PROTECT, related_name="parts")
+    manufacturer = models.ForeignKey("PartManufacturer", null=True, on_delete=models.PROTECT, related_name="parts")
     
 class PartManufacturer(models.Model):
     """Part Manufacturer Model."""
     name = models.CharField(max_length=255)
     website = models.URLField(null=True, blank=True)
-    contact = models.ForeignKey(User, on_delete=models.PROTECT, related_name="manufacturers")
 
 class PartCategory(models.Model):
     """Part Category Model."""

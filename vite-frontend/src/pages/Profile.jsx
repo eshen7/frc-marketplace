@@ -20,6 +20,7 @@ const UserProfile = () => {
 
   const [formData, setFormData] = useState({
     full_name: "",
+    email: "",
     address: "",
     phone: "",
   });
@@ -117,6 +118,7 @@ const UserProfile = () => {
       setProfileData(data);
       setFormData({
         full_name: data.full_name || "",
+        email: data.email || "",
         address: data.formatted_address?.raw || "",
         phone: data.phone || "",
       });
@@ -285,6 +287,17 @@ const UserProfile = () => {
                         </div>
                         <div>
                           <TextField
+                            type="text"
+                            id="email-input"
+                            label="Email"
+                            name="email"
+                            value={formData.email}
+                            onChange={(e) => handleInputChange("email", e.target.value)}
+                            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
+                          />
+                        </div>
+                        <div>
+                          <TextField
                             type="tel"
                             id="phoneNumber"
                             label="Phone Number"
@@ -311,34 +324,6 @@ const UserProfile = () => {
                       </form>
                     </>
                   )}
-                </div>
-
-                {/* Uneditable Information */}
-                <div className="bg-white shadow-md rounded-lg p-6">
-                  {loading || !profileData ? (
-                    <>
-                      <Skeleton className='' />
-                    </>
-                  ) : (
-                    <>
-                      <h2 className="text-xl font-semibold mb-4">Uneditable Information</h2>
-                      <div className="space-y-4">
-                        <div>
-                          <h3 className="text-sm font-medium text-gray-700">Email</h3>
-                          <p className="mt-1 py-2">{profileData.email}</p>
-                        </div>
-                        <div>
-                          <h3 className="text-sm font-medium text-gray-700">Team Name</h3>
-                          <p className="mt-1 py-2">{profileData.team_name}</p>
-                        </div>
-                        <div>
-                          <h3 className="text-sm font-medium text-gray-700">Team Number</h3>
-                          <p className="mt-1 py-2">{profileData.team_number}</p>
-                        </div>
-                      </div>
-                    </>
-                  )}
-
                 </div>
 
                 {/* Password Change */}
@@ -394,6 +379,30 @@ const UserProfile = () => {
                       Change Password
                     </Button>
                   </form>
+                </div>
+
+                {/* Uneditable Information */}
+                <div className="bg-white shadow-md rounded-lg p-6">
+                  {loading || !profileData ? (
+                    <>
+                      <Skeleton className='' />
+                    </>
+                  ) : (
+                    <>
+                      <h2 className="text-xl font-semibold mb-4">Uneditable Information</h2>
+                      <div className="space-y-4">
+                        <div>
+                          <h3 className="text-sm font-medium text-gray-700">Team Name</h3>
+                          <p className="mt-1 py-2">{profileData.team_name}</p>
+                        </div>
+                        <div>
+                          <h3 className="text-sm font-medium text-gray-700">Team Number</h3>
+                          <p className="mt-1 py-2">{profileData.team_number}</p>
+                        </div>
+                      </div>
+                    </>
+                  )}
+
                 </div>
 
                 {/* Delete Account */}
