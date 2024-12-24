@@ -35,6 +35,8 @@ services:
     depends_on:
       - db # waits for database to be ready
       - redis
+    volumes:
+      - django_migrations:/usr/local/app/api/migrations # for persistent migrations
   
   frontend_app:
     build: vite-frontend
