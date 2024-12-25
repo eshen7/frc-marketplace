@@ -34,27 +34,27 @@ const NewPartForm = ({ open, onClose, loading }) => {
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState("");
 
+  const fetchCategories = async () => {
+    try {
+      const response = await axiosInstance.get("parts/categories/");
+      setCategories(response.data);
+    } catch (error) {
+      console.error("Error fetching categories:", error);
+      setCategories([]);
+    }
+  };
+
+  const fetchManufacturers = async () => {
+    try {
+      const response = await axiosInstance.get("parts/manufacturers/");
+      setManufacturers(response.data);
+    } catch (error) {
+      console.error("Error fetching manufacturers:", error);
+      setManufacturers([]);
+    }
+  };
+
   useEffect(() => {
-    const fetchCategories = async () => {
-      try {
-        const response = await axiosInstance.get("parts/categories/");
-        setCategories(response.data);
-      } catch (error) {
-        console.error("Error fetching categories:", error);
-        setCategories([]);
-      }
-    };
-
-    const fetchManufacturers = async () => {
-      try {
-        const response = await axiosInstance.get("parts/manufacturers/");
-        setManufacturers(response.data);
-      } catch (error) {
-        console.error("Error fetching manufacturers:", error);
-        setManufacturers([]);
-      }
-    };
-
     fetchCategories();
     fetchManufacturers();
   }, []);
@@ -90,32 +90,16 @@ const NewPartForm = ({ open, onClose, loading }) => {
     }
   };
 
-  const handleCreateManufacturer = async (manufacturerData) => {
-    try {
-      const response = await axiosInstance.post(
-        "parts/manufacturers/",
-        manufacturerData
-      );
-      setManufacturers([...manufacturers, response.data]);
-      setPartData((prev) => ({ ...prev, manufacturer_id: response.data.id }));
-      setManufacturerDialogOpen(false);
-    } catch (error) {
-      setError("Failed to create new manufacturer");
-    }
+  const handleManufacturerSuccess = (newManufacturer) => {
+    setPartData((prev) => ({ ...prev, manufacturer_id: newManufacturer.id }));
+    setManufacturerDialogOpen(false);
+    fetchManufacturers();
   };
 
-  const handleCreateCategory = async (categoryData) => {
-    try {
-      const response = await axiosInstance.post(
-        "parts/categories/",
-        categoryData
-      );
-      setCategories([...categories, response.data]);
-      setPartData((prev) => ({ ...prev, category_id: response.data.id }));
-      setCategoryDialogOpen(false);
-    } catch (error) {
-      setError("Failed to create new category");
-    }
+  const handleCategorySuccess = (newCategory) => {
+    setPartData((prev) => ({ ...prev, category_id: newCategory.id }));
+    setCategoryDialogOpen(false);
+    fetchCategories();
   };
 
   return (
@@ -142,7 +126,7 @@ const NewPartForm = ({ open, onClose, loading }) => {
           <FormControl fullWidth margin="dense">
             <InputLabel>Manufacturer</InputLabel>
             <Select
-              value={partData.manufacturer_id}
+              value={partData.manufacturer_id || ""}  // Add fallback to empty string
               label="Manufacturer"
               onChange={handleChange("manufacturer_id")}
             >
@@ -166,7 +150,7 @@ const NewPartForm = ({ open, onClose, loading }) => {
           <FormControl fullWidth margin="dense">
             <InputLabel>Category</InputLabel>
             <Select
-              value={partData.category_id}
+              value={partData.category_id || ""}  // Add fallback to empty string
               label="Category"
               onChange={handleChange("category_id")}
             >
@@ -201,14 +185,14 @@ const NewPartForm = ({ open, onClose, loading }) => {
       <NewManufacturerForm
         open={manufacturerDialogOpen}
         onClose={() => setManufacturerDialogOpen(false)}
-        onCreate={handleCreateManufacturer}
+        onSuccess={handleManufacturerSuccess}
         loading={loading}
       />
 
       <NewCategoryForm
         open={categoryDialogOpen}
         onClose={() => setCategoryDialogOpen(false)}
-        onCreate={handleCreateCategory}
+        onSuccess={handleCategorySuccess}
         loading={loading}
       />
     </>
