@@ -8,103 +8,9 @@ import Fuse from "fuse.js";
 import ItemCard from "../components/ItemCard";
 import { getDaysUntil } from "../utils/utils";
 
-// Mock data for requests
-const allRequests = [
-    // {
-    //   id: 1, part_name: "CIM Motor", user: {
-    //     team_number: 1234, team_name: "Robo Wizards", "formatted_address": {
-    //       "raw": "5951 Village Center Loop Rd, San Diego, CA 92130, USA",
-    //       "latitude": 32.9582122,
-    //       "longitude": -117.189548
-    //     },
-    //   }, distance: 2, needed_date: new Date(2024, 10, 30), coverPhoto: "/IMG_6769.jpg"
-    // },
-    // {
-    //   id: 2, part_name: "Pneumatic Cylinder", user: {
-    //     team_number: 5678, team_name: "Tech Titans", "formatted_address": {
-    //       "raw": "5951 Village Center Loop Rd, San Diego, CA 92130, USA",
-    //       "latitude": 32.9582122,
-    //       "longitude": -117.189548
-    //     },
-    //   }, distance: 5, needed_date: new Date(2024, 10, 28), coverPhoto: "/IMG_6769.jpg"
-    // },
-    // {
-    //   id: 3, part_name: "Talon SRX", user: {
-    //     team_number: 9101, team_name: "Gear Guardians", "formatted_address": {
-    //       "raw": "5951 Village Center Loop Rd, San Diego, CA 92130, USA",
-    //       "latitude": 32.9582122,
-    //       "longitude": -117.189548
-    //     },
-    //   }, distance: 10, needed_date: new Date(2024, 10, 27), coverPhoto: "/IMG_6769.jpg"
-    // },
-    // {
-    //   id: 4, part_name: "Encoder", user: {
-    //     team_number: 2468, team_name: "Binary Builders", "formatted_address": {
-    //       "raw": "5951 Village Center Loop Rd, San Diego, CA 92130, USA",
-    //       "latitude": 32.9582122,
-    //       "longitude": -117.189548
-    //     },
-    //   }, distance: 15, needed_date: new Date(2024, 11, 5), coverPhoto: "/IMG_6769.jpg"
-    // },
-    // {
-    //   id: 5, part_name: "Battery", user: {
-    //     team_number: 1357, team_name: "Power Pioneers", "formatted_address": {
-    //       "raw": "5951 Village Center Loop Rd, San Diego, CA 92130, USA",
-    //       "latitude": 32.9582122,
-    //       "longitude": -117.189548
-    //     },
-    //   }, distance: 8, needed_date: new Date(2024, 11, 2), coverPhoto: "/IMG_6769.jpg"
-    // },
-    // {
-    //   id: 6, part_name: "Wheels", user: {
-    //     team_number: 3690, team_name: "Rolling Rangers", "formatted_address": {
-    //       "raw": "5951 Village Center Loop Rd, San Diego, CA 92130, USA",
-    //       "latitude": 32.9582122,
-    //       "longitude": -117.189548
-    //     },
-    //   }, distance: 12, needed_date: new Date(2024, 11, 10), coverPhoto: "/IMG_6769.jpg"
-    // },
-    // {
-    //   id: 7, part_name: "Gearbox", user: {
-    //     team_number: 4812, team_name: "Torque Troopers", "formatted_address": {
-    //       "raw": "5951 Village Center Loop Rd, San Diego, CA 92130, USA",
-    //       "latitude": 32.9582122,
-    //       "longitude": -117.189548
-    //     },
-    //   }, distance: 18, needed_date: new Date(2024, 11, 15), coverPhoto: "/IMG_6769.jpg"
-    // },
-    // {
-    //   id: 8, part_name: "Camera", user: {
-    //     team_number: 7531, team_name: "Vision Voyagers", "formatted_address": {
-    //       "raw": "5951 Village Center Loop Rd, San Diego, CA 92130, USA",
-    //       "latitude": 32.9582122,
-    //       "longitude": -117.189548
-    //     },
-    //   }, distance: 7, needed_date: new Date(2024, 11, 8), coverPhoto: "/IMG_6769.jpg"
-    // },
-    // {
-    //   id: 9, part_name: "Servo Motor", user: {
-    //     team_number: 9876, team_name: "Precision Pilots", "formatted_address": {
-    //       "raw": "5951 Village Center Loop Rd, San Diego, CA 92130, USA",
-    //       "latitude": 32.9582122,
-    //       "longitude": -117.189548
-    //     },
-    //   }, distance: 3, needed_date: new Date(2024, 10, 29), coverPhoto: "/IMG_6769.jpg"
-    // },
-    // {
-    //   id: 10, part_name: "Limit Switch", user: {
-    //     team_number: 2345, team_name: "Sensor Squad", "formatted_address": {
-    //       "raw": "5951 Village Center Loop Rd, San Diego, CA 92130, USA",
-    //       "latitude": 32.9582122,
-    //       "longitude": -117.189548
-    //     },
-    //   }, distance: 20, needed_date: new Date(2024, 11, 20), coverPhoto: "/IMG_6769.jpg"
-    // },
-  ];
-
 // Fuse.js options
 const fuseOptions = {
-  keys: ["part_name", "user.team_name", "user.team_number"],
+  keys: ["part_name"],
   threshold: 0.3,
   ignoreLocation: true,
 };
@@ -115,6 +21,7 @@ const AllRequests = () => {
   const [sortBy, setSortBy] = useState("newest");
   const [showFilters, setShowFilters] = useState(false);
   const [selectedCategories, setSelectedCategories] = useState([]);
+  const [allCategories, setAllCategories] = useState([]);
 
   const [user, setUser] = useState(null);
   const [loadingUser, setLoadingUser] = useState(true);
@@ -123,56 +30,105 @@ const AllRequests = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const response = await axiosInstance.get("/requests/");
-        setItems(Array.isArray(response.data) ? response.data : []); // Ensure it's an array
-        setLoading(false);
-      } catch (err) {
-        setError("Failed to fetch data");
-        setLoading(false);
-      }
-    };
-
-    fetchData();
-  }, []);
+  const fetchData = async () => {
+    try {
+      const response = await axiosInstance.get("/requests/");
+      setItems(Array.isArray(response.data) ? response.data : []); // Ensure it's an array
+      setLoading(false);
+    } catch (err) {
+      setError("Failed to fetch data");
+      setLoading(false);
+    }
+  };
 
   const fetchUser = async () => {
     try {
-      const response = await axiosInstance.get('/users/self/');
+      const response = await axiosInstance.get("/users/self/");
       const data = response.data;
 
       if (!data || !data.formatted_address) {
-        throw new Error('Address or coordinates not found');
+        throw new Error("Address or coordinates not found");
       }
 
       setUser(data);
       setLoadingUser(false);
-    }
-    catch (error) {
-      console.error('Error fetching User Data:', error);
+    } catch (error) {
+      console.error("Error fetching User Data:", error);
       setLoadingUser(false);
     }
   };
 
+  const fetchCategories = async () => {
+    try {
+      const response = await axiosInstance.get("/parts/categories/");
+      setAllCategories(response.data);
+    } catch (error) {
+      console.error("Error fetching categories:", error);
+      setAllCategories([]);
+    }
+  };
+
+  const calculateDistanceForAll = (items) => {
+    items.map((item) => {
+      if (
+        !item.user ||
+        !item.user.formatted_address.latitude ||
+        !item.user.formatted_address.longitude
+      ) {
+        return { ...item, distance: Infinity };
+      }
+
+      const user_latitude = user.formatted_address.latitude;
+      const user_longitude = user.formatted_address.longitude;
+      const item_latitude = item.user.formatted_address.latitude;
+      const item_longitude = item.user.formatted_address.longitude;
+
+      const distance = Math.sqrt(
+        Math.pow(Math.abs(user_latitude - item_latitude), 2) +
+          Math.pow(Math.abs(user_longitude - item_longitude), 2)
+      );
+      item.distance = Math.round(distance);
+      setItems([...items]);
+    });
+  };
+
+  const calculateDistanceForSingle = (item) => {
+    if (
+      !item.user ||
+      !item.user.formatted_address.latitude ||
+      !item.user.formatted_address.longitude
+    ) {
+      return { ...item, distance: Infinity };
+    }
+    const user_latitude = user.formatted_address.latitude;
+    const user_longitude = user.formatted_address.longitude;
+    const item_latitude = item.user.formatted_address.latitude;
+    const item_longitude = item.user.formatted_address.longitude;
+
+    const distance = Math.sqrt(
+      Math.pow(Math.abs(user_latitude - item_latitude), 2) +
+        Math.pow(Math.abs(user_longitude - item_longitude), 2)
+    );
+    return { ...item, distance: Math.round(distance) };
+  };
+
   useEffect(() => {
-    fetchUser();
-  }, []);
+    const setupPage = async () => {
+      try {
+        await fetchUser(); // Fetch user first
+        await fetchData(); // Then fetch items
+        await fetchCategories();
+        if (user && items) calculateDistanceForAll(items);
+      } catch (error) {
+        console.error("Error fetching data:", error);
+      }
+    };
 
-  const categories = [
-    "Motors",
-    "Electronics",
-    "Pneumatics",
-    "Mechanical",
-    "Sensors",
-    "Controls",
-    "Batteries",
-    "Other",
-  ];
+    setupPage();
+  }, []); // Run once on component mount
 
-  // Create a memoized instance of Fuse
-  const fuse = useMemo(() => new Fuse(items, fuseOptions), []);
+  // Update Fuse instance to include new items when they change
+  const fuse = useMemo(() => new Fuse(items, fuseOptions), [items]);
 
   // Get filtered results based on search term and other filters
   const getFilteredResults = () => {
@@ -183,26 +139,31 @@ const AllRequests = () => {
       results = fuse.search(searchTerm).map((result) => result.item);
     }
 
-    // Apply distance filter
-    results = results.filter((request) => request.distance <= distance);
+    // Apply distance filter if distance exists
+    if (distance && user) {
+      results = results.filter((request) => {
+        const item = calculateDistanceForSingle(request);
+        return item.distance <= distance;
+      });
+    }
 
     // Apply category filter if any categories are selected
     if (selectedCategories.length > 0) {
-      results = results.filter((request) =>
-        // Note: You'll need to add a category field to your request objects
-        selectedCategories.includes(request.category)
+      results = results.filter(
+        (request) =>
+          request.category && selectedCategories.includes(request.category)
       );
     }
 
     // Apply sorting
     results.sort((a, b) => {
       switch (sortBy) {
-        case "newest":
-          return b.dueDate - a.dueDate;
-        case "closest":
-          return a.distance - b.distance;
         case "urgent":
-          return getDaysUntil(a.dueDate) - getDaysUntil(b.dueDate);
+          return getDaysUntil(a.due_date) - getDaysUntil(b.due_date);
+        case "newest":
+          return new Date(b.created_at) - new Date(a.created_at);
+        case "closest":
+          return (a.distance || Infinity) - (b.distance || Infinity);
         default:
           return 0;
       }
@@ -211,9 +172,10 @@ const AllRequests = () => {
     return results;
   };
 
+  // Update filteredRequests dependencies
   const filteredRequests = useMemo(
     () => getFilteredResults(),
-    [searchTerm, distance, selectedCategories, sortBy]
+    [items, searchTerm, distance, selectedCategories, sortBy, fuse]
   );
 
   return (
@@ -282,9 +244,9 @@ const AllRequests = () => {
                     Categories
                   </label>
                   <div className="mt-1 flex flex-wrap gap-2">
-                    {categories.map((category) => (
+                    {allCategories.map((category) => (
                       <button
-                        key={category}
+                        key={category.id}
                         onClick={() => {
                           setSelectedCategories((prev) =>
                             prev.includes(category)
@@ -292,12 +254,13 @@ const AllRequests = () => {
                               : [...prev, category]
                           );
                         }}
-                        className={`px-3 py-1 rounded-full text-sm ${selectedCategories.includes(category)
-                          ? "bg-blue-500 text-white"
-                          : "bg-gray-100 text-gray-800"
-                          }`}
+                        className={`px-3 py-1 text-sm ${
+                          selectedCategories.includes(category)
+                            ? "bg-blue-500 text-white"
+                            : "bg-gray-100 text-gray-800"
+                        }`}
                       >
-                        {category}
+                        {category.name}
                       </button>
                     ))}
                   </div>
@@ -310,57 +273,27 @@ const AllRequests = () => {
 
       <div className="flex flex-col flex-grow bg-gray-100 font-sans p-8">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-          {filteredRequests && !loadingUser ? (
-            <>
-              {filteredRequests.map((request) => (
-                <ItemCard key={request.id} currentUser={user} item={request} type="request" />
-              ))}
-            </>
-          ) : loadingUser ? (
-            <p>Loading</p>
-          ) : error ? (
-            <p>Error... {error} </p>
+          {!loading && !loadingUser ? (
+            filteredRequests.length > 0 ? (
+              filteredRequests.map((request) => (
+                <ItemCard
+                  key={request.id}
+                  currentUser={user}
+                  item={request}
+                  type="request"
+                />
+              ))
+            ) : (
+              <div className="col-span-full text-center text-gray-500">
+                No results found
+              </div>
+            )
           ) : (
-            <p>blah blah ig</p>
-          )
-          }
-        </div>
-
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-          {items && !loading && !loadingUser ? (
-            <>
-              {items.map((request) => (
-                <ItemCard key={request.id} currentUser={user} item={request} type="request" />
-              ))}
-            </>
-          ) : loadingUser || loading ? (
-            <p>Loading</p>
-          ) : error ? (
-            <p>Error... {error} </p>
-          ) : (
-            <p>blah blah ig</p>
-          )
-          }
-
-        </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-          {filteredRequests && !loading && !loadingUser ? (
-            <>
-              {filteredRequests.map((request) => (
-                <ItemCard key={request.id} currentUser={user} item={request} type="request" />
-              ))}
-            </>
-          ) : loadingUser || loading ? (
-            <p>Loading</p>
-          ) : error ? (
-            <p>Error... {error} </p>
-          ) : (
-            <p>blah blah ig</p>
-          )
-          }
-
+            <div className="col-span-full text-center">Loading...</div>
+          )}
         </div>
       </div>
+
       <Footer />
     </div>
   );
