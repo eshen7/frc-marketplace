@@ -60,6 +60,34 @@ services:
       - .env
     restart: always # Restart automatically if the container stops
 
+  celery:
+    build: frc_marketplace_API
+    container_name: celery_worker
+    command: >
+      sh -c "pipenv run celery -A frc_marketplace_API worker --loglevel=info"
+    depends_on:
+      - backend_app
+      - redis
+    env_file:
+      - .env
+    environment:
+      - DJANGO_SETTINGS_MODULE=frc_marketplace_API.settings
+      - CELERY_BROKER_URL=redis://redis-server:${REDIS_PORT_CONTAINER}/0
+
+  celery_beat:
+    build: frc_marketplace_API
+    container_name: celery_beat
+    command: >
+      sh -c "pipenv run celery -A frc_marketplace_API beat --loglevel=info"
+    depends_on:
+      - backend_app
+      - redis
+    env_file:
+      - .env
+    environment:
+      - DJANGO_SETTINGS_MODULE=frc_marketplace_API.settings
+      - CELERY_BROKER_URL=redis://redis-server:${REDIS_PORT_CONTAINER}/0
+
 volumes:
   pgdata:
   pgadmin_data:

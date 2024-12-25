@@ -18,6 +18,10 @@ from .serializers import (
 from rest_framework.permissions import IsAuthenticated
 from django.db import models
 from django.core.paginator import Paginator
+from django.core.mail import send_mail
+from django.conf import settings
+from django.shortcuts import get_object_or_404
+from .tasks import send_email_task
 
 
 # Create your views here.
@@ -390,6 +394,15 @@ def message_post_view(request):
             receiver=receiver,
             message=message,
         )
+
+        # Use Celery to send the email asynchronously
+        if receiver.email:
+            send_email_task.delay(
+                subject=f"New Message from {sender.team_number}",
+                message=f"Hello {receiver.full_name},\n\nYou have received a new message from {sender.full_name} on team {sender.team_number}:\n\n{message.message}\n\n- FRC Marketplace Team",
+                from_email=settings.DEFAULT_FROM_EMAIL,
+                recipient_list=[receiver.email],
+            )
 
         serializer = MessageSerializer(message)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
