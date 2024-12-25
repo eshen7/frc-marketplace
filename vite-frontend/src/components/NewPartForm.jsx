@@ -13,112 +13,211 @@ import {
   FormControl,
   InputLabel,
 } from "@mui/material";
+import axiosInstance from "../utils/axiosInstance";
+import NewCategoryForm from "./NewCategoryForm";
+import NewManufacturerForm from "./NewManufacturerForm";
+import SuccessBanner from "./SuccessBanner";
+import ErrorBanner from "./ErrorBanner";
 
-const categories = [
-  "Motors",
-  "Electronics",
-  "Pneumatics",
-  "Mechanical",
-  "Sensors",
-  "Controls",
-  "Batteries",
-  "Other",
-];
-
-const manufacturers = ["VEX", "REV Robotics", "AndyMark"];
-
-const NewPartForm = ({ open, onClose, onCreate, loading }) => {
+const NewPartForm = ({ open, onClose, loading }) => {
+  const [categories, setCategories] = useState([]);
+  const [manufacturers, setManufacturers] = useState([]);
+  const [manufacturerDialogOpen, setManufacturerDialogOpen] = useState(false);
+  const [categoryDialogOpen, setCategoryDialogOpen] = useState(false);
   const [partData, setPartData] = useState({
     name: "",
-    manufacturer: "",
+    manufacturer_id: "",
+    category_id: "",
     partID: "",
     description: "",
-    category: "",
   });
+  const [success, setSuccess] = useState(false);
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const response = await axiosInstance.get("parts/categories/");
+        setCategories(response.data);
+      } catch (error) {
+        console.error("Error fetching categories:", error);
+        setCategories([]);
+      }
+    };
+
+    const fetchManufacturers = async () => {
+      try {
+        const response = await axiosInstance.get("parts/manufacturers/");
+        setManufacturers(response.data);
+      } catch (error) {
+        console.error("Error fetching manufacturers:", error);
+        setManufacturers([]);
+      }
+    };
+
+    fetchCategories();
+    fetchManufacturers();
+  }, []);
 
   const handleChange = (field) => (event) => {
+    if (field === "manufacturer_id" && event.target.value === "create") {
+      setManufacturerDialogOpen(true);
+      return;
+    }
+
+    if (field === "category_id" && event.target.value === "create") {
+      setCategoryDialogOpen(true);
+      return;
+    }
     setPartData((prev) => ({ ...prev, [field]: event.target.value }));
   };
 
-  const handleSubmit = () => {
-    onCreate(partData);
-    setPartData({ name: "", description: "", category: "" });
+  const handleSubmit = async () => {
+    try {
+      await axiosInstance.post("parts/", partData);
+      setSuccess(true);
+      setPartData({
+        name: "",
+        description: "",
+        category_id: "",
+        manufacturer_id: "",
+        partID: "",
+      });
+      onClose();
+    } catch (error) {
+      setError("Failed to create part. Please try again.");
+      console.error("Error creating part:", error);
+    }
+  };
+
+  const handleCreateManufacturer = async (manufacturerData) => {
+    try {
+      const response = await axiosInstance.post(
+        "parts/manufacturers/",
+        manufacturerData
+      );
+      setManufacturers([...manufacturers, response.data]);
+      setPartData((prev) => ({ ...prev, manufacturer_id: response.data.id }));
+      setManufacturerDialogOpen(false);
+    } catch (error) {
+      setError("Failed to create new manufacturer");
+    }
+  };
+
+  const handleCreateCategory = async (categoryData) => {
+    try {
+      const response = await axiosInstance.post(
+        "parts/categories/",
+        categoryData
+      );
+      setCategories([...categories, response.data]);
+      setPartData((prev) => ({ ...prev, category_id: response.data.id }));
+      setCategoryDialogOpen(false);
+    } catch (error) {
+      setError("Failed to create new category");
+    }
   };
 
   return (
-    <Dialog open={open} onClose={onClose} fullWidth maxWidth="sm">
-      <DialogTitle>Create New Part</DialogTitle>
-      <DialogContent>
-        <TextField
-          autoFocus
-          margin="dense"
-          label="Part Name"
-          fullWidth
-          value={partData.name}
-          onChange={handleChange("name")}
+    <>
+      {success && (
+        <SuccessBanner
+          message="Operation completed successfully!"
+          onClose={() => setSuccess(false)}
         />
-        <FormControl fullWidth margin="dense">
-          <InputLabel>Manufacturer</InputLabel>
-          <Select
-            value={partData.manufacturer}
-            label="Manufacturer"
-            onChange={handleChange("manufacturer")}
+      )}
+      {error && <ErrorBanner message={error} onClose={() => setError("")} />}
+
+      <Dialog open={open} onClose={onClose} fullWidth maxWidth="sm">
+        <DialogTitle>Create New Part</DialogTitle>
+        <DialogContent>
+          <TextField
+            autoFocus
+            margin="dense"
+            label="Part Name"
+            fullWidth
+            value={partData.name}
+            onChange={handleChange("name")}
           />
-          {manufacturers.map((manufacturer) => (
-            <MenuItem key={manufacturer} value={manufacturer}>
-              {manufacturer}
-            </MenuItem>
-          ))}
-        </FormControl>
-        <TextField
-          margin="dense"
-          label="Part ID"
-          fullWidth
-          multiline
-          value={partData.partID}
-          onChange={handleChange("description")}
-        />
-        <TextField
-          margin="dense"
-          label="Description"
-          fullWidth
-          multiline
-          rows={4}
-          value={partData.description}
-          onChange={handleChange("description")}
-        />
-        <FormControl fullWidth margin="dense">
-          <InputLabel>Category</InputLabel>
-          <Select
-            value={partData.category}
-            label="Category"
-            onChange={handleChange("category")}
-          >
-            {categories.map((category) => (
-              <MenuItem key={category} value={category}>
-                {category}
+          <FormControl fullWidth margin="dense">
+            <InputLabel>Manufacturer</InputLabel>
+            <Select
+              value={partData.manufacturer_id}
+              label="Manufacturer"
+              onChange={handleChange("manufacturer_id")}
+            >
+              {manufacturers.map((manufacturer) => (
+                <MenuItem key={manufacturer.id} value={manufacturer.id}>
+                  {manufacturer.name}
+                </MenuItem>
+              ))}
+              <MenuItem value="create">
+                <em>ADD NEW MANUFACTURER +</em>
               </MenuItem>
-            ))}
-          </Select>
-        </FormControl>
-      </DialogContent>
-      <DialogActions>
-        <Button onClick={onClose}>Cancel</Button>
-        <Button
-          onClick={handleSubmit}
-          disabled={loading || !partData.name || !partData.category}
-        >
-          {loading ? <CircularProgress size={24} /> : "Create"}
-        </Button>
-      </DialogActions>
-    </Dialog>
+            </Select>
+          </FormControl>
+          <TextField
+            margin="dense"
+            label="Part ID"
+            fullWidth
+            value={partData.partID}
+            onChange={handleChange("partID")}
+          />
+          <FormControl fullWidth margin="dense">
+            <InputLabel>Category</InputLabel>
+            <Select
+              value={partData.category_id}
+              label="Category"
+              onChange={handleChange("category_id")}
+            >
+              {categories.map((category) => (
+                <MenuItem key={category.id} value={category.id}>
+                  {category.name}
+                </MenuItem>
+              ))}
+              <MenuItem value="create">
+                <em>ADD NEW CATEGORY +</em>
+              </MenuItem>
+            </Select>
+          </FormControl>
+          <TextField
+            margin="dense"
+            label="Description"
+            fullWidth
+            multiline
+            rows={4}
+            value={partData.description}
+            onChange={handleChange("description")}
+          />
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={onClose}>Cancel</Button>
+          <Button onClick={handleSubmit} disabled={loading}>
+            {loading ? <CircularProgress size={24} /> : "Submit"}
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      <NewManufacturerForm
+        open={manufacturerDialogOpen}
+        onClose={() => setManufacturerDialogOpen(false)}
+        onCreate={handleCreateManufacturer}
+        loading={loading}
+      />
+
+      <NewCategoryForm
+        open={categoryDialogOpen}
+        onClose={() => setCategoryDialogOpen(false)}
+        onCreate={handleCreateCategory}
+        loading={loading}
+      />
+    </>
   );
 };
 
 NewPartForm.propTypes = {
   open: PropTypes.bool.isRequired,
   onClose: PropTypes.func.isRequired,
-  onCreate: PropTypes.func.isRequired,
   loading: PropTypes.bool.isRequired,
 };
 

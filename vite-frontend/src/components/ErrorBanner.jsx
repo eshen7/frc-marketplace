@@ -29,7 +29,7 @@ const ErrorBanner = ({ message, onClose }) => {
         sx={{
           mt: 2,
           maxWidth: "md",
-          width: "35%",
+          width: "45%",
           boxShadow: 2,
         }}
         action={

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from "react";
 // Material UI imports
 import {
   Box,
@@ -9,35 +9,34 @@ import {
   MenuItem,
   Select,
   TextField,
-} from '@mui/material';
+} from "@mui/material";
 // Date handling
-import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
-import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
-import { DatePicker } from '@mui/x-date-pickers/DatePicker';
+import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
+import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
+import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 // Components
-import TopBar from '../components/TopBar';
-import Footer from '../components/Footer';
-import SuccessBanner from '../components/SuccessBanner';
-import ErrorBanner from '../components/ErrorBanner';
-import NewPartForm from '../components/NewPartForm';
+import TopBar from "../components/TopBar";
+import Footer from "../components/Footer";
+import SuccessBanner from "../components/SuccessBanner";
+import ErrorBanner from "../components/ErrorBanner";
+import NewPartForm from "../components/NewPartForm";
 // Utils
-import axiosInstance from '../utils/axiosInstance';
-
+import axiosInstance from "../utils/axiosInstance";
 
 const INITIAL_FORM_STATE = {
   quantity: 1,
-  neededFor: '',
-  additionalInfo: '',
+  neededFor: "",
+  additionalInfo: "",
 };
 
 const PartRequestForm = () => {
   const [parts, setParts] = useState([]);
-  const [selectedPart, setSelectedPart] = useState('');
+  const [selectedPart, setSelectedPart] = useState("");
   const [dateNeeded, setDateNeeded] = useState(null);
   const [formData, setFormData] = useState(INITIAL_FORM_STATE);
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
   const [isNewPartFormOpen, setIsNewPartFormOpen] = useState(false);
 
   useEffect(() => {
@@ -46,11 +45,11 @@ const PartRequestForm = () => {
 
   const fetchParts = async () => {
     try {
-      const { data } = await axiosInstance.get('/parts/');
+      const { data } = await axiosInstance.get("/parts/");
       setParts(data);
     } catch (error) {
-      setError('Failed to fetch parts list');
-      console.error('Error fetching parts:', error);
+      setError("Failed to fetch parts list");
+      console.error("Error fetching parts:", error);
     }
   };
 
@@ -64,7 +63,7 @@ const PartRequestForm = () => {
     if (!selectedPart || !dateNeeded) return;
 
     setLoading(true);
-    setError('');
+    setError("");
 
     try {
       const requestData = {
@@ -72,55 +71,39 @@ const PartRequestForm = () => {
         quantity: formData.quantity,
         needed_for: formData.neededFor,
         additional_info: formData.additionalInfo,
-        needed_date: new Date(dateNeeded).toISOString().split('T')[0],
+        needed_date: new Date(dateNeeded).toISOString().split("T")[0],
       };
 
-      await axiosInstance.post('/requests/', requestData);
+      await axiosInstance.post("/requests/", requestData);
       setSuccess(true);
-      setSelectedPart('');
+      setSelectedPart("");
       setFormData(INITIAL_FORM_STATE);
       setDateNeeded(null);
     } catch (error) {
-      setError('Failed to submit request. Please try again.');
-      console.error('Error submitting request:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleCreatePart = async (partData) => {
-    setLoading(true);
-    try {
-      const { data: newPart } = await axiosInstance.post('/parts/', partData);
-      setParts((prev) => [...prev, newPart]);
-      setSelectedPart(newPart.id);
-      setIsNewPartFormOpen(false);
-      setSuccess(true);
-    } catch (error) {
-      setError('Failed to create new part');
-      console.error('Error creating part:', error);
+      setError("Failed to submit request. Please try again.");
+      console.error("Error submitting request:", error);
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <Box sx={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
+    <Box sx={{ minHeight: "100vh", display: "flex", flexDirection: "column" }}>
       {success && (
         <SuccessBanner
           message="Operation completed successfully!"
           onClose={() => setSuccess(false)}
         />
       )}
-      {error && <ErrorBanner message={error} onClose={() => setError('')} />}
-      
+      {error && <ErrorBanner message={error} onClose={() => setError("")} />}
+
       <TopBar />
-      
-      <Box sx={{ flexGrow: 1, maxWidth: 600, mx: 'auto', px: 2, py: 4 }}>
+
+      <Box sx={{ flexGrow: 1, maxWidth: 600, mx: "auto", px: 2, py: 4 }}>
         <h1 className="text-7xl text-center mt-[80px] mb-[80px] font-paytone text-[#AE0000] font-extrabold text-shadow-md">
           Make a Request
         </h1>
-        
+
         <form onSubmit={handleSubmit}>
           <FormControl fullWidth margin="normal">
             <InputLabel id="part-select-label">Part</InputLabel>
@@ -157,7 +140,7 @@ const PartRequestForm = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
             <LocalizationProvider dateAdapter={AdapterDateFns}>
               <DatePicker
-                label="Need the part by*"
+                label="Need the part by"
                 value={dateNeeded}
                 onChange={setDateNeeded}
                 slotProps={{ textField: { fullWidth: true } }}
@@ -196,11 +179,10 @@ const PartRequestForm = () => {
         <NewPartForm
           open={isNewPartFormOpen}
           onClose={() => setIsNewPartFormOpen(false)}
-          onCreate={handleCreatePart}
           loading={loading}
         />
       </Box>
-      
+
       <Footer />
     </Box>
   );

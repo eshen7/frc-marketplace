@@ -194,6 +194,8 @@ def manufacturer_view(request):
         serializer = PartManufacturerSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save()
+            return Response(request.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 @api_view(["GET", "POST"])
@@ -207,6 +209,8 @@ def category_view(request):
         serializer = PartCategorySerializer(data=request.data)
         if serializer.is_valid():
             serializer.save()
+            return Response(request.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 @api_view(["GET", "POST"])
@@ -219,7 +223,7 @@ def part_views(request):
     if request.method == "POST":
         serializer = PartSerializer(data=request.data)
         if serializer.is_valid():
-            serializer.save()  # Save the new part to the database
+            serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
@@ -235,7 +239,6 @@ def part_request_views(request):
 
     if request.method == "POST":
         user_uuid = request.headers.get("X-User-UUID")
-        user_csrftoken = request.headers.get("X-CSRFToken")
         try:
             user = User.objects.get(UUID=user_uuid)
         except User.DoesNotExist:

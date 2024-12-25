@@ -132,17 +132,38 @@ class UserSerializer(serializers.ModelSerializer):
 class PartSerializer(serializers.ModelSerializer):
     """Serializer for the Part model."""
 
+    manufacturer_id = serializers.PrimaryKeyRelatedField(
+        queryset=PartManufacturer.objects.all(), source="manufacturer"
+    )
+    category_id = serializers.PrimaryKeyRelatedField(
+        queryset=PartCategory.objects.all(), source="category"
+    )
+
     class Meta:
         model = Part
         fields = [
             "id",
             "name",
-            "part_id",
-            "manufacturer",
-            "category",
-            "description",
-            "picture",
+            "manufacturer_id",
+            "category_id",
+            "model_id",
         ]
+
+    def create(self, validated_data):
+        """Create a new Part instance."""
+        manufacturer = validated_data.pop("manufacturer")
+        category = validated_data.pop("category")
+        part = Part.objects.create(
+            manufacturer=manufacturer, category=category, **validated_data
+        )
+        return part
+
+    def to_representation(self, instance):
+        """Customize the serialized output."""
+        data = super().to_representation(instance)
+        data["manufacturer_name"] = instance.manufacturer.name
+        data["category"] = instance.category.name
+        return data
 
 
 class PartManufacturerSerializer(serializers.ModelSerializer):
@@ -150,14 +171,15 @@ class PartManufacturerSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = PartManufacturer
-        fields = ["name", "website","contact"]
+        fields = ["id", "name", "website"]
+
 
 class PartCategorySerializer(serializers.ModelSerializer):
     """Serializer for the PartCategory model."""
 
     class Meta:
         model = PartCategory
-        fields = ["name"]
+        fields = ["id", "name"]
 
 
 class PartRequestSerializer(serializers.ModelSerializer):
@@ -192,11 +214,7 @@ class PartRequestSerializer(serializers.ModelSerializer):
         data = super().to_representation(instance)
 
         # Optionally include `user` or other computed fields here
-        data["part_id"] = instance.part.id  # Include the part's ID in the output
         data["part_name"] = instance.part.name  # Optionally include the part name
-        data["part_description"] = (
-            instance.part.description
-        )  # Optionally include the part name
         data["user"] = UserSerializer(instance.user).data  # Include user details
         return data
 

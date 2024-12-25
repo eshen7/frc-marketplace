@@ -73,25 +73,34 @@ class User(AbstractBaseUser, PermissionsMixin):
 class Part(models.Model):
     """Part Model."""
 
-    name = models.CharField(max_length=255)
-    part_id = models.CharField(max_length=255,null=True, blank=True)
+    name = models.CharField(max_length=255, null=False, blank=False)
+    model_id = models.CharField(max_length=255, null=True, blank=True)
     description = models.CharField(null=True, blank=True)
     picture = models.ImageField(upload_to="parts/", null=True, blank=True)
-    category = models.ForeignKey("PartCategory", on_delete=models.PROTECT, related_name="parts")
-    manufacturer = models.ForeignKey("PartManufacturer", on_delete=models.PROTECT, related_name="parts")
-    
+    category = models.ForeignKey(
+        "PartCategory", on_delete=models.PROTECT, related_name="parts", null=True
+    )
+    manufacturer = models.ForeignKey(
+        "PartManufacturer", on_delete=models.PROTECT, related_name="parts", null=True
+    )
+
+
 class PartManufacturer(models.Model):
     """Part Manufacturer Model."""
-    name = models.CharField(max_length=255)
+
+    name = models.CharField(max_length=255, unique=True)
     website = models.URLField(null=True, blank=True)
-    contact = models.ForeignKey(User, on_delete=models.PROTECT, related_name="manufacturers")
+
 
 class PartCategory(models.Model):
     """Part Category Model."""
-    name = models.CharField(max_length=255)
+
+    name = models.CharField(max_length=255, unique=True)
+
 
 class PartRequest(models.Model):
     """Part Request Model."""
+
     part = models.ForeignKey(Part, on_delete=models.PROTECT, related_name="requests")
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="requests")
     quantity = models.IntegerField(default=1)
@@ -100,13 +109,19 @@ class PartRequest(models.Model):
     needed_for = models.CharField(max_length=255, null=True, blank=True)
     additional_info = models.TextField(null=True, blank=True)
 
+
 class Message(models.Model):
     """Message Model."""
+
     id = models.UUIDField(primary_key=True, unique=True)
-    sender = models.ForeignKey(User, related_name='sent_messages', on_delete=models.CASCADE)
-    receiver = models.ForeignKey(User, related_name='received_messages', on_delete=models.CASCADE)
+    sender = models.ForeignKey(
+        User, related_name="sent_messages", on_delete=models.CASCADE
+    )
+    receiver = models.ForeignKey(
+        User, related_name="received_messages", on_delete=models.CASCADE
+    )
     message = models.TextField()
     timestamp = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return f'{self.sender} to {self.receiver}: {self.message}'
+        return f"{self.sender} to {self.receiver}: {self.message}"
