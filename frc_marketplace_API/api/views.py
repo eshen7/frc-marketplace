@@ -24,6 +24,25 @@ from django.shortcuts import get_object_or_404
 from .tasks import send_email_task
 
 
+@api_view(["GET"])
+def search_all_view(request):
+    """View for searching EVERYTHING"""
+    if request.method == "GET":
+        total_data = {}
+        users = User.objects.all()
+        parts = Part.objects.all()
+        requests = PartRequest.objects.all()
+        user_serializer = UserSerializer(users, many=True)
+        part_serializer = PartSerializer(parts, many=True)
+        request_serializer = PartRequestSerializer(requests, many=True)
+
+        total_data["users"] = user_serializer.data
+        total_data["parts"] = part_serializer.data
+        total_data["requests"] = request_serializer.data
+        return Response(total_data, status=status.HTTP_200_OK)
+    return JsonResponse({"error": "Only GET requests are allowed"}, status=405)
+
+
 # Create your views here.
 @api_view(["GET", "POST"])
 def user_views(request):

@@ -14,7 +14,7 @@ import { FaTimes, FaPlus, FaHandHolding, FaStore, FaWpforms, FaSignInAlt, FaSign
 import { MdHome } from "react-icons/md";
 import { CgProfile } from "react-icons/cg";
 import { LuMessageCircle } from "react-icons/lu";
-
+import SearchBar from "./SearchBar";
 
 const TopBar = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -79,6 +79,9 @@ const TopBar = () => {
           alt="3647 logo"
         />
       </a>
+      <div className="hidden sm:block">
+        <SearchBar />
+      </div>
       <div className="gap-5 whitespace-nowrap hidden sm:flex">
         <Button href="/requests" variant="contained" color="secondary">
           Requests

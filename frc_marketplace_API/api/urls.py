@@ -16,6 +16,7 @@ from .views import (
     requests_by_user_view,
     category_view,
     manufacturer_view,
+    search_all_view,
 )
 
 urlpatterns = [
@@ -47,4 +48,5 @@ urlpatterns = [
     path("message/", message_post_view, name="message_post_view"),
     path("parts/categories/", category_view),
     path("parts/manufacturers/", manufacturer_view),
+    path("search/all/", search_all_view, name="search_all_view"),
 ]
