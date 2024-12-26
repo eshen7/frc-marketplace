@@ -58,7 +58,6 @@ const Login = () => {
 
   async function handleSubmit() {
     const result = await login();
-    console.log(result);
     if (result.success) {
       // Store tokens in localStorage
       localStorage.setItem("authToken", result.access);

@@ -30,46 +30,37 @@ const Signup = () => {
   useEffect(() => {
     // Initialize Google Places Autocomplete
     const initAutocomplete = () => {
-      if (window.google && window.google.maps) {
-        const autocompleteInstance = new window.google.maps.places.Autocomplete(
-          document.getElementById("address-input"),
-          {
-            types: ["address"],
-          }
-        );
-
-        autocompleteInstance.addListener("place_changed", () => {
-          const place = autocompleteInstance.getPlace();
-          if (place.formatted_address) {
-            setFormData((prevData) => ({
-              ...prevData,
-              address: place.formatted_address,
-            }));
-          }
+      const input = document.getElementById("address-input");
+      if (input) {
+        const autocomplete = new window.google.maps.places.Autocomplete(input, {
+          types: ["address"],
+          componentRestrictions: { country: "us" }, // Adjust as needed
         });
 
-        setAutocomplete(autocompleteInstance);
+        autocomplete.addListener("place_changed", () => {
+          const place = autocomplete.getPlace();
+          if (place.formatted_address) {
+            handleChange("address", place.formatted_address);
+          }
+        });
       }
     };
 
-    // Load Google Places script if not already loaded
-    if (!window.google) {
+    if (window.google && window.google.maps) {
+      initAutocomplete();
+    } else {
+      const apiKey = import.meta.env.GOOGLE_API_KEY;
+      if (!apiKey) {
+        console.error("Google Maps API key is missing");
+        return;
+      }
       const script = document.createElement("script");
-      script.src = `https://maps.googleapis.com/maps/api/js?key=${process.env.GOOGLE_API_KEY}&libraries=places`;
+      script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&libraries=places`;
       script.async = true;
       script.defer = true;
       script.onload = initAutocomplete;
       document.head.appendChild(script);
-    } else {
-      initAutocomplete();
     }
-
-    // Cleanup
-    return () => {
-      if (autocomplete) {
-        window.google.maps.event.clearInstanceListeners(autocomplete);
-      }
-    };
   }, []);
 
   const validatePasswords = (password, confirmation) => {
@@ -95,7 +86,10 @@ const Signup = () => {
   };
 
   const handleSubmit = async (e) => {
-    const emptyFields = Object.entries(formData).filter(([key, value]) => value === "");
+    e.preventDefault();
+    const emptyFields = Object.entries(formData).filter(
+      ([key, value]) => value === ""
+    );
 
     if (emptyFields.length > 1) {
       // Create an error message listing the empty fields
@@ -130,141 +124,121 @@ const Signup = () => {
           <h1 className="text-5xl text-red-800 font-bold font-roboto text-center mb-[100px]">
             Sign up
           </h1>
-          <div className="flex flex-col gap-5">
-            <div className="w-2/3 mx-auto">
-              <TextField
-                id=""
-                required
-                name="name"
-                autoComplete="name"
-                type="text"
-                label="Head Mentor Full Name"
-                variant="outlined"
-                className="w-full"
-                value={formData.full_name}
-                onChange={(e) => handleChange("full_name", e.target.value)}
-              />
-            </div>
-            <div className="w-2/3 mx-auto">
-              <TextField
-                id=""
-                required
-                type="number"
-                label="Team Number"
-                variant="outlined"
-                className="w-full"
-                value={formData.team_number}
-                onChange={(e) => handleChange("team_number", e.target.value)}
-              />
-            </div>
-            <div className="w-2/3 mx-auto">
-              <TextField
-                id="address-input" // Important: This ID is used by Google Places
-                required
-                label="Address"
-                variant="outlined"
-                className="w-full"
-                value={formData.address}
-                onChange={(e) => handleChange("address", e.target.value)}
-                placeholder="Start typing your address..."
-              />
-            </div>
-            <div className="w-2/3 mx-auto">
-              <TextField
-                id=""
-                required
-                label="Email"
-                type="email"
-                variant="outlined"
-                className="w-full"
-                value={formData.email}
-
-                onChange={(e) => handleChange("email", e.target.value)}
-              />
-            </div>
-            <div className="w-2/3 mx-auto">
-              <TextField
-                id=""
-                required
-                label="Phone Number"
-                type="number"
-                variant="outlined"
-                className="w-full"
-                value={formData.phone}
-                onChange={(e) => handleChange("phone", e.target.value)}
-              />
-            </div>
-            <div className="w-2/3 mx-auto">
-              <TextField
-                id=""
-                required
-                label="Password"
-                variant="outlined"
-                className="w-full"
-                type="password"
-                autoComplete="current-password"
-                value={formData.password}
-                onChange={(e) => handleChange("password", e.target.value)}
-                error={!!passwordError}
-                helperText={passwordError}
-              />
-            </div>
-            <div className="w-2/3 mx-auto">
-              <TextField
-                id=""
-                required
-                label="Re-type Password"
-                variant="outlined"
-                className="w-full"
-                type="password"
-                autoComplete="current-password"
-                value={formData.passwordConfirmation}
-                onChange={(e) =>
-                  handleChange("passwordConfirmation", e.target.value)
-                }
-                error={!!passwordError}
-                helperText={passwordError}
-              />
-            </div>
-            <div className="w-2/3 mx-auto">
-              <TextField
-                id=""
-                required
-                label="Confirmation Code"
-                variant="outlined"
-                className="w-full"
-                value={formData.confirmationCode}
-                onChange={(e) =>
-                  handleChange("confirmationCode", e.target.value)
-                }
-              />
-            </div>
-
-            <div className="flex flex-row mx-10 justify-center">
-              <div className="w-1/2 flex justify-center">
-                <a href="login" className="text-blue-600 hover:text-blue-800">
-                  Sign In Instead
-                </a>
+          <form onSubmit={handleSubmit} className="signup-form">
+            <div className="flex flex-col gap-5">
+              <div className="w-2/3 mx-auto">
+                <TextField
+                  required
+                  name="name"
+                  autoComplete="name"
+                  type="text"
+                  label="Head Mentor Full Name"
+                  variant="outlined"
+                  className="w-full"
+                  value={formData.full_name}
+                  onChange={(e) => handleChange("full_name", e.target.value)}
+                />
               </div>
-              <div className="w-1/2 flex justify-center">
-                <Button
-                  variant="contained"
-                  type="submit"
-                  className="justify-end w-1/2 whitespace-nowrap"
-                  onClick={handleSubmit}
-                  disabled={!!passwordError}
-                >
-                  Sign up
-                </Button>
+              <div className="w-2/3 mx-auto">
+                <TextField
+                  required
+                  type="number"
+                  label="Team Number"
+                  variant="outlined"
+                  className="w-full"
+                  value={formData.team_number}
+                  onChange={(e) => handleChange("team_number", e.target.value)}
+                />
+              </div>
+              <div className="w-2/3 mx-auto">
+                <TextField
+                  id="address-input" // Important: This ID is used by Google Places
+                  required
+                  label="Address"
+                  variant="outlined"
+                  className="w-full"
+                  value={formData.address}
+                  onChange={(e) => handleChange("address", e.target.value)}
+                  placeholder="Start typing your address..."
+                />
+              </div>
+              <div className="w-2/3 mx-auto">
+                <TextField
+                  required
+                  label="Email"
+                  type="email"
+                  variant="outlined"
+                  className="w-full"
+                  value={formData.email}
+                  onChange={(e) => handleChange("email", e.target.value)}
+                  autoComplete="username" // Add this line
+                />
+              </div>
+              <div className="w-2/3 mx-auto">
+                <TextField
+                  required
+                  label="Phone Number"
+                  type="number"
+                  variant="outlined"
+                  className="w-full"
+                  value={formData.phone}
+                  onChange={(e) => handleChange("phone", e.target.value)}
+                />
+              </div>
+              <div className="w-2/3 mx-auto">
+                <TextField
+                  required
+                  label="Password"
+                  variant="outlined"
+                  className="w-full"
+                  type="password"
+                  autoComplete="current-password"
+                  value={formData.password}
+                  onChange={(e) => handleChange("password", e.target.value)}
+                  error={!!passwordError}
+                  helperText={passwordError}
+                />
+              </div>
+              <div className="w-2/3 mx-auto">
+                <TextField
+                  required
+                  label="Re-type Password"
+                  variant="outlined"
+                  className="w-full"
+                  type="password"
+                  autoComplete="current-password"
+                  value={formData.passwordConfirmation}
+                  onChange={(e) =>
+                    handleChange("passwordConfirmation", e.target.value)
+                  }
+                  error={!!passwordError}
+                  helperText={passwordError}
+                />
+              </div>
+              <div className="flex flex-row mx-10 justify-center">
+                <div className="w-1/2 flex justify-center">
+                  <a href="login" className="text-blue-600 hover:text-blue-800">
+                    Sign In Instead
+                  </a>
+                </div>
+                <div className="w-1/2 flex justify-center">
+                  <Button
+                    variant="contained"
+                    type="submit"
+                    className="justify-end w-1/2 whitespace-nowrap"
+                    onClick={handleSubmit}
+                    disabled={!!passwordError}
+                  >
+                    Sign up
+                  </Button>
+                </div>
               </div>
             </div>
-          </div>
+          </form>
         </div>
-      </div >
+      </div>
       <Footer />
-      {error && (
-        <ErrorBanner message={error} onClose={() => setError("")} />
-      )}
+      {error && <ErrorBanner message={error} onClose={() => setError("")} />}
     </>
   );
 };

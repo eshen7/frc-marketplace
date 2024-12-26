@@ -1,14 +1,13 @@
-import React, { useEffect, useState } from 'react'
-import TopBar from '../components/TopBar';
-import Footer from '../components/Footer';
-import axiosInstance from '../utils/axiosInstance';
-import { useNavigate } from 'react-router-dom';
-import Skeleton from 'react-loading-skeleton'
-import SuccessBanner from '../components/SuccessBanner';
+import React, { useEffect, useState } from "react";
+import TopBar from "../components/TopBar";
+import Footer from "../components/Footer";
+import axiosInstance from "../utils/axiosInstance";
+import { useNavigate } from "react-router-dom";
+import Skeleton from "react-loading-skeleton";
+import SuccessBanner from "../components/SuccessBanner";
 import TextField from "@mui/material/TextField";
-import ErrorBanner from '../components/ErrorBanner';
-import { Button } from '@mui/material';
-
+import ErrorBanner from "../components/ErrorBanner";
+import { Button } from "@mui/material";
 
 const UserProfile = () => {
   const [profileData, setProfileData] = useState(null);
@@ -77,12 +76,11 @@ const UserProfile = () => {
     };
   }, []);
 
-
   // Input changing on profile changing fields
   const handleInputChange = (name, value) => {
     const updatedFormData = { ...formData, [name]: value };
     setFormData(updatedFormData);
-  }
+  };
 
   // Password Validation
   const validatePasswords = (password, confirmation) => {
@@ -99,21 +97,19 @@ const UserProfile = () => {
     if (name === "new" || name === "confirmation") {
       const error = validatePasswords(
         name === "new" ? value : passwordData.new,
-        name === "confirmation"
-          ? value
-          : passwordData.confirmation
+        name === "confirmation" ? value : passwordData.confirmation
       );
       setPasswordError(error);
     }
-  }
+  };
 
   // Fetch self user
   const fetchUser = async () => {
     try {
       const response = await axiosInstance.get("/users/self/");
-      console.log('User Fetch Response:', response);
+      console.log("User Fetch Response:", response);
       const data = response.data;
-      console.log('data', data);
+      console.log("data", data);
 
       setProfileData(data);
       setFormData({
@@ -123,22 +119,21 @@ const UserProfile = () => {
         phone: data.phone || "",
       });
       setLoading(false);
-    }
-    catch (error) {
-      console.error('Error fetching User Data:', error);
+    } catch (error) {
+      console.error("Error fetching User Data:", error);
       setError(error);
       setLoading(false);
     }
-  }
+  };
 
   // Fetch user on mount
   useEffect(() => {
     const checkUserAndFetchData = async () => {
-      const token = localStorage.getItem('authToken');
+      const token = localStorage.getItem("authToken");
 
       if (!token) {
-        navigate('/login');
-        setError('User not logged in, please login to display profile editor'); // Display login message if no user
+        navigate("/login");
+        setError("User not logged in, please login to display profile editor"); // Display login message if no user
         setLoading(false);
         return;
       }
@@ -146,14 +141,13 @@ const UserProfile = () => {
       try {
         await fetchUser(); // Fetch user data if a token exists
       } catch (error) {
-        console.error('Error fetching User Data:', error);
+        console.error("Error fetching User Data:", error);
         setError(error);
       }
     };
 
     checkUserAndFetchData();
   }, []);
-
 
   // Changing Profile
   const handleSubmit = async (e) => {
@@ -167,8 +161,7 @@ const UserProfile = () => {
       setProfileData(response.data);
 
       setProfileChange("Profile Updated Successfully.");
-    }
-    catch (error) {
+    } catch (error) {
       console.error("Error updating profile:", error.response || error.message);
       setProfileChange("Failed to update profile. Please try again.");
     }
@@ -176,13 +169,17 @@ const UserProfile = () => {
 
   const closeProfileChangeBanner = () => {
     setProfileChange("");
-  }
+  };
 
   // Changing Password
   const handlePasswordChange = async (e) => {
     e.preventDefault();
 
-    if (!passwordData.current || !passwordData.new || !passwordData.confirmation) {
+    if (
+      !passwordData.current ||
+      !passwordData.new ||
+      !passwordData.confirmation
+    ) {
       setPasswordError("All fields are required.");
       return;
     }
@@ -193,7 +190,10 @@ const UserProfile = () => {
     }
 
     try {
-      const response = await axiosInstance.put("/change-password/", passwordData)
+      const response = await axiosInstance.put(
+        "/change-password/",
+        passwordData
+      );
 
       console.log("Password changed successfully:", response.data);
       setPasswordData({ current: "", new: "", confirmation: "" }); // Clear the form
@@ -202,10 +202,11 @@ const UserProfile = () => {
     } catch (error) {
       console.error("Error updating profile:", error.response || error.message);
       setPasswordError(
-        error.response?.data?.error || "Failed to change password. Please try again."
+        error.response?.data?.error ||
+          "Failed to change password. Please try again."
       );
     }
-  }
+  };
 
   // Account Deletion handling
   const handleDeleteAccount = async () => {
@@ -226,7 +227,6 @@ const UserProfile = () => {
 
       localStorage.removeItem("authToken");
 
-
       // Redirect to the home page
       navigate("/");
     } catch (error) {
@@ -236,8 +236,9 @@ const UserProfile = () => {
   };
 
   return (
-    <div className='min-h-screen flex flex-col'>
-      {profileChange == "Profile Updated Successfully." || profileChange == "Password changed successfully." ? (
+    <div className="min-h-screen flex flex-col">
+      {profileChange == "Profile Updated Successfully." ||
+      profileChange == "Password changed successfully." ? (
         <SuccessBanner
           message={profileChange}
           onClose={closeProfileChangeBanner}
@@ -251,7 +252,7 @@ const UserProfile = () => {
         <></>
       )}
       <TopBar />
-      <div className='flex flex-col flex-grow px-20 pt-10'>
+      <div className="flex flex-col flex-grow px-20 pt-10">
         <div className="container mx-auto py-10 px-4">
           <h1 className="text-3xl font-bold mb-6">Profile</h1>
           {error ? (
@@ -272,7 +273,9 @@ const UserProfile = () => {
                     </>
                   ) : (
                     <>
-                      <h2 className="text-xl font-semibold mb-4">Editable Information</h2>
+                      <h2 className="text-xl font-semibold mb-4">
+                        Editable Information
+                      </h2>
                       <form onSubmit={handleSubmit} className="space-y-4">
                         <div>
                           <TextField
@@ -281,7 +284,12 @@ const UserProfile = () => {
                             label="Address"
                             name="address"
                             value={formData.address}
-                            onChange={(e) => handleInputChange("address", e.target.value)}
+                            onChange={(e) =>
+                              handleInputChange("address", e.target.value)
+                            }
+                            onFocus={(e) =>
+                              e.target.setAttribute("autocomplete", "none")
+                            }
                             className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
                           />
                         </div>
@@ -292,7 +300,9 @@ const UserProfile = () => {
                             label="Email"
                             name="email"
                             value={formData.email}
-                            onChange={(e) => handleInputChange("email", e.target.value)}
+                            onChange={(e) =>
+                              handleInputChange("email", e.target.value)
+                            }
                             className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
                           />
                         </div>
@@ -303,7 +313,9 @@ const UserProfile = () => {
                             label="Phone Number"
                             name="phoneNumber"
                             value={formData.phone}
-                            onChange={(e) => handleInputChange("phone", e.target.value)}
+                            onChange={(e) =>
+                              handleInputChange("phone", e.target.value)
+                            }
                             className="mt-1 block w-full p-2 rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
                           />
                         </div>
@@ -314,11 +326,16 @@ const UserProfile = () => {
                             label="Head Coach Name"
                             name="headCoachName"
                             value={formData.full_name}
-                            onChange={(e) => handleInputChange("full_name", e.target.value)}
+                            onChange={(e) =>
+                              handleInputChange("full_name", e.target.value)
+                            }
                             className="mt-1 block w-full p-2 rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
                           />
                         </div>
-                        <button type="submit" className="w-full bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
+                        <button
+                          type="submit"
+                          className="w-full bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+                        >
                           Update Profile
                         </button>
                       </form>
@@ -328,7 +345,9 @@ const UserProfile = () => {
 
                 {/* Password Change */}
                 <div className="bg-white shadow-md rounded-lg p-6">
-                  <h2 className="text-xl font-semibold mb-4">Change Password</h2>
+                  <h2 className="text-xl font-semibold mb-4">
+                    Change Password
+                  </h2>
                   <form className="space-y-4">
                     <div>
                       <TextField
@@ -337,7 +356,9 @@ const UserProfile = () => {
                         name="currentPassword"
                         label="Current Password"
                         value={passwordData.current}
-                        onChange={(e) => handlePassInputChange("current", e.target.value)}
+                        onChange={(e) =>
+                          handlePassInputChange("current", e.target.value)
+                        }
                         required
                         className="mt-1 block w-full p-2 rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
                       />
@@ -349,7 +370,9 @@ const UserProfile = () => {
                         name="newPassword"
                         label="New Password"
                         value={passwordData.new}
-                        onChange={(e) => handlePassInputChange("new", e.target.value)}
+                        onChange={(e) =>
+                          handlePassInputChange("new", e.target.value)
+                        }
                         required
                         error={!!passwordError}
                         helperText={passwordError}
@@ -363,7 +386,9 @@ const UserProfile = () => {
                         name="confirmPassword"
                         label="Confirm New Password"
                         value={passwordData.confirmation}
-                        onChange={(e) => handlePassInputChange("confirmation", e.target.value)}
+                        onChange={(e) =>
+                          handlePassInputChange("confirmation", e.target.value)
+                        }
                         required
                         error={!!passwordError}
                         helperText={passwordError}
@@ -372,10 +397,11 @@ const UserProfile = () => {
                     </div>
                     <Button
                       variant="contained"
-                      color='success'
+                      color="success"
                       onClick={handlePasswordChange}
                       disabled={!!passwordError}
-                      className="w-full font-bold py-2 px-4 rounded">
+                      className="w-full font-bold py-2 px-4 rounded"
+                    >
                       Change Password
                     </Button>
                   </form>
@@ -385,46 +411,52 @@ const UserProfile = () => {
                 <div className="bg-white shadow-md rounded-lg p-6">
                   {loading || !profileData ? (
                     <>
-                      <Skeleton className='' />
+                      <Skeleton className="" />
                     </>
                   ) : (
                     <>
-                      <h2 className="text-xl font-semibold mb-4">Uneditable Information</h2>
+                      <h2 className="text-xl font-semibold mb-4">
+                        Uneditable Information
+                      </h2>
                       <div className="space-y-4">
                         <div>
-                          <h3 className="text-sm font-medium text-gray-700">Team Name</h3>
+                          <h3 className="text-sm font-medium text-gray-700">
+                            Team Name
+                          </h3>
                           <p className="mt-1 py-2">{profileData.team_name}</p>
                         </div>
                         <div>
-                          <h3 className="text-sm font-medium text-gray-700">Team Number</h3>
+                          <h3 className="text-sm font-medium text-gray-700">
+                            Team Number
+                          </h3>
                           <p className="mt-1 py-2">{profileData.team_number}</p>
                         </div>
                       </div>
                     </>
                   )}
-
                 </div>
 
                 {/* Delete Account */}
-                <div className='bg-white shadow-md rounded-lg p-6'>
+                <div className="bg-white shadow-md rounded-lg p-6">
                   <h2 className="text-xl font-semibold mb-4">Delete Account</h2>
-                  <p className='text-sm mb-4'>Actions cannot be undone</p>
+                  <p className="text-sm mb-4">Actions cannot be undone</p>
                   <Button
-                    variant='contained'
-                    color='error'
+                    variant="contained"
+                    color="error"
                     onClick={handleDeleteAccount}
-                    className='w-full py-2 px-4'>
+                    className="w-full py-2 px-4"
+                  >
                     Delete Account
                   </Button>
                 </div>
               </div>
             </>
           )}
-        </div >
-      </div >
+        </div>
+      </div>
       <Footer />
-    </div >
+    </div>
   );
 };
 
-export default UserProfile
+export default UserProfile;
