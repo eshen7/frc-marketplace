@@ -18,6 +18,8 @@ channels = "*"
 channels-redis = "*"
 daphne = "*"
 celery = "*"
+django-storages="*"
+boto3="*"
 
 [dev-packages]
 

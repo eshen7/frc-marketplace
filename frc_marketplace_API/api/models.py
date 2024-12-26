@@ -6,9 +6,31 @@ from django.db import models
 from phone_field import PhoneField
 from address.models import AddressField, Address, Locality
 import logging
+import os
+from django.core.exceptions import ValidationError
 
 # Default address for superusers
 DEFAULT_ADDRESS = {"raw": "1001 Avenida De Las Americas, Houston, TX 77010"}
+
+
+def validate_image_file(value):
+    # 5MB limit
+    max_size = 5 * 1024 * 1024
+    if value.size > max_size:
+        raise ValidationError("File size must be no more than 5MB.")
+
+    # Check file extension
+    ext = os.path.splitext(value.name)[1].lower()
+    valid_extensions = [".jpg", ".jpeg", ".png", ".gif", ".webp"]
+    if ext not in valid_extensions:
+        raise ValidationError(
+            "Unsupported file extension. Use jpg, jpeg, png, webp, or gif."
+        )
+
+
+def part_image_path(instance, filename):
+    """Generate file path for part image."""
+    return f"parts/{instance.manufacturer.name}/{instance.category.name}/{filename}"
 
 
 class UserManager(BaseUserManager):
@@ -31,11 +53,6 @@ class UserManager(BaseUserManager):
 
         extra_fields.setdefault("is_staff", True)
         extra_fields.setdefault("is_superuser", True)
-
-        # Set the default address (superuser only)
-        extra_fields.setdefault(
-            "address", Address.objects.get_or_create(DEFAULT_ADDRESS)
-        )
 
         return self.create_user(email, password, **extra_fields)
 
@@ -76,12 +93,17 @@ class Part(models.Model):
     name = models.CharField(max_length=255, null=False, blank=False)
     model_id = models.CharField(max_length=255, null=True, blank=True)
     description = models.CharField(null=True, blank=True)
-    picture = models.ImageField(upload_to="parts/", null=True, blank=True)
     category = models.ForeignKey(
         "PartCategory", on_delete=models.PROTECT, related_name="parts", null=True
     )
     manufacturer = models.ForeignKey(
         "PartManufacturer", on_delete=models.PROTECT, related_name="parts", null=True
+    )
+    image = models.ImageField(
+        upload_to=part_image_path,
+        null=True,
+        blank=True,
+        validators=[validate_image_file],
     )
 
 

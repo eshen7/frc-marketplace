@@ -7,6 +7,7 @@ from address.models import State, Country, Locality, Address
 from decouple import config
 from utils.geolocation import get_coordinates
 from utils.blueAlliance import getTeamName
+from django.core.files.images import get_image_dimensions
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -141,20 +142,25 @@ class PartSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Part
-        fields = [
-            "id",
-            "name",
-            "manufacturer_id",
-            "category_id",
-            "model_id",
-        ]
+        fields = ["id", "name", "manufacturer_id", "category_id", "model_id", "image"]
+
+    def validate_image(self, value):
+        if value:
+            # Check image dimensions
+            width, height = get_image_dimensions(value)
+            if width > 4096 or height > 4096:
+                raise serializers.ValidationError(
+                    'Image dimensions must be no greater than 4096x4096'
+                )
+        return value
 
     def create(self, validated_data):
         """Create a new Part instance."""
         manufacturer = validated_data.pop("manufacturer")
         category = validated_data.pop("category")
+        image = validated_data.pop("image", None)
         part = Part.objects.create(
-            manufacturer=manufacturer, category=category, **validated_data
+            manufacturer=manufacturer, category=category, image=image, **validated_data
         )
         return part
 
@@ -163,6 +169,7 @@ class PartSerializer(serializers.ModelSerializer):
         data = super().to_representation(instance)
         data["manufacturer_name"] = instance.manufacturer.name
         data["category"] = instance.category.name
+        data["image"] = instance.image.url if instance.image else None
         return data
 
 
