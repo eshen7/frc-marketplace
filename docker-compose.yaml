@@ -37,6 +37,7 @@ services:
       - redis
     volumes:
       - django_migrations:/usr/local/app/api/migrations # for persistent migrations
+      - staticfiles_volume:/usr/local/app/static
   
   frontend_app:
     build: vite-frontend
@@ -93,3 +94,4 @@ volumes:
   pgadmin_data:
   redis-data:
   django_migrations:
+  staticfiles_volume:
