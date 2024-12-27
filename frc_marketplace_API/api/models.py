@@ -130,6 +130,21 @@ class PartRequest(models.Model):
     needed_date = models.DateField(null=True, blank=True)
     needed_for = models.CharField(max_length=255, null=True, blank=True)
     additional_info = models.TextField(null=True, blank=True)
+    bid_price = models.DecimalField(
+        max_digits=10, decimal_places=2, null=True, blank=True
+    ) # -1 if they are willing to trade, 0 for donation
+
+
+class PartSale(models.Model):
+    """Part Sale Model."""
+
+    part = models.ForeignKey(Part, on_delete=models.PROTECT, related_name="sales")
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="sales")
+    quantity = models.IntegerField(default=1)
+    sale_creation_date = models.DateField(auto_now_add=True)
+    ask_price = models.DecimalField(max_digits=10, decimal_places=2) # -1 if trade, 0 for FREE
+    additional_info = models.TextField(null=True, blank=True)
+    condition = models.CharField(max_length=255, null=True, blank=True)
 
 
 class Message(models.Model):

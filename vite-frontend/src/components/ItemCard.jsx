@@ -12,6 +12,8 @@ import { getDaysUntil, haversine, isDate } from "../utils/utils";
 
 const ItemCard = ({ item, currentUser, type }) => {
   const isRequest = type === "request";
+  const isSale = type === "sale";
+  const isPart = type === "part";
 
   return (
     <Card sx={{ maxWidth: 345, height: "100%" }}>
@@ -19,7 +21,7 @@ const ItemCard = ({ item, currentUser, type }) => {
         component="img"
         height="200"
         image={
-          isRequest
+          isRequest || isSale
             ? item.part.image != null
               ? item.part.image
               : "/IMG_6769.jpg"
@@ -36,13 +38,13 @@ const ItemCard = ({ item, currentUser, type }) => {
         <Typography variant="body2" color="text.secondary" gutterBottom>
           {isRequest
             ? `Team ${item.user.team_number} - ${item.user.team_name}`
-            : item.user}
+            : undefined}
         </Typography>
 
         {isRequest ? (
           <Box>
             <Typography variant="body2" color="text.secondary" gutterBottom>
-              {isRequest && currentUser
+              {(isRequest || isSale) && currentUser
                 ? haversine(
                     currentUser.formatted_address.latitude,
                     currentUser.formatted_address.longitude,
@@ -61,13 +63,15 @@ const ItemCard = ({ item, currentUser, type }) => {
               const daysUntil = getDaysUntil(temp_date);
               const isUrgent = daysUntil < 3;
               return (
-                <Typography
-                  variant="body2"
-                  color={isUrgent ? "error" : "text.secondary"}
-                  sx={{ fontWeight: isUrgent ? "bold" : "regular", mb: 2 }}
-                >
-                  Due: {temp_date.toLocaleDateString()} ({daysUntil} days)
-                </Typography>
+                isRequest && (
+                  <Typography
+                    variant="body2"
+                    color={isUrgent ? "error" : "text.secondary"}
+                    sx={{ fontWeight: isUrgent ? "bold" : "regular", mb: 2 }}
+                  >
+                    Due: {temp_date.toLocaleDateString()} ({daysUntil} days)
+                  </Typography>
+                )
               );
             })()}
           </Box>
@@ -90,21 +94,40 @@ const ItemCard = ({ item, currentUser, type }) => {
           </Box>
         )}
 
-        <Button
-          variant="contained"
-          fullWidth
-          sx={{
-            bgcolor: isRequest ? "primary.main" : "error.dark",
-            "&:hover": {
-              bgcolor: isRequest ? "primary.dark" : "error.darker",
-            },
-          }}
-          onClick={() => {
-            window.location.href = `/requests/${item.id}`;
-          }}
-        >
-          {isRequest ? "Offer Part" : "Buy"}
-        </Button>
+        {isRequest && (
+          <Button
+            variant="contained"
+            fullWidth
+            sx={{
+              bgcolor: "primary.main",
+              "&:hover": {
+                bgcolor: "primary.dark",
+              },
+            }}
+            onClick={() => {
+              window.location.href = `/requests/${item.id}`;
+            }}
+          >
+            Make Offer
+          </Button>
+        )}
+        {isSale && (
+          <Button
+            variant="contained"
+            fullWidth
+            sx={{
+              bgcolor: "primary.main",
+              "&:hover": {
+                bgcolor: "primary.dark",
+              },
+            }}
+            onClick={() => {
+              window.location.href = `/sales/${item.id}`;
+            }}
+          >
+            Send Bid
+          </Button>
+        )}
       </CardContent>
     </Card>
   );
@@ -113,7 +136,6 @@ const ItemCard = ({ item, currentUser, type }) => {
 ItemCard.propTypes = {
   item: PropTypes.shape({
     id: PropTypes.number.isRequired,
-    part_name: PropTypes.string.isRequired,
     user: PropTypes.oneOfType([
       PropTypes.string,
       PropTypes.shape({
