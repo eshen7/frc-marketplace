@@ -46,9 +46,7 @@ class UserManager(BaseUserManager):
         user.set_password(password)
 
         if "team_number" in extra_fields and extra_fields["team_number"] is not None:
-            user.profile_photo = (
-                f"https://www.thebluealliance.com/avatar/2024/frc{extra_fields['team_number']}.png"
-            )
+            user.profile_photo = f"https://www.thebluealliance.com/avatar/2024/frc{extra_fields['team_number']}.png"
 
         user.save(using=self._db)
         return user
@@ -112,6 +110,14 @@ class Part(models.Model):
         validators=[validate_image_file],
     )
 
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=["name", "manufacturer"],
+                name="unique_part",
+            )
+        ]
+
 
 class PartManufacturer(models.Model):
     """Part Manufacturer Model."""
@@ -138,7 +144,7 @@ class PartRequest(models.Model):
     additional_info = models.TextField(null=True, blank=True)
     bid_price = models.DecimalField(
         max_digits=10, decimal_places=2, null=True, blank=True
-    ) # -1 if they are willing to trade, 0 for donation
+    )  # -1 if they are willing to trade, 0 for donation
 
 
 class PartSale(models.Model):
@@ -148,7 +154,9 @@ class PartSale(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="sales")
     quantity = models.IntegerField(default=1)
     sale_creation_date = models.DateField(auto_now_add=True)
-    ask_price = models.DecimalField(max_digits=10, decimal_places=2) # -1 if trade, 0 for FREE
+    ask_price = models.DecimalField(
+        max_digits=10, decimal_places=2
+    )  # -1 if trade, 0 for FREE
     additional_info = models.TextField(null=True, blank=True)
     condition = models.CharField(max_length=255, null=True, blank=True)
 

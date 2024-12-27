@@ -148,6 +148,9 @@ class PartSerializer(serializers.ModelSerializer):
     category_id = serializers.PrimaryKeyRelatedField(
         queryset=PartCategory.objects.all(), source="category"
     )
+    model_id = serializers.CharField(
+        allow_blank=True, allow_null=True, required=False, default=None
+    )
 
     class Meta:
         model = Part
