@@ -24,6 +24,7 @@ class UserSerializer(serializers.ModelSerializer):
             "date_joined",
             "team_name",
             "team_number",
+            "profile_photo",
             "phone",
             "is_active",
             "is_staff",

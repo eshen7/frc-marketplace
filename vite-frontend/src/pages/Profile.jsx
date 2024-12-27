@@ -408,7 +408,7 @@ const UserProfile = () => {
                 </div>
 
                 {/* Uneditable Information */}
-                <div className="bg-white shadow-md rounded-lg p-6">
+                <div className="bg-white shadow-md rounded-lg p-6 relative">
                   {loading || !profileData ? (
                     <>
                       <Skeleton className="" />
@@ -418,6 +418,9 @@ const UserProfile = () => {
                       <h2 className="text-xl font-semibold mb-4">
                         Uneditable Information
                       </h2>
+                      <div className="absolute right-[20px] top-[20px] rounded-lg bg-gray-200">
+                        <img src={profileData.profile_photo} width={60} className="p-2"/>
+                      </div>
                       <div className="space-y-4">
                         <div>
                           <h3 className="text-sm font-medium text-gray-700">
