@@ -67,7 +67,7 @@ const PublicProfileComponent = ({ user }) => {
                         {/* Main Profile Content */}
                         <div className="p-6 space-y-6">
                             <div className="flex items-center justify-center">
-                                <FaRobot className="text-6xl text-blue-500" />
+                                <img src={user.profile_photo} />
                             </div>
 
                             <h1 className="text-3xl font-bold text-center text-gray-800">

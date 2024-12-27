@@ -18,7 +18,6 @@ const Signup = () => {
     team_name: "",
     phone: "",
     passwordConfirmation: "",
-    confirmationCode: "",
   });
 
   const [passwordError, setPasswordError] = useState("");

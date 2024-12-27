@@ -45,6 +45,11 @@ class UserManager(BaseUserManager):
         user = self.model(email=email, **extra_fields)
         user.set_password(password)
 
+        if "team_number" in extra_fields and extra_fields["team_number"] is not None:
+            user.profile_photo = (
+                f"https://www.thebluealliance.com/avatar/2024/frc{extra_fields['team_number']}.png"
+            )
+
         user.save(using=self._db)
         return user
 
@@ -64,6 +69,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     email = models.EmailField(unique=True)
     team_name = models.CharField(max_length=255, null=True, blank=True)
     team_number = models.IntegerField(unique=True, null=True, blank=True)
+    profile_photo = models.URLField(unique=True, null=True, blank=True)
     phone = PhoneField(unique=True, null=True, blank=True)
     address = AddressField(on_delete=models.SET_NULL, null=True, blank=True)
     password = models.CharField(max_length=128)  # Store hashed password
