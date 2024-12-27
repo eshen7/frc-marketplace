@@ -150,7 +150,7 @@ class PartSerializer(serializers.ModelSerializer):
             width, height = get_image_dimensions(value)
             if width > 4096 or height > 4096:
                 raise serializers.ValidationError(
-                    'Image dimensions must be no greater than 4096x4096'
+                    "Image dimensions must be no greater than 4096x4096"
                 )
         return value
 
@@ -221,7 +221,7 @@ class PartRequestSerializer(serializers.ModelSerializer):
         data = super().to_representation(instance)
 
         # Optionally include `user` or other computed fields here
-        data["part_name"] = instance.part.name  # Optionally include the part name
+        data["part"] = PartSerializer(instance.part).data  # Include part details
         data["user"] = UserSerializer(instance.user).data  # Include user details
         return data
 
