@@ -10,7 +10,7 @@ import { getDaysUntil } from "../utils/utils";
 
 // Fuse.js options
 const fuseOptions = {
-  keys: ["part_name"],
+  keys: ["part.name"],
   threshold: 0.3,
   ignoreLocation: true,
 };

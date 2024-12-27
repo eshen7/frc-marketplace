@@ -18,18 +18,19 @@ const ItemCard = ({ item, currentUser, type }) => {
       <CardMedia
         component="img"
         height="200"
-        image={isRequest ? (
-          // item.coverPhoto
-          "/IMG_6769.jpg"
-        ) : (
-          item.image
-        )}
-        alt={item.part_name}
-        sx={{ objectFit: "cover" }}
+        image={
+          isRequest
+            ? item.part.image != null
+              ? item.part.image
+              : "/IMG_6769.jpg"
+            : null
+        }
+        alt={item.part.name}
+        sx={{ objectFit: "cover", maxHeight: 200, width: "100%" }}
       />
       <CardContent>
         <Typography variant="h6" gutterBottom>
-          {item.part_name}
+          {item.part.name}
         </Typography>
 
         <Typography variant="body2" color="text.secondary" gutterBottom>
@@ -41,14 +42,16 @@ const ItemCard = ({ item, currentUser, type }) => {
         {isRequest ? (
           <Box>
             <Typography variant="body2" color="text.secondary" gutterBottom>
-              {isRequest && currentUser ? (
-                haversine(currentUser.formatted_address.latitude,
-                  currentUser.formatted_address.longitude,
-                  item.user.formatted_address.latitude,
-                  item.user.formatted_address.longitude).toFixed(1) + " miles"
-              ) : isRequest && !currentUser ? (
-                "Please log in to view distance"
-              ) : item.distance}
+              {isRequest && currentUser
+                ? haversine(
+                    currentUser.formatted_address.latitude,
+                    currentUser.formatted_address.longitude,
+                    item.user.formatted_address.latitude,
+                    item.user.formatted_address.longitude
+                  ).toFixed(1) + " miles"
+                : isRequest && !currentUser
+                ? "Please log in to view distance"
+                : item.distance}
             </Typography>
             {(() => {
               let temp_date = item.needed_date;
@@ -61,7 +64,7 @@ const ItemCard = ({ item, currentUser, type }) => {
                 <Typography
                   variant="body2"
                   color={isUrgent ? "error" : "text.secondary"}
-                  sx={{ fontWeight: isUrgent ? 'bold' : 'regular', mb: 2 }}
+                  sx={{ fontWeight: isUrgent ? "bold" : "regular", mb: 2 }}
                 >
                   Due: {temp_date.toLocaleDateString()} ({daysUntil} days)
                 </Typography>
@@ -70,7 +73,12 @@ const ItemCard = ({ item, currentUser, type }) => {
           </Box>
         ) : (
           <Box>
-            <Typography variant="body2" color="success.main" sx={{ fontWeight: 'bold' }} gutterBottom>
+            <Typography
+              variant="body2"
+              color="success.main"
+              sx={{ fontWeight: "bold" }}
+              gutterBottom
+            >
               ask: ${item.price}
             </Typography>
             <Typography variant="body2" color="text.secondary" gutterBottom>
@@ -86,13 +94,13 @@ const ItemCard = ({ item, currentUser, type }) => {
           variant="contained"
           fullWidth
           sx={{
-            bgcolor: isRequest ? 'primary.main' : 'error.dark',
-            '&:hover': {
-              bgcolor: isRequest ? 'primary.dark' : 'error.darker',
+            bgcolor: isRequest ? "primary.main" : "error.dark",
+            "&:hover": {
+              bgcolor: isRequest ? "primary.dark" : "error.darker",
             },
           }}
           onClick={() => {
-            window.location.href = `/requests/${item.id}`
+            window.location.href = `/requests/${item.id}`;
           }}
         >
           {isRequest ? "Offer Part" : "Buy"}
@@ -115,7 +123,7 @@ ItemCard.propTypes = {
           raw: PropTypes.string,
           latitude: PropTypes.number,
           longitude: PropTypes.number,
-        })
+        }),
       }),
     ]).isRequired,
     coverPhoto: PropTypes.string,
@@ -123,8 +131,9 @@ ItemCard.propTypes = {
     distance: PropTypes.number,
     needed_date: PropTypes.oneOfType([
       PropTypes.instanceOf(Date), // Accepts Date object
-      PropTypes.string,           // Accepts string
-    ]), price: PropTypes.number,
+      PropTypes.string, // Accepts string
+    ]),
+    price: PropTypes.number,
     condition: PropTypes.string,
   }).isRequired,
   type: PropTypes.oneOf(["request", "sale"]).isRequired,
