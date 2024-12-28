@@ -1,658 +1,706 @@
 import { useNavigate, useParams } from 'react-router-dom';
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useContext } from 'react';
 import TopBar from '../components/TopBar';
 import Footer from '../components/Footer';
 import { IoMdSend } from "react-icons/io";
 import axiosInstance from '../utils/axiosInstance';
 import { v4 as uuidv4 } from 'uuid'; // Add this at the top (install `uuid` if necessary)
 import { formatTimestamp, timeSince } from '../utils/utils';
+import { GlobalSocketContext } from '../contexts/GlobalSocketContext';
 
 const MessageSent = ({ message, allTeams }) => {
-    const senderTeam = allTeams.find(team => team.team_number === message.sender);
-    return (
-        <div className='text-right flex flex-col place-items-end px-[20px] py-[10px]'>
-            <p className='text-xs px-[2px]'>{senderTeam ? senderTeam.full_name : 'Unknown Team'}</p>
-            <div className='bg-red-800 rounded-3xl text-left w-fit shadow-md max-w-[50%] overflow-hidden break-words'>
-                <p className='text-white px-[20px]'>{message.message}</p>
-            </div>
-            <p className='text-xs text-gray-500'>{message.timestamp ? formatTimestamp(message.timestamp) : "..."}</p>
-        </div>
-    );
+  const senderTeam = allTeams.find(team => team.team_number === message.sender);
+  return (
+    <div className='text-right flex flex-col place-items-end px-[20px] py-[10px]'>
+      <p className='text-xs px-[2px]'>{senderTeam ? senderTeam.full_name : 'Unknown Team'}</p>
+      <div className='bg-red-800 rounded-3xl text-left w-fit shadow-md max-w-[50%] overflow-hidden break-words'>
+        <p className='text-white px-[20px]'>{message.message}</p>
+      </div>
+      <p className='text-xs text-gray-500'>{message.timestamp ? formatTimestamp(message.timestamp) : "..."}</p>
+    </div>
+  );
 };
 
 const MessageReceived = ({ message, allTeams }) => {
-    const senderTeam = allTeams.find(team => team.team_number === message.sender);
-    return (
-        <div className='text-left flex flex-col place-items-start px-[20px] py-[10px]'>
-            <p className='text-xs px-[2px]'>{senderTeam ? senderTeam.full_name : 'Unknown Team'}</p>
-            <div className='bg-gray-200 rounded-3xl text-left w-fit shadow-md max-w-[50%] overflow-hidden break-words'>
-                <p className='text-red-800 px-[20px]'>{message.message}</p>
-            </div>
-            <p className='text-xs text-gray-500'>{message.timestamp ? formatTimestamp(message.timestamp) : "..."}</p>
-        </div>
-    );
+  const senderTeam = allTeams.find(team => team.team_number === message.sender);
+  return (
+    <div className='text-left flex flex-col place-items-start px-[20px] py-[10px]'>
+      <p className='text-xs px-[2px]'>{senderTeam ? senderTeam.full_name : 'Unknown Team'}</p>
+      <div className='bg-gray-200 rounded-3xl text-left w-fit shadow-md max-w-[50%] overflow-hidden break-words'>
+        <p className='text-red-800 px-[20px]'>{message.message}</p>
+      </div>
+      <p className='text-xs text-gray-500'>{message.timestamp ? formatTimestamp(message.timestamp) : "..."}</p>
+    </div>
+  );
 };
 
 const Chat = () => {
-    const navigate = useNavigate();
+  const navigate = useNavigate();
 
-    const { roomName } = useParams(); // Get roomName from the URL
-    const [messagesByRoom, setMessagesByRoom] = useState({});
-    const [newMessage, setNewMessage] = useState('');
-    const socketRef = useRef(null);
-    const messagesEndRef = useRef(null); // Ref to track the bottom of the messages container
+  const { roomName } = useParams(); // Get roomName from the URL
+  const [messagesByRoom, setMessagesByRoom] = useState({});
+  const [newMessage, setNewMessage] = useState('');
+  const socketRef = useRef(null);
+  const messagesEndRef = useRef(null); // Ref to track the bottom of the messages container
 
-    const [user, setUser] = useState(null);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState(null);
-    const [receiverUser, setReceiverUser] = useState(null);
+  const { socket: globalSocket, isConnected } = useContext(GlobalSocketContext);
 
-    const [allTeams, setAllTeams] = useState([]);
-    const [loadingTeams, setLoadingTeams] = useState(true);
+  const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [receiverUser, setReceiverUser] = useState(null);
 
-    const [subsetTeams, setSubsetTeams] = useState([]);
-    const [loadingSubsetTeams, setLoadingSubsetTeams] = useState(true);
+  const [allTeams, setAllTeams] = useState([]);
+  const [loadingTeams, setLoadingTeams] = useState(true);
 
-    const [messagedTeams, setMessagedTeams] = useState([]);
-    const [unmessagedTeams, setUnmessagedTeams] = useState([]);
+  const [subsetTeams, setSubsetTeams] = useState([]);
+  const [loadingSubsetTeams, setLoadingSubsetTeams] = useState(true);
 
-    const [currentOffset, setCurrentOffset] = useState(0);
-    const [hasMoreMessages, setHasMoreMessages] = useState(true);
-    const [loadingMoreMessages, setLoadingMoreMessages] = useState(false);
-    const messagesContainerRef = useRef(null);
-    const [isAtBottom, setIsAtBottom] = useState(true);
+  const [messagedTeams, setMessagedTeams] = useState([]);
+  const [unmessagedTeams, setUnmessagedTeams] = useState([]);
 
-    const handleScroll = () => {
-        if (!hasMoreMessages || loadingMoreMessages) return;
+  const [currentOffset, setCurrentOffset] = useState(0);
+  const [hasMoreMessages, setHasMoreMessages] = useState(true);
+  const [loadingMoreMessages, setLoadingMoreMessages] = useState(false);
+  const messagesContainerRef = useRef(null);
+  const [isAtBottom, setIsAtBottom] = useState(true);
 
-        const container = messagesContainerRef.current;
-        if (container) {
-            const { scrollTop, scrollHeight, clientHeight } = container;
 
-            // Check if user is at the bottom
-            setIsAtBottom(scrollTop + clientHeight >= scrollHeight - 5);
+  // Auto Fetching by Scroll
+  const handleScroll = () => {
+    if (!hasMoreMessages || loadingMoreMessages) return;
 
-            // Fetch older messages if near the top
-            if (scrollTop < 50) {
-                fetchMessages(currentOffset); // Fetch older messages
-            }
-        }
-    };
+    const container = messagesContainerRef.current;
+    if (container) {
+      const { scrollTop, scrollHeight, clientHeight } = container;
 
-    useEffect(() => {
-        const container = messagesContainerRef.current;
-        if (container) {
-            container.addEventListener("scroll", handleScroll);
-        }
+      // Check if user is at the bottom
+      setIsAtBottom(scrollTop + clientHeight >= scrollHeight - 5);
 
-        return () => {
-            if (container) {
-                container.removeEventListener("scroll", handleScroll);
-            }
-        };
-    }, [hasMoreMessages, loadingMoreMessages, currentOffset, roomName]);
-
-    useEffect(() => {
-        const messageMaxHeight = () => {
-            if (loading) return;
-            const topBarHeight = document.querySelector('.top-bar').offsetHeight;
-            const footerHeight = document.querySelector('.footer').offsetHeight;
-            const messagesSection = document.querySelector('.messages-section');
-
-            const maxHeight = `calc(100vh - ${topBarHeight}px - ${footerHeight}px)`;
-            messagesSection.style.maxHeight = maxHeight;
-        }
-
-        messageMaxHeight();
-    }, [loading]);
-
-    useEffect(() => {
-        const fetchList = async () => {
-            if (user) {
-                try {
-                    const response = await axiosInstance.get("/dms/");
-                    let data = response.data;
-
-                    data = data.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
-
-                    setSubsetTeams(data);
-                } catch (err) {
-                    console.error("Error fetching list of messages:", err);
-                } finally {
-                    setLoadingSubsetTeams(false);
-                }
-            }
-        };
-
-        fetchList();
-    }, [user]);
-
-    useEffect(() => {
-        if (allTeams.length && subsetTeams.length) {
-            const messagedTeamNumbers = subsetTeams.map(team => team.team_number);
-
-            setUnmessagedTeams(allTeams.filter(
-                team => !messagedTeamNumbers.includes(team.team_number)
-            ));
-        }
-    }, [allTeams, subsetTeams]);
-
-    useEffect(() => {
-        if (!user || !roomName) return;
-
-        // Mark messages as read:
-        markMessagesAsRead(roomName);
-    }, [user, roomName]);
-
-    const markMessagesAsRead = async (teamNumber) => {
-        try {
-            const response = await axiosInstance.post('/messages/mark_as_read/', {
-                team_number: teamNumber,
-            });
-            console.log(response.data); // "Messages marked as read."
-        } catch (err) {
-            console.error('Error marking messages as read:', err);
-        }
-    };
-
-    useEffect(() => {
-        const fetchTeams = async () => {
-            try {
-                const response = await axiosInstance.get('/users/');
-                const data = response.data;
-
-                if (!data) {
-                    throw new Error('Error getting Teams');
-                }
-
-                setAllTeams(data);
-                // console.log(allTeams)
-                setLoadingTeams(false);
-            }
-            catch (error) {
-                console.error('Error fetching User Data:', error);
-                setLoadingTeams(false);
-            }
-        };
-
-        fetchTeams();
-    }, []);
-
-    const fetchUser = async () => {
-        try {
-            const response = await axiosInstance.get("/users/self/");
-            // console.log('User Fetch Response:', response);
-            const data = response.data;
-            // console.log('data', data);
-
-            setUser(data);
-            setLoading(false);
-        }
-        catch (error) {
-            console.error('Error fetching User Data:', error);
-            setError(error);
-            setLoading(false);
-        }
+      // Fetch older messages if near the top
+      if (scrollTop < 50) {
+        fetchMessages(currentOffset); // Fetch older messages
+      }
+    }
+  };
+  useEffect(() => {
+    const container = messagesContainerRef.current;
+    if (container) {
+      container.addEventListener("scroll", handleScroll);
     }
 
-    // Fetch user on mount
-    useEffect(() => {
-        const checkUserAndFetchData = async () => {
-            const token = localStorage.getItem('authToken');
+    return () => {
+      if (container) {
+        container.removeEventListener("scroll", handleScroll);
+      }
+    };
+  }, [hasMoreMessages, loadingMoreMessages, currentOffset, roomName]);
 
-            if (!token) {
-                navigate('/login');
-                setError('User not logged in, please login to display profile editor'); // Display login message if no user
-                setLoading(false);
-                return;
-            }
+  // Set Max Height for the Message container
+  useEffect(() => {
+    const messageMaxHeight = () => {
+      if (loading) return;
+      const topBarHeight = document.querySelector('.top-bar').offsetHeight;
+      const footerHeight = document.querySelector('.footer').offsetHeight;
+      const messagesSection = document.querySelector('.messages-section');
 
-            try {
-                await fetchUser(); // Fetch user data if a token exists
-            } catch (error) {
-                console.error('Error fetching User Data:', error);
-                setError(error);
-                setLoading(false);
-            }
-        };
+      const maxHeight = `calc(100vh - ${topBarHeight}px - ${footerHeight}px)`;
+      messagesSection.style.maxHeight = maxHeight;
+    }
 
-        checkUserAndFetchData();
-    }, []);
+    messageMaxHeight();
+  }, [loading]);
 
-    useEffect(() => {
-        const getReceiver = async () => {
-            if (!roomName) return;
+  // Fetch List of current users you are messaging with
+  const fetchList = async () => {
+    if (user) {
+      try {
+        const response = await axiosInstance.get("/dms/");
+        let data = response.data;
 
-            try {
-                const response = await axiosInstance.get(`/users/frc${roomName}`);
-                const data = response.data;
+        data = data.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
 
-                setReceiverUser(data);
-            } catch (err) {
-                console.error("Error fetching receiver:", err);
-            }
-        };
+        setSubsetTeams(data);
+      } catch (err) {
+        console.error("Error fetching list of messages:", err);
+      } finally {
+        setLoadingSubsetTeams(false);
+      }
+    }
+  };
+  useEffect(() => {
+    fetchList();
+  }, [user, roomName]);
 
-        getReceiver();
-    }, [roomName])
+  useEffect(() => {
+    if (!globalSocket) return;
 
-    const retryFetchFullMessage = async (messageId, maxRetries = 5, delay = 500) => {
-        let retries = 0;
+    const handleGlobalMessage = (event) => {
+      const data = JSON.parse(event.data);
+      if (data.type === "chat_message") {
+        // Optionally filter if it's relevant to me:
+        // if (data.receiver_team === user.team_number || data.sender_team === user.team_number) {
+        //   fetchList();
+        // }
 
-        while (retries < maxRetries) {
-            try {
-                const response = await axiosInstance.get(`/message/id/${messageId}/`);
-                const fullMessage = response.data;
-
-                // Update the state with the fetched message
-                setMessagesByRoom((prevMessages) => {
-                    const updatedMessages = { ...prevMessages };
-
-                    // Find the messages array for the current room
-                    const roomMessages = updatedMessages[roomName] || [];
-
-                    // Find the index of the message that matches the ID
-                    const messageIndex = roomMessages.findIndex((msg) => msg.id === messageId);
-
-                    if (messageIndex !== -1) {
-                        // Replace the message with the full message (including timestamp)
-                        roomMessages[messageIndex] = fullMessage;
-                    } else {
-                        // Add the message if it's not already in the list
-                        roomMessages.push(fullMessage);
-                    }
-
-                    // Update the messages for the current room
-                    updatedMessages[roomName] = roomMessages;
-
-                    return updatedMessages;
-                });
-
-                // If the fetch is successful, exit the retry loop
-                return;
-            } catch (err) {
-                retries++;
-                console.warn(`Retrying fetch for message ID ${messageId}... Attempt ${retries}`);
-                // Wait before retrying
-                await new Promise((resolve) => setTimeout(resolve, delay));
-            }
-        }
-
-        console.error(`Failed to fetch message ID ${messageId} after ${maxRetries} retries`);
+        // Or just always refetch
+        fetchList();
+      }
     };
 
-    useEffect(() => {
-        const connectWebSocket = () => {
-            if (!user || !roomName) return; // Ensure `user` and `roomName` are available
+    globalSocket.addEventListener("message", handleGlobalMessage);
 
-            // Generate the universal room name based on user and roomName
-            let universalWS = "";
-            if (Number(roomName) > Number(user.team_number)) {
-                universalWS = `${user.team_number}_${roomName}`;
-            } else {
-                universalWS = `${roomName}_${user.team_number}`;
-            }
+    console.log("Attached listener to globalSocket")
 
-            // Initialize WebSocket
-            socketRef.current = new WebSocket(`ws://localhost:8000/ws/chat/${universalWS}/`);
+    return () => {
+      // Cleanup the event listener when we leave the chat page
+      globalSocket.removeEventListener("message", handleGlobalMessage);
+      console.log("Detached listener from globalSocket")
+    };
+  }, [globalSocket]);
 
-            socketRef.current.onopen = () => console.log("WebSocket opened");
+  // Set complement of users currently messaging with - rest of users
+  useEffect(() => {
+    if (allTeams.length && subsetTeams.length) {
+      const messagedTeamNumbers = subsetTeams.map(team => team.team_number);
 
-            socketRef.current.onmessage = async (event) => {
-                console.log("Received message:", event.data);
-                const data = JSON.parse(event.data);
+      setUnmessagedTeams(allTeams.filter(
+        team => !messagedTeamNumbers.includes(team.team_number)
+      ));
+    }
+  }, [allTeams, subsetTeams]);
 
-                setMessagesByRoom((prevMessages) => {
-                    const updatedMessages = { ...prevMessages };
+  // Mark Read Messages
+  useEffect(() => {
+    if (!user || !roomName) return;
 
-                    if (!updatedMessages[roomName]) {
-                        updatedMessages[roomName] = [];
-                    }
+    // Mark messages as read:
+    markMessagesAsRead(roomName);
+    fetchList();
+  }, [user, roomName]);
+  const markMessagesAsRead = async (teamNumber) => {
+    try {
+      const response = await axiosInstance.post('/messages/mark_as_read/', {
+        team_number: teamNumber,
+      });
+      console.log(response.data); // "Messages marked as read."
+    } catch (err) {
+      console.error('Error marking messages as read:', err);
+    }
+  };
 
-                    const messageIndex = updatedMessages[roomName].findIndex(
-                        (msg) => msg.id === data.id
-                    );
+  // Fetch All Teams
+  useEffect(() => {
+    const fetchTeams = async () => {
+      try {
+        const response = await axiosInstance.get('/users/');
+        const data = response.data;
 
-                    if (messageIndex !== -1) {
-                        // Message already exists - Check if timestamp is missing
-                        if (!updatedMessages[roomName][messageIndex].timestamp) {
-                            // Retry fetching full message if timestamp is missing
-                            retryFetchFullMessage(data.id);
-                        }
-                    } else {
-                        // Add new message
-                        updatedMessages[roomName].push(data);
-                        // If timestamp is missing, retry fetching full message
-                        if (!data.timestamp) {
-                            retryFetchFullMessage(data.id);
-                        }
-                    }
-
-                    return updatedMessages;
-                });
-            };
-            socketRef.current.onclose = (e) => console.log("WebSocket closed", e);
-            socketRef.current.onerror = (err) => console.error("WebSocket error", err);
-        };
-
-        connectWebSocket();
-
-        return () => {
-            if (socketRef.current) {
-                socketRef.current.close();
-                socketRef.current = null;
-            }
-        };
-    }, [roomName, user]); // Re-run effect when roomName or user changes
-
-    // Autoscroll
-    useEffect(() => {
-        if (messagesEndRef.current && isAtBottom) {
-            messagesEndRef.current.scrollIntoView({ behavior: 'auto' });
+        if (!data) {
+          throw new Error('Error getting Teams');
         }
-    }, [messagesByRoom, roomName])
 
-    const fetchMessages = async (offset = 0, limit = 25, initialFetch = false) => {
-        if (!roomName || loadingMoreMessages || (!hasMoreMessages && !initialFetch)) return;
+        setAllTeams(data);
+        // console.log(allTeams)
+        setLoadingTeams(false);
+      }
+      catch (error) {
+        console.error('Error fetching User Data:', error);
+        setLoadingTeams(false);
+      }
+    };
 
-        setLoadingMoreMessages(true);
+    fetchTeams();
+  }, []);
 
+  // Fetch Self User Function
+  const fetchUser = async () => {
+    try {
+      const response = await axiosInstance.get("/users/self/");
+      // console.log('User Fetch Response:', response);
+      const data = response.data;
+      // console.log('data', data);
+
+      setUser(data);
+      setLoading(false);
+    }
+    catch (error) {
+      console.error('Error fetching User Data:', error);
+      setError(error);
+      setLoading(false);
+    }
+  }
+
+  // Fetch user on mount
+  useEffect(() => {
+    const checkUserAndFetchData = async () => {
+      const token = localStorage.getItem('authToken');
+
+      if (!token) {
+        navigate('/login');
+        setError('User not logged in, please login to display profile editor'); // Display login message if no user
+        setLoading(false);
+        return;
+      }
+
+      try {
+        await fetchUser(); // Fetch user data if a token exists
+      } catch (error) {
+        console.error('Error fetching User Data:', error);
+        setError(error);
+        setLoading(false);
+      }
+    };
+
+    checkUserAndFetchData();
+  }, []);
+
+  // Fetch user data of the receiver user
+  useEffect(() => {
+    const getReceiver = async () => {
+      if (!roomName) return;
+
+      try {
+        const response = await axiosInstance.get(`/users/frc${roomName}`);
+        const data = response.data;
+
+        setReceiverUser(data);
+      } catch (err) {
+        console.error("Error fetching receiver:", err);
+      }
+    };
+
+    getReceiver();
+  }, [roomName])
+
+  // Fetch Full Message retry for updated timestamp stuff
+  const retryFetchFullMessage = async (messageId, maxRetries = 5, delay = 500) => {
+    let retries = 0;
+
+    while (retries < maxRetries) {
+      try {
+        const response = await axiosInstance.get(`/message/id/${messageId}/`);
+        const fullMessage = response.data;
+
+        // Update the state with the fetched message
+        setMessagesByRoom((prevMessages) => {
+          const updatedMessages = { ...prevMessages };
+
+          // Find the messages array for the current room
+          const roomMessages = updatedMessages[roomName] || [];
+
+          // Find the index of the message that matches the ID
+          const messageIndex = roomMessages.findIndex((msg) => msg.id === messageId);
+
+          if (messageIndex !== -1) {
+            // Replace the message with the full message (including timestamp)
+            roomMessages[messageIndex] = fullMessage;
+          } else {
+            // Add the message if it's not already in the list
+            roomMessages.push(fullMessage);
+          }
+
+          // Update the messages for the current room
+          updatedMessages[roomName] = roomMessages;
+
+          return updatedMessages;
+        });
+
+        // If the fetch is successful, exit the retry loop
+        return;
+      } catch (err) {
+        retries++;
+        console.warn(`Retrying fetch for message ID ${messageId}... Attempt ${retries}`);
+        // Wait before retrying
+        await new Promise((resolve) => setTimeout(resolve, delay));
+      }
+    }
+
+    console.error(`Failed to fetch message ID ${messageId} after ${maxRetries} retries`);
+  };
+
+  // Connect web socket, set websocket settings
+  useEffect(() => {
+    const connectWebSocket = () => {
+      if (!user || !roomName) return; // Ensure `user` and `roomName` are available
+
+      // Generate the universal room name based on user and roomName
+      let universalWS = "";
+      if (Number(roomName) > Number(user.team_number)) {
+        universalWS = `${user.team_number}_${roomName}`;
+      } else {
+        universalWS = `${roomName}_${user.team_number}`;
+      }
+
+      // Initialize WebSocket
+      socketRef.current = new WebSocket(`ws://localhost:8000/ws/chat/${universalWS}/`);
+
+      socketRef.current.onopen = () => console.log("WebSocket opened");
+
+      socketRef.current.onmessage = async (event) => {
+        fetchList();
+        console.log("Received message:", event.data);
+        const data = JSON.parse(event.data);
+
+        markMessagesAsRead(roomName);
+
+        setMessagesByRoom((prevMessages) => {
+          const updatedMessages = { ...prevMessages };
+
+          if (!updatedMessages[roomName]) {
+            updatedMessages[roomName] = [];
+          }
+
+          const messageIndex = updatedMessages[roomName].findIndex(
+            (msg) => msg.id === data.id
+          );
+
+          if (messageIndex !== -1) {
+            // Message already exists - Check if timestamp is missing
+            if (!updatedMessages[roomName][messageIndex].timestamp) {
+              // Retry fetching full message if timestamp is missing
+              retryFetchFullMessage(data.id);
+            }
+          } else {
+            // Add new message
+            updatedMessages[roomName].push(data);
+            // If timestamp is missing, retry fetching full message
+            if (!data.timestamp) {
+              retryFetchFullMessage(data.id);
+            }
+          }
+
+          return updatedMessages;
+        });
+      };
+      socketRef.current.onclose = (e) => console.log("WebSocket closed", e);
+      socketRef.current.onerror = (err) => console.error("WebSocket error", err);
+    };
+
+    connectWebSocket();
+
+    return () => {
+      if (socketRef.current) {
+        socketRef.current.close();
+        socketRef.current = null;
+      }
+    };
+  }, [roomName, user]); // Re-run effect when roomName or user changes
+
+  // Autoscroll to bottom of messages at beginning
+  useEffect(() => {
+    if (messagesEndRef.current && isAtBottom) {
+      messagesEndRef.current.scrollIntoView({ behavior: 'auto' });
+    }
+  }, [messagesByRoom, roomName])
+
+  // Fetch messages incrementally function
+  const fetchMessages = async (offset = 0, limit = 25, initialFetch = false) => {
+    if (!roomName || loadingMoreMessages || (!hasMoreMessages && !initialFetch)) return;
+
+    setLoadingMoreMessages(true);
+
+    try {
+      const container = messagesContainerRef.current;
+
+      // Save current scroll position and height
+      const previousScrollHeight = container.scrollHeight;
+      const previousScrollTop = container.scrollTop;
+
+
+      const response = await axiosInstance.get(`/message/${roomName}/`, {
+        params: { limit, offset },
+      });
+      const data = response.data;
+
+      // Check if there are more messages to load
+      if (data.length < limit) {
+        setHasMoreMessages(false);
+      }
+
+      setMessagesByRoom((prevMessages) => {
+        const updatedMessages = { ...prevMessages };
+        const roomMessages = updatedMessages[roomName] || [];
+
+        // Combine new and existing messages
+        const combinedMessages = [...data.reverse(), ...roomMessages];
+
+        // Sort messages by timestamp
+        combinedMessages.sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
+
+        // Update the state with sorted messages
+        updatedMessages[roomName] = combinedMessages;
+
+        return updatedMessages;
+      });
+
+      setCurrentOffset((prevOffset) => prevOffset + limit);
+
+      setTimeout(() => {
+        const newScrollHeight = container.scrollHeight;
+        container.scrollTop = newScrollHeight - previousScrollHeight + previousScrollTop;
+      }, 0); // Use a timeout to ensure DOM updates are applied before calculating the new scroll    
+    } catch (err) {
+      console.error("Error fetching messages:", err);
+    } finally {
+      setLoadingMoreMessages(false);
+    }
+  };
+
+  // Reset messages & fetch
+  useEffect(() => {
+    const resetAndFetchMessages = async () => {
+      // Reset states
+      setHasMoreMessages(true);
+      setCurrentOffset(0);
+
+      // Clear messages for the new room
+      setMessagesByRoom((prevMessages) => {
+        const updatedMessages = { ...prevMessages };
+        updatedMessages[roomName] = [];
+        return updatedMessages;
+      });
+
+      // Wait for the reset to complete before fetching
+      await new Promise((resolve) => setTimeout(resolve, 0));
+
+      // Fetch initial messages
+      if (roomName && user) {
         try {
-            const container = messagesContainerRef.current;
-
-            // Save current scroll position and height
-            const previousScrollHeight = container.scrollHeight;
-            const previousScrollTop = container.scrollTop;
-
-
-            const response = await axiosInstance.get(`/message/${roomName}/`, {
-                params: { limit, offset },
-            });
-            const data = response.data;
-
-            // Check if there are more messages to load
-            if (data.length < limit) {
-                setHasMoreMessages(false);
-            }
-
-            setMessagesByRoom((prevMessages) => {
-                const updatedMessages = { ...prevMessages };
-                const roomMessages = updatedMessages[roomName] || [];
-
-                // Combine new and existing messages
-                const combinedMessages = [...data.reverse(), ...roomMessages];
-
-                // Sort messages by timestamp
-                combinedMessages.sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
-
-                // Update the state with sorted messages
-                updatedMessages[roomName] = combinedMessages;
-
-                return updatedMessages;
-            });
-
-            setCurrentOffset((prevOffset) => prevOffset + limit);
-
-            setTimeout(() => {
-                const newScrollHeight = container.scrollHeight;
-                container.scrollTop = newScrollHeight - previousScrollHeight + previousScrollTop;
-            }, 0); // Use a timeout to ensure DOM updates are applied before calculating the new scroll    
+          await fetchMessages(0, 25, true); // Pass the initial state of `hasMoreMessages`
         } catch (err) {
-            console.error("Error fetching messages:", err);
-        } finally {
-            setLoadingMoreMessages(false);
+          console.error("Error fetching initial messages:", err);
         }
+      }
     };
 
-    useEffect(() => {
-        const resetAndFetchMessages = async () => {
-            // Reset states
-            setHasMoreMessages(true);
-            setCurrentOffset(0);
+    resetAndFetchMessages();
+  }, [roomName, user]);
 
-            // Clear messages for the new room
-            setMessagesByRoom((prevMessages) => {
-                const updatedMessages = { ...prevMessages };
-                updatedMessages[roomName] = [];
-                return updatedMessages;
-            });
+  // Send a message function
+  const sendMessage = async () => {
+    if (socketRef.current) {
+      const newMessageObj = {
+        id: uuidv4(),
+        message: newMessage,
+        sender: user.team_number,
+        receiver: receiverUser.team_number, // Replace with actual receiver ID
+      };
 
-            // Wait for the reset to complete before fetching
-            await new Promise((resolve) => setTimeout(resolve, 0));
+      // Send the message via websocket
+      socketRef.current.send(JSON.stringify(newMessageObj));
 
-            // Fetch initial messages
-            if (roomName && user) {
-                try {
-                    await fetchMessages(0, 25, true); // Pass the initial state of `hasMoreMessages`
-                } catch (err) {
-                    console.error("Error fetching initial messages:", err);
-                }
-            }
-        };
-
-        resetAndFetchMessages();
-    }, [roomName, user]);
-
-    const sendMessage = async () => {
-        if (socketRef.current) {
-            const newMessageObj = {
-                id: uuidv4(),
-                message: newMessage,
-                sender: user.team_number,
-                receiver: receiverUser.team_number, // Replace with actual receiver ID
-            };
-
-            // Send the message via websocket
-            socketRef.current.send(JSON.stringify(newMessageObj));
-
-            // Add the message to the current room's messages
-            setMessagesByRoom((prevMessages) => {
-                const updatedMessages = { ...prevMessages };
-                if (!updatedMessages[roomName]) {
-                    updatedMessages[roomName] = [];
-                }
-
-                const isDuplicate = updatedMessages[roomName].some((msg) => msg.id === newMessageObj.id);
-                if (!isDuplicate) {
-                    updatedMessages[roomName].push(newMessageObj);
-                }
-                return updatedMessages;
-            });
-
-            try {
-                const response = await axiosInstance.post('/message/', newMessageObj);
-
-                if (response.status === 200 && response.data.detail === "Message already exists") {
-                    console.log("Message already exists in the database");
-                } else if (response.status === 201) {
-                    console.log("Message saved successfully");
-                }
-
-                const singleMessage = await axiosInstance.get(`/message/id/${newMessageObj.id}/`);
-                setMessagesByRoom((prevMessages) => {
-                    const updatedMessages = { ...prevMessages };
-
-                    // Find the messages array for the current room
-                    const roomMessages = updatedMessages[roomName] || [];
-
-                    // Find the index of the message that matches the ID
-                    const messageIndex = roomMessages.findIndex((msg) => msg.id === newMessageObj.id);
-
-                    // If the message is found, replace it with the updated singleMessage
-                    if (messageIndex !== -1) {
-                        roomMessages[messageIndex] = singleMessage.data;
-                    } else {
-                        // If the message doesn't exist (new message), push it
-                        roomMessages.push(singleMessage.data);
-                    }
-
-
-                    // Update the messages for the current room
-                    updatedMessages[roomName] = roomMessages;
-
-                    return updatedMessages;
-                });
-            } catch (err) {
-                console.error("Error saving message to database:", err);
-            }
-
-            setNewMessage('');
+      // Add the message to the current room's messages
+      setMessagesByRoom((prevMessages) => {
+        const updatedMessages = { ...prevMessages };
+        if (!updatedMessages[roomName]) {
+          updatedMessages[roomName] = [];
         }
-    };
 
-    return (
-        <div className='h-screen flex flex-col'>
-            <TopBar />
-            <div className='messages-section p-5 flex flex-grow flex-row bg-gray-100'>
-                {!loading && user ? (
-                    <>
-                        {/* Left Nav Bar */}
-                        <div className='w-1/3 bg-white rounded-3xl shadow-md'>
-                            <h1 className='text-3xl text-center p-3'>Chats</h1>
-                            {!loadingTeams && subsetTeams ? (
-                                <div className='flex flex-col overflow-y-auto'>
-                                    {subsetTeams.map((team, index) => (
-                                        <div key={index}>
-                                            {team.team_number != user.team_number && (
-                                                <div onClick={() => { navigate(`/chat/${team.team_number}`) }}
-                                                    className={`flex flex-row px-1 place-items-center ${roomName == team.team_number ? "bg-gray-100" : ""} hover:cursor-pointer hover:bg-gray-100 ${!team.is_read && team.receiver == user.team_number && "border-2 border-blue-300"} transition duration-200 my-2 mx-3 rounded-xl`}>
-                                                    <div className="flex w-full items-center">
-                                                        {/* Image container with a fixed or min width */}
-                                                        <div className="flex-shrink-0 w-[60px] p-2">
-                                                            <img
-                                                                className="h-[40px] w-[40px]"
-                                                                src={team.profile_photo}
-                                                                alt="Team Logo"
-                                                            />
-                                                        </div>
+        const isDuplicate = updatedMessages[roomName].some((msg) => msg.id === newMessageObj.id);
+        if (!isDuplicate) {
+          updatedMessages[roomName].push(newMessageObj);
+        }
+        return updatedMessages;
+      });
 
-                                                        {/* Text container that fills the remaining space */}
-                                                        <div className="flex flex-col flex-grow overflow-hidden px-2">
-                                                            <div className=''>
-                                                                <p className=''>{team.team_number} | {team.team_name}</p>
-                                                            </div>
-                                                            <div className="flex justify-between items-center w-full overflow-hidden">
-                                                                {/* Truncate the message if it’s too long */}
-                                                                <p className="truncate text-gray-400 text-sm">
-                                                                    {team.most_recent_message}
-                                                                </p>
-                                                                <p className="ml-2 whitespace-nowrap text-[12px]">{timeSince(team.timestamp)}</p>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            )}
-                                        </div>
-                                    ))}
-                                    <p className='mx-3 py-2 text-[20px] border-t border-gray-300'>Other Teams</p>
-                                    {unmessagedTeams.map((team, index) => (
-                                        <div key={index}>
-                                            {team.team_number != user.team_number && (
-                                                <div onClick={() => {
-                                                    navigate(`/chat/${team.team_number}`);
-                                                }}
-                                                    className={`flex flex-row place-items-center ${roomName == team.team_number ? "bg-gray-100" : ""} hover:cursor-pointer hover:bg-gray-100 transition duration-200 my-2 mx-3 rounded-xl`}>
-                                                    <div className='rounded-lg p-2 ml-2'>
-                                                        <img className='h-[40px] min-w-[40px]'
-                                                            src={team.profile_photo}
-                                                            alt="3647 logo"
-                                                        />
-                                                    </div>
-                                                    <div className='flex flex-col w-full px-2 py-2'>
-                                                        <div className=''>
-                                                            <p className=''>{team.team_name}</p>
-                                                        </div>
-                                                        <div className='flex flex-row justify-between'>
-                                                            <p>{team.team_number}</p>
-                                                            <p>{team.full_name}</p>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            )}
-                                        </div>
-                                    ))}
-                                </div>
-                            ) : loadingTeams ? (
-                                <p>Loading Teams</p>
-                            ) : (
-                                <p>error loading teams</p>
-                            )}
+      try {
+        const response = await axiosInstance.post('/message/', newMessageObj);
+
+        if (response.status === 200 && response.data.detail === "Message already exists") {
+          console.log("Message already exists in the database");
+        } else if (response.status === 201) {
+          console.log("Message saved successfully");
+        }
+
+        const singleMessage = await axiosInstance.get(`/message/id/${newMessageObj.id}/`);
+        setMessagesByRoom((prevMessages) => {
+          const updatedMessages = { ...prevMessages };
+
+          // Find the messages array for the current room
+          const roomMessages = updatedMessages[roomName] || [];
+
+          // Find the index of the message that matches the ID
+          const messageIndex = roomMessages.findIndex((msg) => msg.id === newMessageObj.id);
+
+          // If the message is found, replace it with the updated singleMessage
+          if (messageIndex !== -1) {
+            roomMessages[messageIndex] = singleMessage.data;
+          } else {
+            // If the message doesn't exist (new message), push it
+            roomMessages.push(singleMessage.data);
+          }
+
+
+          // Update the messages for the current room
+          updatedMessages[roomName] = roomMessages;
+
+          return updatedMessages;
+        });
+      } catch (err) {
+        console.error("Error saving message to database:", err);
+      }
+
+      setNewMessage('');
+    }
+  };
+
+  return (
+    <div className='h-screen flex flex-col'>
+      <TopBar />
+      <div className='messages-section p-5 flex flex-grow flex-row bg-gray-100'>
+        {!loading && user ? (
+          <>
+            {/* Left Nav Bar */}
+            <div className='w-1/3 bg-white rounded-3xl shadow-md'>
+              <h1 className='text-3xl text-center p-3'>Chats</h1>
+              {!loadingTeams && subsetTeams ? (
+                <div className='flex flex-col overflow-y-auto'>
+                  {subsetTeams.map((team, index) => (
+                    <div key={index}>
+                      {team.team_number != user.team_number && (
+                        <div onClick={() => {
+                          navigate(`/chat/${team.team_number}`);
+                          fetchList();
+                        }}
+                          className={`flex flex-row px-1 place-items-center ${roomName == team.team_number ? "bg-gray-100" : ""} hover:cursor-pointer hover:bg-gray-100 ${!team.is_read && team.receiver == user.team_number && "border-blue-400"} border-2 border-white transition duration-200 my-2 mx-3 rounded-xl`}>
+                          <div className="flex w-full items-center">
+                            {/* Image container with a fixed or min width */}
+                            <div className="flex-shrink-0 w-[60px] p-2">
+                              <img
+                                className="h-[40px] w-[40px]"
+                                src={team.profile_photo}
+                                alt="Team Logo"
+                              />
+                            </div>
+
+                            {/* Text container that fills the remaining space */}
+                            <div className="flex flex-col flex-grow overflow-hidden px-2">
+                              <div className=''>
+                                <p className='truncate'>{team.team_number} | {team.team_name}</p>
+                              </div>
+                              <div className="flex justify-between items-center w-full overflow-hidden">
+                                {/* Truncate the message if it’s too long */}
+                                <p className="truncate text-gray-400 text-sm">
+                                  {team.most_recent_message}
+                                </p>
+                                <p className="ml-2 whitespace-nowrap text-[12px]">{timeSince(team.timestamp)}</p>
+                              </div>
+                            </div>
+                          </div>
                         </div>
-
-                        {/* Right Panel with messages */}
-                        <div className='w-2/3 flex flex-col'>
-                            <div>
-                                <h1 className='text-3xl text-center'>
-                                    {roomName ? roomName : "Select a user to chat with!"}
-                                </h1>
+                      )}
+                    </div>
+                  ))}
+                  <p className='mx-3 py-2 text-[20px] border-t border-gray-300'>Other Teams</p>
+                  {unmessagedTeams.map((team, index) => (
+                    <div key={index}>
+                      {team.team_number != user.team_number && (
+                        <div onClick={() => {
+                          navigate(`/chat/${team.team_number}`);
+                        }}
+                          className={`flex flex-row place-items-center ${roomName == team.team_number ? "bg-gray-100" : ""} hover:cursor-pointer hover:bg-gray-100 transition duration-200 my-2 mx-3 rounded-xl`}>
+                          <div className='rounded-lg p-2 ml-2'>
+                            <img className='h-[40px] min-w-[40px]'
+                              src={team.profile_photo}
+                              alt="3647 logo"
+                            />
+                          </div>
+                          <div className='flex flex-col w-full px-2 py-2'>
+                            <div className=''>
+                              <p className=''>{team.team_name}</p>
                             </div>
-                            {/* Messages Section */}
-                            <div className='overflow-y-auto flex-grow'
-                                ref={messagesContainerRef}>
-                                {!loadingTeams && allTeams ? (
-                                    <>
-                                        {(messagesByRoom[roomName] || []).map((msg, index) => (
-                                            <div key={index}>
-                                                {msg.sender === user.team_number ? (
-                                                    <MessageSent message={msg} allTeams={allTeams} />
-                                                ) : msg.receiver === user.team_number ? (
-                                                    <MessageReceived message={msg} allTeams={allTeams} />
-                                                ) : (
-                                                    <>
-                                                        <p>Loading...</p>
-                                                    </>
-                                                )}
-                                            </div>
-                                        ))}
-                                    </>
-                                ) : (
-                                    <>
-                                        <p>Loading Messages</p>
-                                    </>
-                                )}
-
-                                <div ref={messagesEndRef} />
+                            <div className='flex flex-row justify-between'>
+                              <p>{team.team_number}</p>
+                              <p>{team.full_name}</p>
                             </div>
-
-                            {/* Input Section */}
-                            <div className='flex flex-row w-full justify-end'>
-                                <input
-                                    type="text"
-                                    value={newMessage}
-                                    onChange={(e) => setNewMessage(e.target.value)}
-                                    onKeyDown={(e) => {
-                                        if (e.key === 'Enter' && newMessage.trim()) {
-                                            sendMessage();
-                                        }
-                                    }}
-                                    className='mr-3 border-b border-b-red-800 
-                                focus:shadow-md focus:border-b-2 focus:ring-0 px-3 py-1 bg-inherit w-[87%]'
-                                />
-                                <button disabled={!newMessage || !roomName}
-                                    onClick={sendMessage}
-                                    className='p-2 rounded-full bg-red-800 text-white disabled:bg-gray-200 disabled:text-red-800 transition duration-200'>
-                                    <div>
-                                        <IoMdSend className='text-xl' />
-                                    </div>
-                                </button>
-                            </div>
-
+                          </div>
                         </div>
-                    </>
-                ) : error ? (
-                    <p>error: {error}</p>
-                ) : loading ? (
-                    <p>loading</p>
-                ) : !user ? (
-                    <p>Login to view messages</p>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              ) : loadingTeams ? (
+                <p>Loading Teams</p>
+              ) : (
+                <p>error loading teams</p>
+              )}
+            </div>
+
+            {/* Right Panel with messages */}
+            <div className='w-2/3 flex flex-col'>
+              <div>
+                <h1 className='text-3xl text-center'>
+                  {roomName ? roomName : "Select a user to chat with!"}
+                </h1>
+              </div>
+              {/* Messages Section */}
+              <div className='overflow-y-auto flex-grow'
+                ref={messagesContainerRef}>
+                {!loadingTeams && allTeams ? (
+                  <>
+                    {(messagesByRoom[roomName] || []).map((msg, index) => (
+                      <div key={index}>
+                        {msg.sender === user.team_number ? (
+                          <MessageSent message={msg} allTeams={allTeams} />
+                        ) : msg.receiver === user.team_number ? (
+                          <MessageReceived message={msg} allTeams={allTeams} />
+                        ) : (
+                          <>
+                            <p>Loading...</p>
+                          </>
+                        )}
+                      </div>
+                    ))}
+                  </>
                 ) : (
-                    <p>idk gang</p>
+                  <>
+                    <p>Loading Messages</p>
+                  </>
                 )}
 
+                <div ref={messagesEndRef} />
+              </div>
+
+              {/* Input Section */}
+              <div className='flex flex-row w-full justify-end'>
+                <input
+                  type="text"
+                  value={newMessage}
+                  onChange={(e) => setNewMessage(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' && newMessage.trim()) {
+                      sendMessage();
+                    }
+                  }}
+                  className='mr-3 border-b border-b-red-800 
+                                focus:shadow-md focus:border-b-2 focus:ring-0 px-3 py-1 bg-inherit w-[87%]'
+                />
+                <button disabled={!newMessage || !roomName}
+                  onClick={sendMessage}
+                  className='p-2 rounded-full bg-red-800 text-white disabled:bg-gray-200 disabled:text-red-800 transition duration-200'>
+                  <div>
+                    <IoMdSend className='text-xl' />
+                  </div>
+                </button>
+              </div>
+
             </div>
-            <Footer />
-        </div >
-    );
+          </>
+        ) : error ? (
+          <p>error: {error}</p>
+        ) : loading ? (
+          <p>loading</p>
+        ) : !user ? (
+          <p>Login to view messages</p>
+        ) : (
+          <p>idk gang</p>
+        )}
+
+      </div>
+      <Footer />
+    </div >
+  );
 };
 
 export default Chat;
