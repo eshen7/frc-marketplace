@@ -7,7 +7,13 @@ import Skeleton from "react-loading-skeleton";
 import SuccessBanner from "../components/SuccessBanner";
 import TextField from "@mui/material/TextField";
 import ErrorBanner from "../components/ErrorBanner";
-import { Button } from "@mui/material";
+import {
+  Button,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+} from "@mui/material";
 
 const UserProfile = () => {
   const [profileData, setProfileData] = useState(null);
@@ -16,6 +22,9 @@ const UserProfile = () => {
   const [profileChange, setProfileChange] = useState("");
   const [autocomplete, setAutocomplete] = useState(null);
   const [passwordError, setPasswordError] = useState("");
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [deleteConfirmation, setDeleteConfirmation] = useState("");
+  const CONFIRMATION_TEXT = "DELETE MY ACCOUNT";
 
   const [formData, setFormData] = useState({
     full_name: "",
@@ -209,29 +218,28 @@ const UserProfile = () => {
   };
 
   // Account Deletion handling
-  const handleDeleteAccount = async () => {
-    const confirmDelete = window.confirm(
-      "Are you sure you want to delete your account? This action cannot be undone."
-    );
+  const handleDeleteAccount = () => {
+    setDeleteDialogOpen(true);
+  };
 
-    if (!confirmDelete) {
-      return; // Exit if the user cancels the confirmation
+  const handleConfirmDelete = async () => {
+    if (deleteConfirmation !== CONFIRMATION_TEXT) {
+      alert("Please type the confirmation text exactly as shown.");
+      return;
     }
 
     try {
       const response = await axiosInstance.delete("/users/self/delete/");
       console.log(response.data);
-
-      // Notify the user of success
       alert("Account deleted successfully.");
-
       localStorage.removeItem("authToken");
-
-      // Redirect to the home page
       navigate("/");
     } catch (error) {
       console.error("Error deleting account:", error.response || error.message);
       alert("Failed to delete account. Please try again.");
+    } finally {
+      setDeleteDialogOpen(false);
+      setDeleteConfirmation("");
     }
   };
 
@@ -419,7 +427,11 @@ const UserProfile = () => {
                         Uneditable Information
                       </h2>
                       <div className="absolute right-[20px] top-[20px] rounded-lg bg-gray-200">
-                        <img src={profileData.profile_photo} width={60} className="p-2"/>
+                        <img
+                          src={profileData.profile_photo}
+                          width={60}
+                          className="p-2"
+                        />
                       </div>
                       <div className="space-y-4">
                         <div>
@@ -458,6 +470,34 @@ const UserProfile = () => {
         </div>
       </div>
       <Footer />
+      <Dialog
+        open={deleteDialogOpen}
+        onClose={() => setDeleteDialogOpen(false)}
+      >
+        <DialogTitle>Confirm Account Deletion</DialogTitle>
+        <DialogContent>
+          <p className="mb-4">
+            This action cannot be undone. To confirm, please type:
+          </p>
+          <p className="font-bold mb-4">{CONFIRMATION_TEXT}</p>
+          <TextField
+            fullWidth
+            value={deleteConfirmation}
+            onChange={(e) => setDeleteConfirmation(e.target.value)}
+            placeholder="Type confirmation text here"
+          />
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setDeleteDialogOpen(false)}>Cancel</Button>
+          <Button
+            onClick={handleConfirmDelete}
+            color="error"
+            disabled={deleteConfirmation !== CONFIRMATION_TEXT}
+          >
+            Delete Account
+          </Button>
+        </DialogActions>
+      </Dialog>
     </div>
   );
 };
