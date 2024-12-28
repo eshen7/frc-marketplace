@@ -70,7 +70,6 @@ class ChatConsumer(AsyncWebsocketConsumer):
                 {
                     'type': 'chat_message',
                     'id': id,
-                    'message': message,
                     'receiver': receiver,
                     'sender': sender,
                 }
