@@ -1,5 +1,6 @@
 import PropTypes from "prop-types";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
+import { useDropzone } from "react-dropzone";
 import {
   Dialog,
   DialogTitle,
@@ -12,7 +13,12 @@ import {
   MenuItem,
   FormControl,
   InputLabel,
+  Box,
+  Typography,
+  Stack,
+  IconButton,
 } from "@mui/material";
+import CloseIcon from "@mui/icons-material/Close";
 import axiosInstance from "../utils/axiosInstance";
 import NewCategoryForm from "./NewCategoryForm";
 import NewManufacturerForm from "./NewManufacturerForm";
@@ -30,9 +36,11 @@ const NewPartForm = ({ open, onClose, loading }) => {
     category_id: "",
     partID: "",
     description: "",
+    imageFile: null,
   });
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState("");
+  const [preview, setPreview] = useState(null);
 
   const fetchCategories = async () => {
     try {
@@ -69,12 +77,62 @@ const NewPartForm = ({ open, onClose, loading }) => {
       setCategoryDialogOpen(true);
       return;
     }
+
+    if (field === "imageFile") {
+      const file = event.target.files[0];
+      setPartData((prev) => ({ ...prev, imageFile: file }));
+      return;
+    }
+
     setPartData((prev) => ({ ...prev, [field]: event.target.value }));
   };
 
+  const onDrop = useCallback((acceptedFiles) => {
+    const file = acceptedFiles[0];
+    setPartData((prev) => ({ ...prev, imageFile: file }));
+    setPreview(URL.createObjectURL(file));
+  }, []);
+
+  const { getRootProps, getInputProps, isDragActive } = useDropzone({
+    onDrop,
+    accept: {
+      "image/*": [".jpeg", ".jpg", ".png", ".gif"],
+    },
+    multiple: false,
+  });
+
+  const handleRemoveImage = () => {
+    setPartData((prev) => ({ ...prev, imageFile: null }));
+    setPreview(null);
+  };
+
+  // Cleanup preview URL on unmount
+  useEffect(() => {
+    return () => {
+      if (preview) {
+        URL.revokeObjectURL(preview);
+      }
+    };
+  }, [preview]);
+
   const handleSubmit = async () => {
     try {
-      await axiosInstance.post("parts/", partData);
+      const formData = new FormData();
+      formData.append("name", partData.name);
+      formData.append("manufacturer_id", partData.manufacturer_id);
+      formData.append("category_id", partData.category_id);
+      formData.append("partID", partData.partID);
+      formData.append("description", partData.description);
+
+      if (partData.imageFile) {
+        formData.append("image", partData.imageFile);
+      }
+
+      await axiosInstance.post("parts/", formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
       setSuccess(true);
       setPartData({
         name: "",
@@ -82,7 +140,9 @@ const NewPartForm = ({ open, onClose, loading }) => {
         category_id: "",
         manufacturer_id: "",
         partID: "",
+        imageFile: null,
       });
+      setPreview(null);
       onClose();
     } catch (error) {
       setError("Failed to create part. Please try again.");
@@ -102,11 +162,15 @@ const NewPartForm = ({ open, onClose, loading }) => {
     fetchCategories();
   };
 
+  const isFormValid = () => {
+    return partData.name && partData.category_id; // Require both name and category
+  };
+
   return (
     <>
       {success && (
         <SuccessBanner
-          message="Operation completed successfully!"
+          message="Part created successfully!"
           onClose={() => setSuccess(false)}
         />
       )}
@@ -120,16 +184,21 @@ const NewPartForm = ({ open, onClose, loading }) => {
             margin="dense"
             label="Part Name"
             fullWidth
+            required
+            error={!partData.name}
             value={partData.name}
             onChange={handleChange("name")}
           />
           <FormControl fullWidth margin="dense">
             <InputLabel>Manufacturer</InputLabel>
             <Select
-              value={partData.manufacturer_id || ""}  // Add fallback to empty string
+              value={partData.manufacturer_id || ""} // Add fallback to empty string
               label="Manufacturer"
               onChange={handleChange("manufacturer_id")}
             >
+              <MenuItem key="select" value="Select Manufacturer...">
+                Select Manufacturer...
+              </MenuItem>
               {manufacturers.map((manufacturer) => (
                 <MenuItem key={manufacturer.id} value={manufacturer.id}>
                   {manufacturer.name}
@@ -147,12 +216,15 @@ const NewPartForm = ({ open, onClose, loading }) => {
             value={partData.partID}
             onChange={handleChange("partID")}
           />
-          <FormControl fullWidth margin="dense">
+          <FormControl fullWidth margin="dense" required>
+            {" "}
+            {/* Added required prop */}
             <InputLabel>Category</InputLabel>
             <Select
-              value={partData.category_id || ""}  // Add fallback to empty string
-              label="Category"
+              value={partData.category_id || ""} // Add fallback to empty string
+              label="Category *" // Added asterisk
               onChange={handleChange("category_id")}
+              error={!partData.category_id} // Added error state
             >
               {categories.map((category) => (
                 <MenuItem key={category.id} value={category.id}>
@@ -164,6 +236,48 @@ const NewPartForm = ({ open, onClose, loading }) => {
               </MenuItem>
             </Select>
           </FormControl>
+          {/* top margin of 1 */}
+          <Box sx={{ mt: 1 }}>
+            <div
+              {...getRootProps()}
+              style={{
+                border: "2px dashed #cccccc",
+                borderRadius: "4px",
+                padding: "20px",
+                textAlign: "center",
+                cursor: "pointer",
+              }}
+            >
+              <input {...getInputProps()} />
+              {isDragActive ? (
+                <Typography>Drop the image here ...</Typography>
+              ) : (
+                <Typography>Add An Image</Typography>
+              )}
+            </div>
+
+            {preview && (
+              <Stack
+                direction="row"
+                spacing={1}
+                alignItems="center"
+                sx={{ mt: 2 }}
+              >
+                <Box
+                  component="img"
+                  src={preview}
+                  sx={{
+                    maxWidth: 200,
+                    maxHeight: 200,
+                    objectFit: "contain",
+                  }}
+                />
+                <IconButton onClick={handleRemoveImage} size="small">
+                  <CloseIcon />
+                </IconButton>
+              </Stack>
+            )}
+          </Box>
           <TextField
             margin="dense"
             label="Description"
@@ -176,7 +290,10 @@ const NewPartForm = ({ open, onClose, loading }) => {
         </DialogContent>
         <DialogActions>
           <Button onClick={onClose}>Cancel</Button>
-          <Button onClick={handleSubmit} disabled={loading}>
+          <Button
+            onClick={handleSubmit}
+            disabled={loading || !isFormValid()} // Added form validation
+          >
             {loading ? <CircularProgress size={24} /> : "Submit"}
           </Button>
         </DialogActions>

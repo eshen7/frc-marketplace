@@ -1,7 +1,15 @@
 # serializers.py
 from django.forms import ValidationError
 from rest_framework import serializers
-from .models import User, Part, PartRequest, Message, PartManufacturer, PartCategory
+from .models import (
+    PartSale,
+    User,
+    Part,
+    PartRequest,
+    Message,
+    PartManufacturer,
+    PartCategory,
+)
 import googlemaps
 from address.models import State, Country, Locality, Address
 from decouple import config
@@ -224,6 +232,40 @@ class PartRequestSerializer(serializers.ModelSerializer):
         # Optionally include `user` or other computed fields here
         data["part"] = PartSerializer(instance.part).data  # Include part details
         data["user"] = UserSerializer(instance.user).data  # Include user details
+        return data
+
+
+class PartSaleSerializer(serializers.ModelSerializer):
+    """Serializer for the PartSale model."""
+
+    part_id = serializers.PrimaryKeyRelatedField(
+        queryset=Part.objects.all(), source="part", write_only=True
+    )
+
+    class Meta:
+        model = PartSale
+        fields = [
+            "id",  # self reference
+            "part_id",  # part reference
+            "ask_price",
+            "quantity",
+            "sale_creation_date",
+            "additional_info",
+        ]
+        read_only_fields = ["user", "sale_creation_date"]
+
+    def create(self, validated_data):
+        """Add the selling user to the validated data."""
+        user = self.context["request"].user
+        validated_data["user"] = user
+        return super().create(validated_data)
+
+    def to_representation(self, instance):
+        """Customize the serialized output."""
+        data = super().to_representation(instance)
+
+        data["part"] = PartSerializer(instance.part).data
+        data["user"] = UserSerializer(instance.user).data
         return data
 
 

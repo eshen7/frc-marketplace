@@ -17,6 +17,7 @@ from .views import (
     category_view,
     manufacturer_view,
     search_all_view,
+    part_sale_views,
 )
 
 urlpatterns = [
@@ -49,4 +50,5 @@ urlpatterns = [
     path("parts/categories/", category_view),
     path("parts/manufacturers/", manufacturer_view),
     path("search/all/", search_all_view, name="search_all_view"),
+    path("sales/", part_sale_views, name="part_sale_views"),
 ]

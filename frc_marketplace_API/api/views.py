@@ -6,9 +6,18 @@ from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
 from rest_framework import status
 from django.views.decorators.csrf import csrf_exempt
-from .models import User, Part, PartRequest, Message, PartCategory, PartManufacturer
+from .models import (
+    PartSale,
+    User,
+    Part,
+    PartRequest,
+    Message,
+    PartCategory,
+    PartManufacturer,
+)
 from .serializers import (
     MessageSerializer,
+    PartSaleSerializer,
     UserSerializer,
     PartSerializer,
     PartRequestSerializer,
@@ -312,6 +321,22 @@ def requests_by_user_view(request, team_number):
     part_request = PartRequest.objects.filter(user_id=user)
     serializer = PartRequestSerializer(part_request, many=True)
     return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+@api_view(["GET", "POST"])
+def part_sale_views(request):
+    """Method for GETTING and CREATING Part Sales."""
+    if request.method == "GET":
+        part_sales = PartSale.objects.all()
+        serializer = PartSaleSerializer(part_sales, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+    if request.method == "POST":
+        serializer = PartSaleSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    return JsonResponse({"error": "Only GET and POST requests are allowed"}, status=405)
 
 
 @permission_classes([IsAuthenticated])
