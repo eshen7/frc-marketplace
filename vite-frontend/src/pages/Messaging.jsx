@@ -5,7 +5,7 @@ import Footer from '../components/Footer';
 import { IoMdSend } from "react-icons/io";
 import axiosInstance from '../utils/axiosInstance';
 import { v4 as uuidv4 } from 'uuid'; // Add this at the top (install `uuid` if necessary)
-import { formatTimestamp } from '../utils/utils';
+import { formatTimestamp, timeSince } from '../utils/utils';
 
 const MessageSent = ({ message, allTeams }) => {
     const senderTeam = allTeams.find(team => team.team_number === message.sender);
@@ -49,6 +49,12 @@ const Chat = () => {
 
     const [allTeams, setAllTeams] = useState([]);
     const [loadingTeams, setLoadingTeams] = useState(true);
+
+    const [subsetTeams, setSubsetTeams] = useState([]);
+    const [loadingSubsetTeams, setLoadingSubsetTeams] = useState(true);
+
+    const [messagedTeams, setMessagedTeams] = useState([]);
+    const [unmessagedTeams, setUnmessagedTeams] = useState([]);
 
     const [currentOffset, setCurrentOffset] = useState(0);
     const [hasMoreMessages, setHasMoreMessages] = useState(true);
@@ -99,6 +105,55 @@ const Chat = () => {
 
         messageMaxHeight();
     }, [loading]);
+
+    useEffect(() => {
+        const fetchList = async () => {
+            if (user) {
+                try {
+                    const response = await axiosInstance.get("/dms/");
+                    let data = response.data;
+
+                    data = data.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+
+                    setSubsetTeams(data);
+                } catch (err) {
+                    console.error("Error fetching list of messages:", err);
+                } finally {
+                    setLoadingSubsetTeams(false);
+                }
+            }
+        };
+
+        fetchList();
+    }, [user]);
+
+    useEffect(() => {
+        if (allTeams.length && subsetTeams.length) {
+            const messagedTeamNumbers = subsetTeams.map(team => team.team_number);
+
+            setUnmessagedTeams(allTeams.filter(
+                team => !messagedTeamNumbers.includes(team.team_number)
+            ));
+        }
+    }, [allTeams, subsetTeams]);
+
+    useEffect(() => {
+        if (!user || !roomName) return;
+
+        // Mark messages as read:
+        markMessagesAsRead(roomName);
+    }, [user, roomName]);
+
+    const markMessagesAsRead = async (teamNumber) => {
+        try {
+            const response = await axiosInstance.post('/messages/mark_as_read/', {
+                team_number: teamNumber,
+            });
+            console.log(response.data); // "Messages marked as read."
+        } catch (err) {
+            console.error('Error marking messages as read:', err);
+        }
+    };
 
     useEffect(() => {
         const fetchTeams = async () => {
@@ -354,17 +409,17 @@ const Chat = () => {
             // Reset states
             setHasMoreMessages(true);
             setCurrentOffset(0);
-    
+
             // Clear messages for the new room
             setMessagesByRoom((prevMessages) => {
                 const updatedMessages = { ...prevMessages };
                 updatedMessages[roomName] = [];
                 return updatedMessages;
             });
-    
+
             // Wait for the reset to complete before fetching
             await new Promise((resolve) => setTimeout(resolve, 0));
-    
+
             // Fetch initial messages
             if (roomName && user) {
                 try {
@@ -374,8 +429,8 @@ const Chat = () => {
                 }
             }
         };
-    
-        resetAndFetchMessages();    
+
+        resetAndFetchMessages();
     }, [roomName, user]);
 
     const sendMessage = async () => {
@@ -454,18 +509,52 @@ const Chat = () => {
                         {/* Left Nav Bar */}
                         <div className='w-1/3 bg-white rounded-3xl shadow-md'>
                             <h1 className='text-3xl text-center p-3'>Chats</h1>
-                            {!loadingTeams && allTeams ? (
+                            {!loadingTeams && subsetTeams ? (
                                 <div className='flex flex-col overflow-y-auto'>
-                                    {allTeams.map((team, index) => (
+                                    {subsetTeams.map((team, index) => (
+                                        <div key={index}>
+                                            {team.team_number != user.team_number && (
+                                                <div onClick={() => { navigate(`/chat/${team.team_number}`) }}
+                                                    className={`flex flex-row px-1 place-items-center ${roomName == team.team_number ? "bg-gray-100" : ""} hover:cursor-pointer hover:bg-gray-100 ${!team.is_read && team.receiver == user.team_number && "border-2 border-blue-300"} transition duration-200 my-2 mx-3 rounded-xl`}>
+                                                    <div className="flex w-full items-center">
+                                                        {/* Image container with a fixed or min width */}
+                                                        <div className="flex-shrink-0 w-[60px] p-2">
+                                                            <img
+                                                                className="h-[40px] w-[40px]"
+                                                                src={team.profile_photo}
+                                                                alt="Team Logo"
+                                                            />
+                                                        </div>
+
+                                                        {/* Text container that fills the remaining space */}
+                                                        <div className="flex flex-col flex-grow overflow-hidden px-2">
+                                                            <div className=''>
+                                                                <p className=''>{team.team_number} | {team.team_name}</p>
+                                                            </div>
+                                                            <div className="flex justify-between items-center w-full overflow-hidden">
+                                                                {/* Truncate the message if it’s too long */}
+                                                                <p className="truncate text-gray-400 text-sm">
+                                                                    {team.most_recent_message}
+                                                                </p>
+                                                                <p className="ml-2 whitespace-nowrap text-[12px]">{timeSince(team.timestamp)}</p>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            )}
+                                        </div>
+                                    ))}
+                                    <p className='mx-3 py-2 text-[20px] border-t border-gray-300'>Other Teams</p>
+                                    {unmessagedTeams.map((team, index) => (
                                         <div key={index}>
                                             {team.team_number != user.team_number && (
                                                 <div onClick={() => {
                                                     navigate(`/chat/${team.team_number}`);
                                                 }}
                                                     className={`flex flex-row place-items-center ${roomName == team.team_number ? "bg-gray-100" : ""} hover:cursor-pointer hover:bg-gray-100 transition duration-200 my-2 mx-3 rounded-xl`}>
-                                                    <div className='rounded-full px-1 '>
-                                                        <img className='h-[40px] min-w-[32px]'
-                                                            src="/MillenniumFalconLogo3647.png"
+                                                    <div className='rounded-lg p-2 ml-2'>
+                                                        <img className='h-[40px] min-w-[40px]'
+                                                            src={team.profile_photo}
                                                             alt="3647 logo"
                                                         />
                                                     </div>
