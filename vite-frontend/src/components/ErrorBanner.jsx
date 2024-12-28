@@ -8,7 +8,7 @@ const ErrorBanner = ({ message, onClose }) => {
   useEffect(() => {
     const timer = setTimeout(() => {
       onClose();
-    }, 5000);
+    }, 2500);
 
     return () => clearTimeout(timer);
   }, [onClose]);
