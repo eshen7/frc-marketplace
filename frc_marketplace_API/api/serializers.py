@@ -154,7 +154,7 @@ class PartSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Part
-        fields = ["id", "name", "manufacturer_id", "category_id", "model_id", "image"]
+        fields = ["id", "name", "manufacturer_id", "category_id", "model_id", "description", "image"]
 
     def validate_image(self, value):
         if value:
@@ -254,12 +254,13 @@ class PartSaleSerializer(serializers.ModelSerializer):
             "quantity",
             "sale_creation_date",
             "additional_info",
+            "condition",
         ]
         read_only_fields = ["user", "sale_creation_date"]
 
     def create(self, validated_data):
         """Add the selling user to the validated data."""
-        user = self.context["request"].user
+        user = self.context["sale"].user
         validated_data["user"] = user
         return super().create(validated_data)
 

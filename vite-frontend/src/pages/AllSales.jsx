@@ -84,7 +84,7 @@ const SalesPage = () => {
 
       const distance = Math.sqrt(
         Math.pow(Math.abs(user_latitude - item_latitude), 2) +
-          Math.pow(Math.abs(user_longitude - item_longitude), 2)
+        Math.pow(Math.abs(user_longitude - item_longitude), 2)
       );
       item.distance = Math.round(distance);
       setItems([...items]);
@@ -106,7 +106,7 @@ const SalesPage = () => {
 
     const distance = Math.sqrt(
       Math.pow(Math.abs(user_latitude - item_latitude), 2) +
-        Math.pow(Math.abs(user_longitude - item_longitude), 2)
+      Math.pow(Math.abs(user_longitude - item_longitude), 2)
     );
     return { ...item, distance: Math.round(distance) };
   };
@@ -250,11 +250,10 @@ const SalesPage = () => {
                             : [...prev, category]
                         );
                       }}
-                      className={`px-3 py-1 text-sm ${
-                        selectedCategories.includes(category)
+                      className={`px-3 py-1 text-sm ${selectedCategories.includes(category)
                           ? "bg-red-800 text-white"
                           : "bg-gray-100 text-gray-800"
-                      }`}
+                        }`}
                     >
                       {category.name}
                     </button>

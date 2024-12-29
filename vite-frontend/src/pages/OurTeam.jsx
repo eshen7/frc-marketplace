@@ -58,10 +58,10 @@ export default function OurTeamPage() {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-10 mt-12">
           <CreatorCard
             name={"Eric Grun"}
-            image={"/IMG_6769.jpg"}
-            title={"Fullstack Developer"}
+            image={"/grun.jpeg"}
+            title={"CS @ Rice"}
             description={
-              "I'm an undergraduate at Rice University studying Computer science and Entrepreneurship. " +
+              "I'm an undergraduate at Rice University studying Computer Science and Entrepreneurship. " +
               "I was the president of Team 3647 from 2023-2024."
             }
             linkedin={"https://www.linkedin.com/in/ericg4"}
@@ -91,6 +91,14 @@ export default function OurTeamPage() {
             description={"eater"}
             linkedin={"https://www.linkedin.com/in/ericg4"}
             insta={"https://www.instagram.com/eric.g4/"}
+          />
+          <CreatorCard
+            name={"Alexus Lee"}
+            image={"/IMG_6769.jpg"}
+            title={"biggest back"}
+            description={"eater"}
+            linkedin={"https://www.linkedin.com/in/alexus-lee-5b695a210/"}
+            insta={"https://www.instagram.com/alexuss.27/"}
           />
         </div>
 

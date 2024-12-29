@@ -370,9 +370,22 @@ def part_sale_views(request):
         serializer = PartSaleSerializer(part_sales, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
     if request.method == "POST":
-        serializer = PartSaleSerializer(data=request.data)
+        user_id = request.headers.get("X-User-ID")
+        try:
+            user = User.objects.get(id=user_id)
+        except User.DoesNotExist:
+            return Response(
+                {"message": f"User with id {user_id} not found"},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+        except Exception as e:
+            return Response(
+                {"message": "An error occurred", "error": str(e)},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            )
+        serializer = PartSaleSerializer(data=request.data, context={"sale": request})
         if serializer.is_valid():
-            serializer.save()
+            serializer.save(user=user)
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     return JsonResponse({"error": "Only GET and POST requests are allowed"}, status=405)

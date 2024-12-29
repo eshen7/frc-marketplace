@@ -16,7 +16,7 @@ const LandingPage = () => {
                 </p>
 
                 <p>
-                    In the meanwhile, check out the features of our website! 
+                    In the meanwhile, check out the features of our website!
                 </p>
             </div>
             <Footer />
