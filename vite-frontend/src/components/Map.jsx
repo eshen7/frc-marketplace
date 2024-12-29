@@ -112,7 +112,7 @@ const Map = ({ zoom = 10, locations = [] }) => {
   };
 
   return (
-    <div className=" h-[500px] flex items-center justify-center mx-auto min-w-[500px]">
+    <div className=" h-[500px] flex items-center justify-center mx-auto">
       <GoogleMap
         mapContainerStyle={{ width: "1000px", height: "500px" }}
         center={mapCenter}

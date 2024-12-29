@@ -332,10 +332,37 @@ const Home = () => {
       )}
       <TopBar />
       <div className="bg-gray-100">
-        <h1 className="text-7xl text-center pt-[80px] mb-[80px] font-paytone text-[#AE0000] font-extrabold text-shadow-md">
-          {" "}
-          FRC MARKETPLACE
-        </h1>
+        {/* Title Section */}
+        <div className="flex flex-col place-items-center pt-[80px] mb-[80px]">
+          {/* Title */}
+          <div className="text-5xl text-center text-black font-semibold text-shadow-md mb-10">
+            <h1>Where Teamwork</h1>
+            <h1 className="text-[#050A44]">Drives Innovation</h1>
+          </div>
+          {/* Description */}
+          <div className="text-center border-b-white max-w-[600px]">
+            <p className="text-sm">
+              RoboExchange is an online marketplace designed specifically for high school robotics teams to buy,
+              sell, and trade parts and components. Whether you're looking for motors, sensors, gears, or even
+              custom-built parts, this platform connects teams across the region, making it easier to source specific
+              materials and tools for your robotics projects. Users can list surplus components, negotiate prices, and
+              offer bulk deals, fostering a collaborative ecosystem where teams help each other by sharing resources.
+              It's a one-stop shop for teams to save on costs, access hard-to-find parts, and build stronger networks
+              within the robotics community.
+            </p>
+          </div>
+          {/* Buttons */}
+          <div className="flex flex-row justify-center mt-5 max-w-screen border-b border-b-black pb-5">
+            {/* Request */}
+            <button className="py-3 px-5 bg-blue-800 text-white text-[14px] rounded-sm hover:bg-blue-900 mr-5">
+              Make a Request
+            </button>
+            {/* Sale */}
+            <button className="py-3 px-5 border border-blue-800 text-blue-800 text-[14px] rounded-sm hover:bg-white">
+              Post a Sale
+            </button>
+          </div>
+        </div>
         <section className="mx-[30px] mb-[30px]">
           <div>
             <h2 className="text-2xl font-bold mb-[30px]">See Nearby Teams</h2>

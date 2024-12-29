@@ -146,7 +146,7 @@ const SearchBar = () => {
   };
 
   return (
-    <div className="relative w-64" ref={searchRef}>
+    <div className="relative" ref={searchRef}>
       <div className="relative">
         <input
           type="text"

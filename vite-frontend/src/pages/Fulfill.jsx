@@ -13,28 +13,42 @@ import TopBar from './../components/TopBar.jsx'
 import Footer from '../components/Footer.jsx'
 import { useParams } from 'react-router-dom'
 import axiosInstance from '../utils/axiosInstance.js'
-import { haversine } from '../utils/utils.jsx'
+import { getDaysUntil, haversine } from '../utils/utils.jsx'
+import { FaComments } from 'react-icons/fa'
 
 // example data
 const requestData = {
-  "id": 1,
+  "id": "ca98f634-ee17-481b-b131-a4f4bb13243c",
   "quantity": 1,
-  "request_date": "2024-11-29",
-  "needed_date": "2024-11-14",
-  "needed_for": "asdfasdf",
-  "additional_info": "jggjhb. hgiggkjhk",
-  "part_id": 1,
-  "part_name": ";lkj",
-  "part_description": "hhkjh",
+  "request_date": "2024-12-29",
+  "needed_date": "2025-02-03",
+  "needed_for": "",
+  "additional_info": "",
+  "part": {
+    "id": "487c4770-edd1-4d33-a7fb-416bee235e88",
+    "name": "Kraken X60 REAL",
+    "manufacturer_id": "7fbe19b9-b7eb-45d5-828b-f16e7861fb29",
+    "category_id": "cb60b85c-80c1-42be-b113-4d8b746bed64",
+    "model_id": null,
+    "image": "https://frcmresources.s3.us-west-1.amazonaws.com/parts/WCP/Motor/kraken.webp",
+    "manufacturer": {
+      "id": "7fbe19b9-b7eb-45d5-828b-f16e7861fb29",
+      "name": "WCP",
+      "website": "https://wcproducts.com/"
+    },
+    "category": "Motor"
+  },
   "user": {
-    "email": "ericgrun4@gmail.com",
-    "full_name": "Eric Grun",
-    "team_name": "The Aluminum Narwhals",
-    "team_number": 3128,
+    "email": "andrewkkchen@gmail.com",
+    "full_name": "Andrew Chen",
+    "team_name": "The Holy Cows",
+    "team_number": 1538,
+    "profile_photo": "https://www.thebluealliance.com/avatar/2024/frc1538.png",
+    "phone": "1234567890",
     "formatted_address": {
-      "raw": "5951 Village Center Loop Rd, San Diego, CA 92130, USA",
-      "latitude": 32.9582122,
-      "longitude": -117.189548
+      "raw": "5331 Mt Alifan Dr, San Diego, CA 92111, USA",
+      "latitude": 32.8156639,
+      "longitude": -117.1808113
     }
   }
 }
@@ -110,105 +124,169 @@ export default function FulfillRequest() {
   const prevImage = () => {
     setCurrentImageIndex((prevIndex) => (prevIndex - 1 + imageUrls.length) % imageUrls.length)
   }
-  return (
-    <>
-      <Box sx={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
-        <TopBar />
-        {request && !error ? (
+  const renderDueDate = (date) => {
+    const date_obj = new Date(date);
+    const daysUntil = getDaysUntil(date_obj);
+    const isUrgent = daysUntil < 5 && daysUntil > 0;
+    const isOverdue = daysUntil < 0;
+    const isDueToday = daysUntil === 0;
+    const absoluteDaysUntil = Math.abs(daysUntil);
 
-          <Box sx={{ flexGrow: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', mt: 4, px: 2 }}>
-            <Typography variant="h2" component="h1" gutterBottom className="font-paytone text-[#AE0000] font-extrabold text-shadow-md">
-              Fulfill Request
-            </Typography>
-            <Grid container spacing={4} justifyContent="center" alignItems="flex-start" sx={{ maxWidth: 1200, mt: 2 }}>
-              <Grid item xs={12} md={6}>
-                <Paper elevation={3} sx={{ p: 2, height: '100%', display: 'flex', flexDirection: 'column' }}>
-                  <Box sx={{ position: 'relative', width: '100%', paddingTop: '100%', overflow: 'hidden' }}>
-                    <img
-                      src={imageUrls[currentImageIndex]}
-                      alt={`Image ${currentImageIndex + 1}`}
-                      style={{
-                        position: 'absolute',
-                        top: 0,
-                        left: 0,
-                        width: '100%',
-                        height: '100%',
-                        objectFit: 'cover'
-                      }}
-                    />
-                  </Box>
-                  <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 2 }}>
-                    <Button onClick={prevImage} variant="contained">Previous</Button>
-                    <Button onClick={nextImage} variant="contained">Next</Button>
-                  </Box>
-                </Paper>
-              </Grid>
-              <Grid item xs={12} md={6}>
-                <Paper elevation={3} sx={{ p: 2, height: '100%', display: 'flex', flexDirection: 'column' }}>
-                  <Typography variant="h4" component="h2" gutterBottom>
-                    {request.part_name}
-                  </Typography>
-                  <Typography variant="body1" gutterBottom>
-                    <strong>Quantity:</strong> {request.quantity}
-                  </Typography>
-                  <Typography variant="body1" gutterBottom>
-                    <strong>Need the Part by:</strong> {new Date(request.needed_date).toLocaleDateString()}
-                  </Typography>
-                  <Typography variant="body1" gutterBottom>
-                    <strong>Needed for:</strong> {request.needed_for}
-                  </Typography>
-                  <Typography variant="body1" gutterBottom>
-                    <strong>Additional info:</strong>
-                  </Typography>
-                  <Box sx={{ maxHeight: 100, overflowY: 'auto', mb: 2 }}>
-                    <Typography variant="body2">
-                      {request.additionalInfo}
-                    </Typography>
-                  </Box>
-                </Paper>
-              </Grid>
-            </Grid>
-            <Box sx={{ width: '100%', maxWidth: 600, mt: 2 }}>
-              <Paper elevation={3} sx={{ p: 2 }}>
-                <div className='flex flex-col'>
-                  <div className='flex flex-col items-center'>
-                    <Typography variant="h4" component="h2" gutterBottom>
-                      <strong>{request.user.team_name}</strong>
-                    </Typography>
-                    <Typography variant="h5" gutterBottom>
-                      {request.user.team_number}
-                    </Typography>
-                  </div>
-                  <Typography variant="body1" gutterBottom>
-                    <strong>Distance:</strong> {user ? (
-                      `${haversine(
-                        request.user.formatted_address.latitude,
-                        request.user.formatted_address.longitude,
-                        user.formatted_address.latitude,
-                        user.formatted_address.longitude
-                      ).toFixed(1)} miles`
-                    ) : ("Log in to view distance")}
-                  </Typography>
-                  <Button onClick={() => {
-                    window.location.href = `/profile/frc/${request.user.team_number}`
-                  }} variant="contained" color="primary" fullWidth>
-                    View their profile
-                  </Button>
-                </div>
-              </Paper>
-            </Box>
-          </Box>
-        ) : !error ? (
-          <>r
-            <p>loading</p>
+    return (
+      <p
+        className={`text-sm ${isOverdue || isDueToday
+          ? "text-red-600 font-bold"
+          : isUrgent
+            ? "text-orange-600 font-bold"
+            : "text-gray-500"
+          }`}
+      >
+        {isOverdue ? (
+          <>
+            OVERDUE! ({absoluteDaysUntil}{" "}
+            {absoluteDaysUntil === 1 ? "day" : "days"} ago)
           </>
+        ) : isDueToday ? (
+          <>Need Today!</>
         ) : (
           <>
-            <p>{error}</p>
+            Need By: {date_obj.toLocaleDateString()} (
+            {daysUntil} {daysUntil === 1 ? "day" : "days"})
           </>
         )}
-        <Footer />
-      </Box>
-    </>
+      </p>
+    );
+  };
+  return (
+    <div className='flex flex-col min-h-screen'>
+      <TopBar />
+      <div className='flex-grow flex flex-col'>
+        <div className='py-8 md:py-16'>
+          {request && !error ? (
+            <>
+              {/* Main Content */}
+              <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 px-5 sm:px-12 md:px-20 gap-10'>
+                {/* Name & Description */}
+                <div className='flex flex-col'>
+                  <div className='flex flex-row justify-between'>
+                    {/* Request Date */}
+                    <p className='text-gray-500 text-sm'>
+                      {(new Date(request.request_date)).toLocaleDateString()}
+                    </p>
+                    {/* Needed By */}
+                    <div>
+                      {renderDueDate(request.needed_date)}
+                    </div>
+                  </div>
+
+                  {/* Part Name */}
+                  <h1 className='text-[30px] font-roboto'>
+                    {request.part.name}
+                  </h1>
+                  <h2 className='text-[20px]'>
+                    <a href={request.part.manufacturer.website} target='_blank'>
+                      <span className='text-blue-600 hover:underline'>
+                        {request.part.manufacturer.name}
+                      </span>
+                    </a>
+                  </h2>
+                  {/* Quantity */}
+                  <div className='flex flex-row justify-between place-items-center'>
+                    <p>
+                      Qty: {request.quantity}
+                    </p>
+                    <p className='text-green-700 text-[24px]'>
+                      $?
+                    </p>
+                  </div>
+                  {/* Additional Info */}
+                  <div className='flex flex-col mt-6'>
+                    <p className='font-semibold'>
+                      Part Description
+                    </p>
+                    <p className='text-gray-500'>
+                      {request.part.description ? request.part.description : (
+                        "No description for the part available."
+                      )}
+                    </p>
+                    <p className='font-semibold mt-4'>
+                      Additional Info
+                    </p>
+                    <p className='text-gray-500'>
+                      {request.additional_info ? request.additional_info : (
+                        "No additional info for the request was provided by the user."
+                      )}
+                    </p>
+                  </div>
+                </div>
+
+                {/* Image */}
+                <div className=''>
+                  <img
+                    src={request.part.image}
+                  />
+                </div>
+
+                {/* User Stuff */}
+                <div className='col-span-1 md:col-span-2 lg:col-span-1'>
+                  <div className='flex flex-row justify-between place-items-center'>
+                    {/* Team Name */}
+                    <h3 className='text-[24px] text-left md:text-center lg:text-left'>
+                      {request.user.team_number} | {request.user.team_name}
+                    </h3>
+                    <div className='rounded-md p-1 bg-gray-200 mr-3 max-w-fit max-h-fit ml-2'>
+                      <img src={request.user.profile_photo} />
+                    </div>
+                  </div>
+                  {/* Distance */}
+                  <div>
+                    <p className='text-sm'>
+                      {user ? (
+                        `${haversine(
+                          request.user.formatted_address.latitude,
+                          request.user.formatted_address.longitude,
+                          user.formatted_address.latitude,
+                          user.formatted_address.longitude
+                        ).toFixed(1)} miles`
+                      ) : ("Log in to view distance")}
+                    </p>
+                  </div>
+
+                  <div className='flex flex-col mt-3'>
+                    <button className='py-3 px-6 bg-black hover:bg-gray-800 transition duration-200 text-white rounded-md mb-4'>
+                      <a href={`/profile/frc/${request.user.team_number}`}>
+                        <div className='flex flex-row justify-center place-items-center'>
+                          <p>Profile Page</p>
+                        </div>
+                      </a>
+                    </button>
+                    <button className='py-3 px-6 bg-blue-700 hover:bg-blue-800 transition duration-200 text-white rounded-md'>
+                      <a href={`/chat/${request.user.team_number}`}>
+                        <div className='flex flex-row justify-center place-items-center'>
+                          <FaComments className='mr-3' />
+                          <p>
+                            Message
+                          </p>
+                        </div>
+                      </a>
+                    </button>
+                  </div>
+
+                </div>
+              </div>
+            </>
+          ) : !error ? (
+            <p className='text-center'>
+              Loading Request...
+            </p>
+          ) : (
+            <p className='text-center'>
+              Error loading request, please try again.
+            </p>
+          )}
+        </div>
+      </div>
+      <Footer />
+    </div>
   )
 }
