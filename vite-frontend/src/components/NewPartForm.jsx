@@ -127,7 +127,7 @@ const NewPartForm = ({ open, onClose, loading }) => {
       formData.append("name", partData.name);
       formData.append("manufacturer_id", partData.manufacturer_id);
       formData.append("category_id", partData.category_id);
-      formData.append("partID", partData.partID);
+      formData.append("model_id", partData.partID);
       formData.append("description", partData.description);
       formData.append("image", partData.imageFile);
 

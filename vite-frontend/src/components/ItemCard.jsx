@@ -37,14 +37,14 @@ const ItemCard = ({ item, currentUser, type }) => {
             <Typography variant="body2" color="text.secondary" gutterBottom>
               {currentUser
                 ? haversine(
-                    currentUser.formatted_address.latitude,
-                    currentUser.formatted_address.longitude,
-                    item.user.formatted_address.latitude,
-                    item.user.formatted_address.longitude
-                  ).toFixed(1) + " miles"
+                  currentUser.formatted_address.latitude,
+                  currentUser.formatted_address.longitude,
+                  item.user.formatted_address.latitude,
+                  item.user.formatted_address.longitude
+                ).toFixed(1) + " miles"
                 : isRequest && !currentUser
-                ? "Please log in to view distance"
-                : item.distance}
+                  ? "Please log in to view distance"
+                  : item.distance}
             </Typography>
             {(() => {
               let temp_date = item.needed_date;

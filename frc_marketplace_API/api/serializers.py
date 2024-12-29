@@ -154,7 +154,7 @@ class PartSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Part
-        fields = ["id", "name", "manufacturer_id", "category_id", "model_id", "image"]
+        fields = ["id", "name", "manufacturer_id", "category_id", "model_id", "description", "image"]
 
     def validate_image(self, value):
         if value:
