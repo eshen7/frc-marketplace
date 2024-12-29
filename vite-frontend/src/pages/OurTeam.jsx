@@ -69,11 +69,12 @@ export default function OurTeamPage() {
           />
           <CreatorCard
             name={"Edison Shen"}
-            image={"/IMG_6769.jpg"}
-            title={"bigback"}
-            description={"eater"}
-            linkedin={"https://www.linkedin.com/in/ericg4"}
-            insta={"https://www.instagram.com/eric.g4/"}
+            image={"/edward.jpg"}
+            title={"CS @ Michigan"}
+            description={"I'm an undergraduate at the University of Michigan, Ann Arbor studying Computer Science. " +
+              "I was the software lead of Team 3647 from 2023-2024."}
+            linkedin={"https://www.linkedin.com/in/edison-shen7/"}
+            insta={"https://www.instagram.com/edisonshen91/"}
           />
           <CreatorCard
             name={"Andrew Chen"}
