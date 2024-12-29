@@ -317,6 +317,19 @@ def part_view(part, part_id):
         return Response(
             {"error": "Part not found"}, status=status.HTTP_404_NOT_FOUND
         )
+    
+@api_view(["GET"])
+def requests_by_part_view(part, part_id):
+    """Fetch all of specific part's requests."""
+    try:
+        part = Part.objects.get(id=part_id)
+        requests_for_part = PartRequest.objects.filter(part=part)
+        serializer = PartRequestSerializer(requests_for_part, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+    except PartRequest.DoesNotExist:
+        return Response(
+            {"error": "Part requests not found"}, status=status.HTTP_404_NOT_FOUND
+        )
 
 
 @api_view(["GET"])
