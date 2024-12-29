@@ -318,6 +318,31 @@ def request_view(request, request_id):
         return Response(
             {"error": "Part Request not found"}, status=status.HTTP_404_NOT_FOUND
         )
+    
+@api_view(["GET"])
+def part_view(part, part_id):
+    """Fetch a specific part's details by UUID."""
+    try:
+        part = Part.objects.get(id=part_id)
+        serializer = PartSerializer(part)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+    except PartRequest.DoesNotExist:
+        return Response(
+            {"error": "Part not found"}, status=status.HTTP_404_NOT_FOUND
+        )
+    
+@api_view(["GET"])
+def requests_by_part_view(part, part_id):
+    """Fetch all of specific part's requests."""
+    try:
+        part = Part.objects.get(id=part_id)
+        requests_for_part = PartRequest.objects.filter(part=part)
+        serializer = PartRequestSerializer(requests_for_part, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+    except PartRequest.DoesNotExist:
+        return Response(
+            {"error": "Part requests not found"}, status=status.HTTP_404_NOT_FOUND
+        )
 
 
 @api_view(["GET"])
@@ -414,6 +439,85 @@ def message_by_id_get_view(request, message_id):
             {"error": f"User not validated"}, status=status.HTTP_401_UNAUTHORIZED
         )
 
+@permission_classes([IsAuthenticated])
+@api_view(["GET"])
+def dm_list_view(request):
+    """
+    Get the list of unique users the current user has messaged with, ordered by most recent message.
+    """
+    try:
+        user = request.user.UUID
+
+        # Fetch conversations (users who have sent or received messages with the current user)
+        conversations = Message.objects.filter(
+            models.Q(sender=user) | models.Q(receiver=user)
+        ).values('sender', 'receiver').annotate(
+            most_recent=models.Max('timestamp')
+        )
+
+        # Collect unique user IDs
+        user_ids = set()
+        for convo in conversations:
+            user_ids.add(convo['sender'])
+            user_ids.add(convo['receiver'])
+        user_ids.discard(user)  # Exclude the current user
+
+        # Prepare data for response
+        user_data = []
+        for uid in user_ids:
+            # Fetch the most recent message for this conversation
+            recent_message = Message.objects.filter(
+                (models.Q(sender=user, receiver_id=uid) | models.Q(sender_id=uid, receiver=user))
+            ).order_by('-timestamp').first()
+
+            # Include relevant user and message data
+            user_data.append({
+                'team_number': recent_message.sender.team_number if recent_message.sender.UUID == uid else recent_message.receiver.team_number,
+                'team_name': recent_message.sender.team_name if recent_message.sender.UUID == uid else recent_message.receiver.team_name,
+                'full_name': recent_message.sender.full_name if recent_message.sender.UUID == uid else recent_message.receiver.full_name,
+                'most_recent_message': recent_message.message,
+                'receiver': recent_message.receiver.team_number,
+                'timestamp': recent_message.timestamp,
+                'profile_photo': recent_message.sender.profile_photo if recent_message.sender.UUID == uid else recent_message.receiver.profile_photo,
+                'is_read': recent_message.is_read if recent_message.sender != user else True
+            })
+
+        return Response(user_data, status=200)
+
+    except Exception as e:
+        return Response({'error': str(e)}, status=500)
+    
+@api_view(["POST"])
+@permission_classes([IsAuthenticated])
+def mark_messages_as_read(request):
+    """
+    Marks all messages from the given team_number to the current user as read.
+    Expects a JSON body like: { "team_number": 1234 }
+    """
+    try:
+        user = request.user
+        team_number = request.data.get("team_number")
+
+        if not team_number:
+            return Response({"error": "team_number is required."}, status=400)
+
+        # Find the sender with that team_number
+        try:
+            other_user = User.objects.get(team_number=team_number)
+        except User.DoesNotExist:
+            return Response({"error": "User with that team_number not found."}, status=404)
+
+        # Mark all unread messages FROM other_user TO current user as read
+        Message.objects.filter(
+            sender=other_user,
+            receiver=user,
+            is_read=False
+        ).update(is_read=True)
+
+        return Response({"detail": "Messages marked as read."}, status=200)
+
+    except Exception as e:
+        return Response({"error": str(e)}, status=500)
 
 @permission_classes([IsAuthenticated])
 @api_view(["POST"])

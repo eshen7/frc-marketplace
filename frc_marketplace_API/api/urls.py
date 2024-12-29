@@ -10,6 +10,8 @@ from .views import (
     delete_user_view,
     user_by_team_number_view,
     request_view,
+    part_view,
+    requests_by_part_view,
     messages_by_user_get_view,
     message_by_id_get_view,
     message_post_view,
@@ -18,6 +20,8 @@ from .views import (
     manufacturer_view,
     search_all_view,
     part_sale_views,
+    dm_list_view,
+    mark_messages_as_read,
 )
 
 urlpatterns = [
@@ -26,6 +30,8 @@ urlpatterns = [
     path("parts/", part_views, name="part_views"),
     path("requests/", part_request_views, name="part_request_views"),
     path("requests/id/<str:request_id>/", request_view, name="request_view"),
+    path("parts/id/<str:part_id>/", part_view, name="part_view"),
+    path("parts/id/<str:part_id>/requests/", requests_by_part_view, name="part_view"),
     path(
         "requests/user/<str:team_number>/",
         requests_by_user_view,
@@ -46,6 +52,8 @@ urlpatterns = [
         message_by_id_get_view,
         name="message_by_id_get_view",
     ),
+    path("dms/", dm_list_view, name="dm_list_view"),
+    path("messages/mark_as_read/", mark_messages_as_read, name="mark_messages_as_read"),
     path("message/", message_post_view, name="message_post_view"),
     path("parts/categories/", category_view),
     path("parts/manufacturers/", manufacturer_view),
