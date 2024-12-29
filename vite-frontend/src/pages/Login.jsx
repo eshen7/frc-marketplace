@@ -34,14 +34,14 @@ const Login = () => {
       // Extract tokens
       const { access, refresh } = response.data;
 
-      const userUUID = document.cookie
+      const userID = document.cookie
         .split("; ")
-        .find((row) => row.startsWith("user_uuid="))
+        .find((row) => row.startsWith("user_id="))
         ?.split("=")[1];
 
       if (response.status === 200) {
         console.log("Login successful", response.data);
-        return { success: true, access, userUUID };
+        return { success: true, access, userID };
       } else {
         setShowErrorBanner(true);
         return {

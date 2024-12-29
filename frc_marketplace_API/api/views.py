@@ -83,7 +83,7 @@ def user_views(request):
 
 @api_view(["GET"])
 def user_by_team_number_view(request, team_number):
-    """Fetch a specific user's details by UUID."""
+    """Fetch a specific user's details by id."""
     try:
         user = User.objects.get(team_number=team_number)
         serializer = UserSerializer(user)
@@ -108,7 +108,8 @@ def get_logged_in_user_view(request):
         if request.method == "GET":
             # Serialize the user's data
             serializer = UserSerializer(user)
-            return Response(serializer.data, status=status.HTTP_200_OK)
+            if isinstance(user, User):
+                return Response(serializer.data, status=status.HTTP_200_OK)
         if request.method == "PUT":
             serializer = UserSerializer(user, data=request.data, partial=True)
             if serializer.is_valid():
@@ -187,7 +188,7 @@ def login_view(request):
         user = authenticate(request, email=email, password=password)
         if user:
             login(request, user)
-            uuid_to_set = str(user.UUID)
+            id_to_set = str(user.id)
             response = JsonResponse(
                 {
                     "message": "Login successful",
@@ -196,8 +197,8 @@ def login_view(request):
                 status=200,
             )
             response.set_cookie(
-                "user_uuid",
-                uuid_to_set,
+                "user_id",
+                id_to_set,
                 httponly=False,
                 samesite="Lax",
                 path="/",
@@ -283,12 +284,12 @@ def part_request_views(request):
         return Response(serializer.data, status=status.HTTP_200_OK)
 
     if request.method == "POST":
-        user_uuid = request.headers.get("X-User-UUID")
+        user_id = request.headers.get("X-User-ID")
         try:
-            user = User.objects.get(UUID=user_uuid)
+            user = User.objects.get(id=user_id)
         except User.DoesNotExist:
             return Response(
-                {"message": f"User with UUID {user_uuid} not found"},
+                {"message": f"User with id {user_id} not found"},
                 status=status.HTTP_404_NOT_FOUND,
             )
         except Exception as e:
@@ -309,7 +310,7 @@ def part_request_views(request):
 
 @api_view(["GET"])
 def request_view(request, request_id):
-    """Fetch a specific request's details by UUID."""
+    """Fetch a specific request's details by id."""
     try:
         part_request = PartRequest.objects.get(id=request_id)
         serializer = PartRequestSerializer(part_request)
@@ -318,19 +319,19 @@ def request_view(request, request_id):
         return Response(
             {"error": "Part Request not found"}, status=status.HTTP_404_NOT_FOUND
         )
-    
+
+
 @api_view(["GET"])
 def part_view(part, part_id):
-    """Fetch a specific part's details by UUID."""
+    """Fetch a specific part's details by id."""
     try:
         part = Part.objects.get(id=part_id)
         serializer = PartSerializer(part)
         return Response(serializer.data, status=status.HTTP_200_OK)
     except PartRequest.DoesNotExist:
-        return Response(
-            {"error": "Part not found"}, status=status.HTTP_404_NOT_FOUND
-        )
-    
+        return Response({"error": "Part not found"}, status=status.HTTP_404_NOT_FOUND)
+
+
 @api_view(["GET"])
 def requests_by_part_view(part, part_id):
     """Fetch all of specific part's requests."""
@@ -439,6 +440,7 @@ def message_by_id_get_view(request, message_id):
             {"error": f"User not validated"}, status=status.HTTP_401_UNAUTHORIZED
         )
 
+
 @permission_classes([IsAuthenticated])
 @api_view(["GET"])
 def dm_list_view(request):
@@ -446,47 +448,77 @@ def dm_list_view(request):
     Get the list of unique users the current user has messaged with, ordered by most recent message.
     """
     try:
-        user = request.user.UUID
+        user = request.user.id
 
         # Fetch conversations (users who have sent or received messages with the current user)
-        conversations = Message.objects.filter(
-            models.Q(sender=user) | models.Q(receiver=user)
-        ).values('sender', 'receiver').annotate(
-            most_recent=models.Max('timestamp')
+        conversations = (
+            Message.objects.filter(models.Q(sender=user) | models.Q(receiver=user))
+            .values("sender", "receiver")
+            .annotate(most_recent=models.Max("timestamp"))
         )
 
         # Collect unique user IDs
         user_ids = set()
         for convo in conversations:
-            user_ids.add(convo['sender'])
-            user_ids.add(convo['receiver'])
+            user_ids.add(convo["sender"])
+            user_ids.add(convo["receiver"])
         user_ids.discard(user)  # Exclude the current user
 
         # Prepare data for response
         user_data = []
         for uid in user_ids:
             # Fetch the most recent message for this conversation
-            recent_message = Message.objects.filter(
-                (models.Q(sender=user, receiver_id=uid) | models.Q(sender_id=uid, receiver=user))
-            ).order_by('-timestamp').first()
+            recent_message = (
+                Message.objects.filter(
+                    (
+                        models.Q(sender=user, receiver_id=uid)
+                        | models.Q(sender_id=uid, receiver=user)
+                    )
+                )
+                .order_by("-timestamp")
+                .first()
+            )
 
             # Include relevant user and message data
-            user_data.append({
-                'team_number': recent_message.sender.team_number if recent_message.sender.UUID == uid else recent_message.receiver.team_number,
-                'team_name': recent_message.sender.team_name if recent_message.sender.UUID == uid else recent_message.receiver.team_name,
-                'full_name': recent_message.sender.full_name if recent_message.sender.UUID == uid else recent_message.receiver.full_name,
-                'most_recent_message': recent_message.message,
-                'receiver': recent_message.receiver.team_number,
-                'timestamp': recent_message.timestamp,
-                'profile_photo': recent_message.sender.profile_photo if recent_message.sender.UUID == uid else recent_message.receiver.profile_photo,
-                'is_read': recent_message.is_read if recent_message.sender != user else True
-            })
+            user_data.append(
+                {
+                    "team_number": (
+                        recent_message.sender.team_number
+                        if recent_message.sender.id == uid
+                        else recent_message.receiver.team_number
+                    ),
+                    "team_name": (
+                        recent_message.sender.team_name
+                        if recent_message.sender.id == uid
+                        else recent_message.receiver.team_name
+                    ),
+                    "full_name": (
+                        recent_message.sender.full_name
+                        if recent_message.sender.id == uid
+                        else recent_message.receiver.full_name
+                    ),
+                    "most_recent_message": recent_message.message,
+                    "receiver": recent_message.receiver.team_number,
+                    "timestamp": recent_message.timestamp,
+                    "profile_photo": (
+                        recent_message.sender.profile_photo
+                        if recent_message.sender.id == uid
+                        else recent_message.receiver.profile_photo
+                    ),
+                    "is_read": (
+                        recent_message.is_read
+                        if recent_message.sender != user
+                        else True
+                    ),
+                }
+            )
 
         return Response(user_data, status=200)
 
     except Exception as e:
-        return Response({'error': str(e)}, status=500)
-    
+        return Response({"error": str(e)}, status=500)
+
+
 @api_view(["POST"])
 @permission_classes([IsAuthenticated])
 def mark_messages_as_read(request):
@@ -505,19 +537,20 @@ def mark_messages_as_read(request):
         try:
             other_user = User.objects.get(team_number=team_number)
         except User.DoesNotExist:
-            return Response({"error": "User with that team_number not found."}, status=404)
+            return Response(
+                {"error": "User with that team_number not found."}, status=404
+            )
 
         # Mark all unread messages FROM other_user TO current user as read
-        Message.objects.filter(
-            sender=other_user,
-            receiver=user,
-            is_read=False
-        ).update(is_read=True)
+        Message.objects.filter(sender=other_user, receiver=user, is_read=False).update(
+            is_read=True
+        )
 
         return Response({"detail": "Messages marked as read."}, status=200)
 
     except Exception as e:
         return Response({"error": str(e)}, status=500)
+
 
 @permission_classes([IsAuthenticated])
 @api_view(["POST"])

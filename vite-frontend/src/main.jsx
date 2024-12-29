@@ -89,7 +89,7 @@ const router = createBrowserRouter(
         },
         {
           path: "/ourteam",
-          element: <OurTeamPage />
+          element: <OurTeamPage />,
         },
         {
           path: "parts",
@@ -131,21 +131,21 @@ if (!rootElement._reactRoot) {
 const renderApp = () => {
   if (root) {
     root.render(
-      <StrictMode>
-        <ThemeProvider theme={theme}>
-          <RouterProvider
-            router={router}
-            future={{
-              v7_partialHydration: true,
-              v7_relativeSplatPath: true,
-              v7_startTransition: true,
-              v7_fetcherPersist: true,
-              v7_normalizeFormMethod: true,
-              v7_skipActionErrorRevalidation: true,
-            }}
-          />
-        </ThemeProvider>
-      </StrictMode>
+      // <StrictMode>
+      <ThemeProvider theme={theme}>
+        <RouterProvider
+          router={router}
+          future={{
+            v7_partialHydration: true,
+            v7_relativeSplatPath: true,
+            v7_startTransition: true,
+            v7_fetcherPersist: true,
+            v7_normalizeFormMethod: true,
+            v7_skipActionErrorRevalidation: true,
+          }}
+        />
+      </ThemeProvider>
+      // </StrictMode>
     );
   }
 };

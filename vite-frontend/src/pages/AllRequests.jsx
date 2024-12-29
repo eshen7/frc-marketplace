@@ -34,7 +34,7 @@ const AllRequests = () => {
   const fetchData = async () => {
     try {
       const response = await axiosInstance.get("/requests/");
-      setItems(Array.isArray(response.data) ? response.data : []); // Ensure it's an array
+      setItems(response.data); // Ensure it's an array
       setLoading(false);
     } catch (err) {
       setError("Failed to fetch data");
@@ -43,34 +43,35 @@ const AllRequests = () => {
   };
 
   useEffect(() => {
-      const checkAuthStatus = () => {
-        const token = localStorage.getItem("authToken");
-        setIsAuthenticated(!!token);
-      };
-  
-      checkAuthStatus(); // Check on mount
-  
-      // Set up an event listener for storage changes
-      window.addEventListener("storage", checkAuthStatus);
-  
-      // Clean up the event listener on component unmount
-      return () => {
-        window.removeEventListener("storage", checkAuthStatus);
-      };
-    }, []);
-  
+    const checkAuthStatus = () => {
+      const token = localStorage.getItem("authToken");
+      setIsAuthenticated(!!token);
+    };
+
+    checkAuthStatus(); // Check on mount
+
+    // Set up an event listener for storage changes
+    window.addEventListener("storage", checkAuthStatus);
+
+    // Clean up the event listener on component unmount
+    return () => {
+      window.removeEventListener("storage", checkAuthStatus);
+    };
+  }, []);
 
   const fetchUser = async () => {
     try {
-      const response = await axiosInstance.get("/users/self/");
-      const data = response.data;
+      if (isAuthenticated) {
+        const response = await axiosInstance.get("/users/self/");
+        const data = response.data;
 
-      if (!data || !data.formatted_address) {
-        throw new Error("Address or coordinates not found");
+        if (!data || !data.formatted_address) {
+          throw new Error("Address or coordinates not found");
+        }
+
+        setUser(data);
+        setLoadingUser(false);
       }
-
-      setUser(data);
-      setLoadingUser(false);
     } catch (error) {
       console.error("Error fetching User Data:", error);
       setLoadingUser(false);
@@ -294,23 +295,21 @@ const AllRequests = () => {
 
       <div className="flex flex-col flex-grow bg-gray-100 font-sans p-8">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-          {!loading && !loadingUser ? (
-            filteredRequests.length > 0 ? (
-              filteredRequests.map((request) => (
-                <ItemCard
-                  key={request.id}
-                  currentUser={user}
-                  item={request}
-                  type="request"
-                />
-              ))
-            ) : (
-              <div className="col-span-full text-center text-gray-500">
-                No results found
-              </div>
-            )
-          ) : (
+          {loading ? (
             <div className="col-span-full text-center">Loading...</div>
+          ) : filteredRequests.length > 0 ? (
+            filteredRequests.map((request) => (
+              <ItemCard
+                key={request.id}
+                currentUser={user}
+                item={request}
+                type="request"
+              />
+            ))
+          ) : (
+            <div className="col-span-full text-center text-gray-500">
+              No results found
+            </div>
           )}
         </div>
       </div>

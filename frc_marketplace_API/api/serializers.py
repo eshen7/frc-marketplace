@@ -28,7 +28,7 @@ class UserSerializer(serializers.ModelSerializer):
             "password",
             "full_name",
             "address",
-            "UUID",
+            "id",
             "date_joined",
             "team_name",
             "team_number",
@@ -38,7 +38,7 @@ class UserSerializer(serializers.ModelSerializer):
             "is_staff",
             "is_superuser",
         ]
-        read_only_fields = ["UUID", "date_joined"]
+        read_only_fields = ["id", "date_joined"]
 
     def create_address_from_components(self, components, raw_address: str) -> Address:
         """Create storable Address object from Google Maps components"""
@@ -133,7 +133,7 @@ class UserSerializer(serializers.ModelSerializer):
         representation.pop("is_staff", None)
         representation.pop("is_superuser", None)
         representation.pop("date_joined", None)
-        representation.pop("UUID", None)
+        representation.pop("id", None)
         # representation.pop("phone", None)
 
         return representation
@@ -287,11 +287,11 @@ class MessageSerializer(serializers.ModelSerializer):
         return obj.receiver.team_number
 
     def create(self, validated_data):
-        # For POST requests, use UUIDs for sender and receiver
-        sender_uuid = self.context["request"].user.UUID
-        receiver_uuid = validated_data.pop("receiver_uuid")
-        receiver = User.objects.get(UUID=receiver_uuid)
+        # For POST requests, use ids for sender and receiver
+        sender_id = self.context["request"].user.id
+        receiver_id = validated_data.pop("receiver_id")
+        receiver = User.objects.get(id=receiver_id)
 
         return Message.objects.create(
-            sender_id=sender_uuid, receiver=receiver, **validated_data
+            sender_id=sender_id, receiver=receiver, **validated_data
         )
