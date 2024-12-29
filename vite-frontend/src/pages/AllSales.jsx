@@ -143,8 +143,10 @@ const SalesPage = () => {
     }
 
     if (selectedCategories.length > 0) {
-      results = results.filter(
-        (sale) => sale.category && selectedCategories.includes(sale.category)
+      results = results.filter((sale) =>
+        sale.part && sale.part.category
+          ? selectedCategories.some(category => category.id === sale.part.category.id)
+          : false
       );
     }
 

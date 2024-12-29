@@ -171,9 +171,12 @@ const AllRequests = () => {
 
     // Apply category filter if any categories are selected
     if (selectedCategories.length > 0) {
-      results = results.filter(
-        (request) =>
-          request.category && selectedCategories.includes(request.category)
+      results = results.filter((request) =>
+        request.part && request.part.category
+          ? selectedCategories.some(
+              (category) => category.id === request.part.category.id
+            )
+          : false
       );
     }
 
