@@ -17,7 +17,7 @@ const MessageSent = ({ message, allTeams }) => {
       <p className="text-xs px-[2px]">
         {senderTeam ? senderTeam.full_name : "Unknown Team"}
       </p>
-      <div className="bg-red-800 rounded-3xl text-left w-fit shadow-md max-w-[50%] overflow-hidden break-words">
+      <div className="bg-[#2A9EFC] rounded-3xl text-left w-fit shadow-md max-w-[50%] overflow-hidden break-words">
         <p className="text-white px-[20px]">{message.message}</p>
       </div>
       <p className="text-xs text-gray-500">
@@ -37,7 +37,7 @@ const MessageReceived = ({ message, allTeams }) => {
         {senderTeam ? senderTeam.full_name : "Unknown Team"}
       </p>
       <div className="bg-gray-200 rounded-3xl text-left w-fit shadow-md max-w-[50%] overflow-hidden break-words">
-        <p className="text-red-800 px-[20px]">{message.message}</p>
+        <p className="text-gray-600 px-[20px]">{message.message}</p>
       </div>
       <p className="text-xs text-gray-500">
         {message.timestamp ? formatTimestamp(message.timestamp) : "..."}
@@ -174,14 +174,14 @@ const Chat = () => {
 
   // Set complement of users currently messaging with - rest of users
   useEffect(() => {
-    if (allTeams.length && subsetTeams.length) {
+    if (allTeams.length) {
       const messagedTeamNumbers = subsetTeams.map((team) => team.team_number);
 
-      setUnmessagedTeams(
-        allTeams.filter(
-          (team) => !messagedTeamNumbers.includes(team.team_number)
-        )
-      );
+      const unmessaged = allTeams.filter(
+        (team) => !messagedTeamNumbers.includes(team.team_number)
+      )
+
+      setUnmessagedTeams(unmessaged);
     }
   }, [allTeams, subsetTeams]);
 
@@ -597,6 +597,9 @@ const Chat = () => {
               <h1 className="text-3xl text-center p-3">Chats</h1>
               {!loadingTeams && subsetTeams ? (
                 <div className="flex flex-col overflow-y-auto">
+                  <p className="mx-3 py-2 text-[20px] border-b border-gray-300">
+                    Current Messages
+                  </p>
                   {subsetTeams.map((team, index) => (
                     <div key={index}>
                       {team.team_number != user.team_number && (
@@ -605,13 +608,11 @@ const Chat = () => {
                             navigate(`/chat/${team.team_number}`);
                             fetchList();
                           }}
-                          className={`flex flex-row px-1 place-items-center ${
-                            roomName == team.team_number ? "bg-gray-100" : ""
-                          } hover:cursor-pointer hover:bg-gray-100 ${
-                            !team.is_read &&
+                          className={`flex flex-row px-1 place-items-center ${roomName == team.team_number ? "bg-gray-100" : ""
+                            } hover:cursor-pointer hover:bg-gray-100 ${!team.is_read &&
                             team.receiver == user.team_number &&
-                            "border-blue-400"
-                          } border-2 border-white transition duration-200 my-2 mx-3 rounded-xl`}
+                            "border-blue-300"
+                            } border-2 border-white transition duration-200 my-2 mx-3 rounded-xl`}
                         >
                           <div className="flex w-full items-center">
                             {/* Image container with a fixed or min width */}
@@ -655,9 +656,8 @@ const Chat = () => {
                           onClick={() => {
                             navigate(`/chat/${team.team_number}`);
                           }}
-                          className={`flex flex-row place-items-center ${
-                            roomName == team.team_number ? "bg-gray-100" : ""
-                          } hover:cursor-pointer hover:bg-gray-100 transition duration-200 my-2 mx-3 rounded-xl`}
+                          className={`flex flex-row place-items-center ${roomName == team.team_number ? "bg-gray-100" : ""
+                            } hover:cursor-pointer hover:bg-gray-100 transition duration-200 my-2 mx-3 rounded-xl`}
                         >
                           <div className="rounded-lg p-2 ml-2">
                             <img
@@ -735,13 +735,13 @@ const Chat = () => {
                       sendMessage();
                     }
                   }}
-                  className="mr-3 border-b border-b-red-800 
+                  className="mr-3 border-b border-b-[#2A9EFC] 
                                 focus:shadow-md focus:border-b-2 focus:ring-0 px-3 py-1 bg-inherit w-[87%]"
                 />
                 <button
                   disabled={!newMessage || !roomName}
                   onClick={sendMessage}
-                  className="p-2 rounded-full bg-red-800 text-white disabled:bg-gray-200 disabled:text-red-800 transition duration-200"
+                  className="p-2 rounded-full bg-[#2A9EFC] text-white disabled:bg-gray-200 disabled:text-[#2A9EFC] transition duration-200"
                 >
                   <div>
                     <IoMdSend className="text-xl" />
