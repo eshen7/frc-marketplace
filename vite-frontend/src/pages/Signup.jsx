@@ -39,7 +39,10 @@ const Signup = () => {
         autocomplete.addListener("place_changed", () => {
           const place = autocomplete.getPlace();
           if (place.formatted_address) {
-            handleChange("address", place.formatted_address);
+            setFormData((prevData) => ({
+              ...prevData,
+              address: place.formatted_address,
+            }));
           }
         });
       }
@@ -95,7 +98,6 @@ const Signup = () => {
       const errorMessage = `Please fill in all required fields: ${emptyFields
         .map(([key]) => key.replace(/_/g, " "))
         .join(", ")}`;
-      // alert(errorMessage); // Show an alert box with the error message
       setError(errorMessage);
       return; // Stop form submission
     }
