@@ -109,12 +109,31 @@ const Signup = () => {
       .post("/users/", formData)
       .then((res) => {
         console.log(res);
+        navigate("/landingPage");
       })
       .catch((err) => {
-        console.log(err);
-      });
 
-    navigate("/landingPage");
+        // Check if the error is due to duplicate email, team number, or phone and set the error message accordingly
+        const isDuplicateEmail = err.response.data.email == undefined;
+        const isDuplicateTeamNumber =
+          err.response.data.team_number == undefined;
+        const isDuplicatePhone = err.response.data.phone == undefined;
+
+        console.log(isDuplicateEmail, isDuplicateTeamNumber, isDuplicatePhone);
+        switch (err.data != undefined) {
+          case isDuplicateTeamNumber:
+            setError("This team number already exists");
+            break;
+          case isDuplicateEmail:
+            setError("This email already exists!");
+            break;
+          case isDuplicatePhone:
+            setError("This phone number already exists");
+            break;
+          default:
+            setError("An error occurred. Please try again.");
+        }
+      });
   };
 
   return (
