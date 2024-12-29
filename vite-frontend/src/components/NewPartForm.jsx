@@ -47,7 +47,7 @@ const NewPartForm = ({ open, onClose, loading }) => {
       const response = await axiosInstance.get("parts/categories/");
       setCategories(response.data);
     } catch (error) {
-      console.error("Error fetching categories:", error);
+      setError("Failed to fetch categories. Please try again.");
       setCategories([]);
     }
   };
@@ -57,7 +57,7 @@ const NewPartForm = ({ open, onClose, loading }) => {
       const response = await axiosInstance.get("parts/manufacturers/");
       setManufacturers(response.data);
     } catch (error) {
-      console.error("Error fetching manufacturers:", error);
+      setError("Failed to fetch manufacturers. Please try again.");
       setManufacturers([]);
     }
   };
@@ -96,7 +96,7 @@ const NewPartForm = ({ open, onClose, loading }) => {
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
     accept: {
-      "image/*": [".jpeg", ".jpg", ".png", ".gif"],
+      "image/*": [".jpeg", ".jpg", ".png", ".gif", ".webp"],
     },
     multiple: false,
   });
@@ -145,8 +145,13 @@ const NewPartForm = ({ open, onClose, loading }) => {
       setPreview(null);
       onClose();
     } catch (error) {
-      setError("Failed to create part. Please try again.");
-      console.error("Error creating part:", error);
+      if (
+        error.response &&
+        error.response.data &&
+        error.response.data.error.includes("Integrity Error")
+      )
+        setError("A part with this name and manufacturer already exists!");
+      else setError("Failed to create part. Please try again.");
     }
   };
 
@@ -190,7 +195,7 @@ const NewPartForm = ({ open, onClose, loading }) => {
             onChange={handleChange("name")}
           />
           <FormControl fullWidth margin="dense">
-            <InputLabel>Manufacturer</InputLabel>
+            <InputLabel required>Manufacturer </InputLabel>
             <Select
               value={partData.manufacturer_id || ""} // Add fallback to empty string
               label="Manufacturer"

@@ -13,20 +13,13 @@ import { getDaysUntil, haversine, isDate } from "../utils/utils";
 const ItemCard = ({ item, currentUser, type }) => {
   const isRequest = type === "request";
   const isSale = type === "sale";
-  const isPart = type === "part";
 
   return (
     <Card sx={{ maxWidth: 345, height: "100%" }}>
       <CardMedia
         component="img"
         height="200"
-        image={
-          isRequest || isSale
-            ? item.part.image != null
-              ? item.part.image
-              : "/IMG_6769.jpg"
-            : null
-        }
+        image={item.part.image != null ? item.part.image : "/IMG_6769.jpg"}
         alt={item.part.name}
         sx={{ objectFit: "cover", maxHeight: 200, width: "100%" }}
       />
@@ -36,15 +29,13 @@ const ItemCard = ({ item, currentUser, type }) => {
         </Typography>
 
         <Typography variant="body2" color="text.secondary" gutterBottom>
-          {isRequest
-            ? `Team ${item.user.team_number} - ${item.user.team_name}`
-            : undefined}
+          {`Team ${item.user.team_number} - ${item.user.team_name}`}
         </Typography>
 
         {isRequest ? (
           <Box>
             <Typography variant="body2" color="text.secondary" gutterBottom>
-              {(isRequest || isSale) && currentUser
+              {currentUser
                 ? haversine(
                     currentUser.formatted_address.latitude,
                     currentUser.formatted_address.longitude,
@@ -83,7 +74,7 @@ const ItemCard = ({ item, currentUser, type }) => {
               sx={{ fontWeight: "bold" }}
               gutterBottom
             >
-              ask: ${item.price}
+              ask: ${item.ask_price}
             </Typography>
             <Typography variant="body2" color="text.secondary" gutterBottom>
               Condition: {item.condition}

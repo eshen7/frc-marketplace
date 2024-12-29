@@ -179,7 +179,7 @@ class PartSerializer(serializers.ModelSerializer):
     def to_representation(self, instance):
         """Customize the serialized output."""
         data = super().to_representation(instance)
-        data["manufacturer_name"] = instance.manufacturer.name
+        data["manufacturer"] = PartManufacturerSerializer(instance.manufacturer).data
         data["category"] = instance.category.name
         data["image"] = instance.image.url if instance.image else None
         return data

@@ -175,9 +175,30 @@ const SalesPage = () => {
     <div className="min-h-screen flex flex-col">
       <TopBar />
       <div className="sticky top-0 z-10 bg-white shadow-md">
-        {/* Search bar section - same structure as AllRequests */}
         <div className="max-w-7xl mx-auto px-4 py-3">
-          {/* ...existing code... */}
+          <div className="flex flex-col space-y-3">
+            {/* Search Bar */}
+            <div className="flex items-center space-x-4">
+              <div className="flex-1 relative">
+                <FiSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+                <input
+                  type="text"
+                  placeholder="Search parts..."
+                  className="w-full pl-10 pr-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                />
+              </div>
+              <button
+                onClick={() => setShowFilters(!showFilters)}
+                className="flex items-center px-4 py-2 border rounded-lg hover:bg-gray-50"
+              >
+                <FiSliders className="mr-2" />
+                Filters
+              </button>
+            </div>
+          </div>
+          {/* filters */}
           {showFilters && (
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pb-2">
               <div>

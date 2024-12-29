@@ -76,7 +76,7 @@ const SearchBar = () => {
 
   const determineResultType = (item) => {
     if (item.team_number) return "team";
-    if (item.part_name) return "request";
+    if (item.part.name) return "request";
     return "unknown";
   };
 

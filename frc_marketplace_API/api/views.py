@@ -5,6 +5,7 @@ from django.contrib.auth import authenticate, login, logout
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
 from rest_framework import status
+from django.db.utils import IntegrityError
 from django.views.decorators.csrf import csrf_exempt
 from .models import (
     PartSale,
@@ -255,11 +256,20 @@ def part_views(request):
     if request.method == "POST":
         serializer = PartSerializer(data=request.data)
         if serializer.is_valid():
-            serializer.save()
-            return Response(
-                f"Part Created Successfully!",
-                status=status.HTTP_201_CREATED,
-            )
+            try:
+                serializer.save()
+                return Response(serializer.data, status=status.HTTP_201_CREATED)
+            except Exception as e:
+                return Response(
+                    {"error": str(e)},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+        else:
+            if "unique" in str(serializer.errors):
+                return Response(
+                    {"error": "Integrity Error: Part already exists."},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 

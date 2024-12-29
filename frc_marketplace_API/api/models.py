@@ -72,7 +72,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     address = AddressField(on_delete=models.SET_NULL, null=True, blank=True)
     password = models.CharField(max_length=128)  # Store hashed password
 
-    UUID = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=False)  # Default user is not staff
     is_superuser = models.BooleanField(default=False)  # Default user is not superuser
@@ -94,6 +94,7 @@ class User(AbstractBaseUser, PermissionsMixin):
 class Part(models.Model):
     """Part Model."""
 
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     name = models.CharField(max_length=255, null=False, blank=False)
     model_id = models.CharField(max_length=255, null=True, blank=True)
     description = models.CharField(null=True, blank=True)
@@ -122,6 +123,7 @@ class Part(models.Model):
 class PartManufacturer(models.Model):
     """Part Manufacturer Model."""
 
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     name = models.CharField(max_length=255, unique=True)
     website = models.URLField(null=True, blank=True)
 
@@ -129,12 +131,14 @@ class PartManufacturer(models.Model):
 class PartCategory(models.Model):
     """Part Category Model."""
 
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     name = models.CharField(max_length=255, unique=True)
 
 
 class PartRequest(models.Model):
     """Part Request Model."""
 
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     part = models.ForeignKey(Part, on_delete=models.PROTECT, related_name="requests")
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="requests")
     quantity = models.IntegerField(default=1)
@@ -150,6 +154,7 @@ class PartRequest(models.Model):
 class PartSale(models.Model):
     """Part Sale Model."""
 
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     part = models.ForeignKey(Part, on_delete=models.PROTECT, related_name="sales")
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="sales")
     quantity = models.IntegerField(default=1)

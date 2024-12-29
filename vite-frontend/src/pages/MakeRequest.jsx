@@ -87,9 +87,10 @@ const PartRequestForm = () => {
     }
   };
 
-  const handleNewPartSuccess = (newPart) => {
-    fetchParts();  // Refresh parts list
-    setSelectedPart(newPart.id);  // Auto-select new part
+  const handleNewPartSuccess = async (newPart) => {
+    await new Promise((resolve) => setTimeout(resolve, 2000));
+    await fetchParts(); // Refresh parts list
+    setSelectedPart(newPart.id); // Auto-select new part
   };
 
   return (
@@ -114,13 +115,13 @@ const PartRequestForm = () => {
             <InputLabel id="part-select-label">Part</InputLabel>
             <Select
               labelId="part-select-label"
-              value={selectedPart || ""}  // Add fallback to empty string
+              value={selectedPart || ""} // Add fallback to empty string
               onChange={(e) => setSelectedPart(e.target.value)}
               required
             >
               {parts.map((part) => (
                 <MenuItem key={part.id} value={part.id}>
-                  {part.name}
+                  {part.name} - <em>{part.manufacturer.name}</em>
                 </MenuItem>
               ))}
             </Select>
@@ -151,13 +152,6 @@ const PartRequestForm = () => {
                 slotProps={{ textField: { fullWidth: true } }}
               />
             </LocalizationProvider>
-            <TextField
-              fullWidth
-              name="neededFor"
-              label="Need it for what"
-              value={formData.neededFor}
-              onChange={handleInputChange}
-            />
           </div>
           <TextField
             fullWidth
@@ -184,7 +178,7 @@ const PartRequestForm = () => {
         <NewPartForm
           open={isNewPartFormOpen}
           onClose={() => setIsNewPartFormOpen(false)}
-          onSuccess={handleNewPartSuccess}  // Add success handler
+          onSuccess={handleNewPartSuccess} // Add success handler
           loading={loading}
         />
       </Box>
