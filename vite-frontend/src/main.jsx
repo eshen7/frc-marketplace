@@ -18,6 +18,7 @@ import UserProfile from "./pages/Profile.jsx";
 import PublicProfilePage from "./pages/PublicProfile.jsx";
 import Chat from "./pages/Messaging.jsx";
 import PartDetails from "./pages/Part.jsx";
+import OurTeamPage from "./pages/OurTeam.jsx";
 
 const ErrorPage = () => <p> Sorry, this page does not exist</p>;
 
@@ -79,6 +80,10 @@ const router = createBrowserRouter(
         {
           path: "/chat/:roomName",
           element: <Chat />,
+        },
+        {
+          path: "/ourteam",
+          element: <OurTeamPage />
         },
         {
           path: "*",

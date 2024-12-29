@@ -19,6 +19,8 @@ from .views import (
     manufacturer_view,
     search_all_view,
     part_sale_views,
+    dm_list_view,
+    mark_messages_as_read,
 )
 
 urlpatterns = [
@@ -48,6 +50,8 @@ urlpatterns = [
         message_by_id_get_view,
         name="message_by_id_get_view",
     ),
+    path("dms/", dm_list_view, name="dm_list_view"),
+    path("messages/mark_as_read/", mark_messages_as_read, name="mark_messages_as_read"),
     path("message/", message_post_view, name="message_post_view"),
     path("parts/categories/", category_view),
     path("parts/manufacturers/", manufacturer_view),

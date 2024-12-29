@@ -74,10 +74,15 @@ const TopBar = () => {
   useEffect(() => {
     const fetchSelf = async () => {
       try {
-        const response = await axiosInstance.get("/users/self/");
-        const data = response.data;
-
-        setUser(data);
+        if (isAuthenticated) {
+          const response = await axiosInstance.get("/users/self/");
+          const data = response.data;
+  
+          setUser(data);
+        } else {
+          console.log("No user logged in, cancel user/self get")
+        }
+        
       } catch (err) {
         console.error("Error fetching Self User Data:", err);
       } finally {

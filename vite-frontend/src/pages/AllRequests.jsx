@@ -23,6 +23,7 @@ const AllRequests = () => {
   const [selectedCategories, setSelectedCategories] = useState([]);
   const [allCategories, setAllCategories] = useState([]);
 
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [user, setUser] = useState(null);
   const [loadingUser, setLoadingUser] = useState(true);
 
@@ -40,6 +41,24 @@ const AllRequests = () => {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+      const checkAuthStatus = () => {
+        const token = localStorage.getItem("authToken");
+        setIsAuthenticated(!!token);
+      };
+  
+      checkAuthStatus(); // Check on mount
+  
+      // Set up an event listener for storage changes
+      window.addEventListener("storage", checkAuthStatus);
+  
+      // Clean up the event listener on component unmount
+      return () => {
+        window.removeEventListener("storage", checkAuthStatus);
+      };
+    }, []);
+  
 
   const fetchUser = async () => {
     try {
@@ -115,7 +134,9 @@ const AllRequests = () => {
   useEffect(() => {
     const setupPage = async () => {
       try {
-        await fetchUser(); // Fetch user first
+        if (isAuthenticated) {
+          await fetchUser(); // Fetch user first
+        }
         await fetchData(); // Then fetch items
         await fetchCategories();
         if (user && items) calculateDistanceForAll(items);
@@ -125,7 +146,7 @@ const AllRequests = () => {
     };
 
     setupPage();
-  }, []); // Run once on component mount
+  }, [isAuthenticated]); // Run once on component mount
 
   // Update Fuse instance to include new items when they change
   const fuse = useMemo(() => new Fuse(items, fuseOptions), [items]);
