@@ -10,9 +10,6 @@ import {
     TextField,
     Typography,
 } from "@mui/material"
-import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns"
-import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider"
-import { DatePicker } from "@mui/x-date-pickers/DatePicker"
 import TopBar from "../components/TopBar"
 import Footer from "../components/Footer"
 import SuccessBanner from "../components/SuccessBanner"
@@ -31,7 +28,6 @@ const INITIAL_FORM_STATE = {
 const PartSaleForm = () => {
     const [parts, setParts] = useState([])
     const [formData, setFormData] = useState(INITIAL_FORM_STATE)
-    const [expirationDate, setExpirationDate] = useState(null)
     const [loading, setLoading] = useState(false)
     const [success, setSuccess] = useState(false)
     const [error, setError] = useState("")
@@ -68,16 +64,16 @@ const PartSaleForm = () => {
             const saleData = {
                 part_id: formData.partId,
                 quantity: formData.quantity,
-                price: parseFloat(formData.price),
+                ask_price: formData.price,
                 condition: formData.condition,
-                description: formData.description,
-                expiration_date: new Date(expirationDate).toISOString().split("T")[0],
+                additional_info: formData.description,
             }
+
+            console.log("sale data", saleData)
 
             await axiosInstance.post("/sales/", saleData)
             setSuccess(true)
             setFormData(INITIAL_FORM_STATE)
-            setExpirationDate(null)
         } catch (error) {
             setError("Failed to submit sale listing. Please try again.")
             console.error("Error submitting sale listing:", error)
@@ -182,18 +178,10 @@ const PartSaleForm = () => {
                             <MenuItem value="poor">Poor</MenuItem>
                         </Select>
                     </FormControl>
-                    <LocalizationProvider dateAdapter={AdapterDateFns}>
-                        <DatePicker
-                            label="Listing Expiration Date"
-                            value={expirationDate}
-                            onChange={setExpirationDate}
-                            slotProps={{ textField: { fullWidth: true, margin: "normal" } }}
-                        />
-                    </LocalizationProvider>
                     <TextField
                         fullWidth
                         name="description"
-                        label="Description"
+                        label="Additional Info"
                         multiline
                         rows={4}
                         value={formData.description}
