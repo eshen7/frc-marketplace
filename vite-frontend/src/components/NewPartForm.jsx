@@ -25,7 +25,7 @@ import NewManufacturerForm from "./NewManufacturerForm";
 import SuccessBanner from "./SuccessBanner";
 import ErrorBanner from "./ErrorBanner";
 
-const NewPartForm = ({ open, onClose, loading }) => {
+const NewPartForm = ({ open, onClose }) => {
   const [categories, setCategories] = useState([]);
   const [manufacturers, setManufacturers] = useState([]);
   const [manufacturerDialogOpen, setManufacturerDialogOpen] = useState(false);
@@ -41,6 +41,7 @@ const NewPartForm = ({ open, onClose, loading }) => {
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState("");
   const [preview, setPreview] = useState(null);
+  const [loading, setLoading] = useState(false);
 
   const fetchCategories = async () => {
     try {
@@ -117,6 +118,7 @@ const NewPartForm = ({ open, onClose, loading }) => {
 
   const handleSubmit = async () => {
     try {
+      setLoading(true);
       const formData = new FormData();
       formData.append("name", partData.name);
       formData.append("manufacturer_id", partData.manufacturer_id);
@@ -128,11 +130,12 @@ const NewPartForm = ({ open, onClose, loading }) => {
         formData.append("image", partData.imageFile);
       }
 
-      await axiosInstance.post("parts/", formData, {
+      const response = await axiosInstance.post("parts/", formData, {
         headers: {
           "Content-Type": "multipart/form-data",
         },
       });
+      setLoading(false);
       setSuccess(true);
       setPartData({
         name: "",
@@ -143,15 +146,19 @@ const NewPartForm = ({ open, onClose, loading }) => {
         imageFile: null,
       });
       setPreview(null);
-      onClose();
+      onClose(response.data);
     } catch (error) {
       if (
         error.response &&
         error.response.data &&
         error.response.data.error.includes("Integrity Error")
-      )
+      ) {
         setError("A part with this name and manufacturer already exists!");
-      else setError("Failed to create part. Please try again.");
+        setLoading(false);
+      } else {
+        setError("Failed to create part. Please try again.");
+        setLoading(false);
+      }
     }
   };
 
@@ -172,7 +179,7 @@ const NewPartForm = ({ open, onClose, loading }) => {
   };
 
   return (
-    <>
+    <Box sx={{ minHeight: "100vh", display: "flex", flexDirection: "column" }}>
       {success && (
         <SuccessBanner
           message="Part created successfully!"
@@ -195,14 +202,14 @@ const NewPartForm = ({ open, onClose, loading }) => {
             onChange={handleChange("name")}
           />
           <FormControl fullWidth margin="dense">
-            <InputLabel required>Manufacturer </InputLabel>
+            <InputLabel required>Manufacturer</InputLabel>
             <Select
-              value={partData.manufacturer_id || ""} // Add fallback to empty string
+              value={partData.manufacturer_id || ""}
               label="Manufacturer"
               onChange={handleChange("manufacturer_id")}
             >
-              <MenuItem key="select" value="Select Manufacturer...">
-                Select Manufacturer...
+              <MenuItem value="">
+                <em>Select a manufacturer</em>
               </MenuItem>
               {manufacturers.map((manufacturer) => (
                 <MenuItem key={manufacturer.id} value={manufacturer.id}>
@@ -222,15 +229,16 @@ const NewPartForm = ({ open, onClose, loading }) => {
             onChange={handleChange("partID")}
           />
           <FormControl fullWidth margin="dense" required>
-            {" "}
-            {/* Added required prop */}
             <InputLabel>Category</InputLabel>
             <Select
-              value={partData.category_id || ""} // Add fallback to empty string
-              label="Category *" // Added asterisk
+              value={partData.category_id || ""}
+              label="Category *"
               onChange={handleChange("category_id")}
-              error={!partData.category_id} // Added error state
+              error={!partData.category_id}
             >
+              <MenuItem value="">
+                <em>Select a category</em>
+              </MenuItem>
               {categories.map((category) => (
                 <MenuItem key={category.id} value={category.id}>
                   {category.name}
@@ -317,14 +325,13 @@ const NewPartForm = ({ open, onClose, loading }) => {
         onSuccess={handleCategorySuccess}
         loading={loading}
       />
-    </>
+    </Box>
   );
 };
 
 NewPartForm.propTypes = {
   open: PropTypes.bool.isRequired,
   onClose: PropTypes.func.isRequired,
-  loading: PropTypes.bool.isRequired,
 };
 
 export default NewPartForm;

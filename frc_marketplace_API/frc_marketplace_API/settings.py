@@ -271,7 +271,7 @@ LOGGING = {
     "handlers": {
         "console": {
             "class": "logging.StreamHandler",
-            "level": "DEBUG",
+            "level": "INFO",
         },
     },
     "loggers": {
@@ -282,12 +282,12 @@ LOGGING = {
         # },
         "botocore": {
             "handlers": ["console"],
-            "level": "DEBUG",
+            "level": "INFO",
             "propagate": True,
         },
         "storages": {
             "handlers": ["console"],
-            "level": "DEBUG",
+            "level": "INFO",
             "propagate": True,
         },
     },

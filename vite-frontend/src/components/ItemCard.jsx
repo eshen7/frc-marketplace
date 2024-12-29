@@ -126,7 +126,7 @@ const ItemCard = ({ item, currentUser, type }) => {
 
 ItemCard.propTypes = {
   item: PropTypes.shape({
-    id: PropTypes.number.isRequired,
+    id: PropTypes.string.isRequired,
     user: PropTypes.oneOfType([
       PropTypes.string,
       PropTypes.shape({

@@ -66,6 +66,7 @@ const PartRequestForm = () => {
     setError("");
 
     try {
+      setLoading(true);
       const requestData = {
         part_id: selectedPart,
         quantity: formData.quantity,
@@ -81,16 +82,14 @@ const PartRequestForm = () => {
       setDateNeeded(null);
     } catch (error) {
       setError("Failed to submit request. Please try again.");
-      console.error("Error submitting request:", error);
     } finally {
       setLoading(false);
     }
   };
 
   const handleNewPartSuccess = async (newPart) => {
-    await new Promise((resolve) => setTimeout(resolve, 2000));
-    await fetchParts(); // Refresh parts list
-    setSelectedPart(newPart.id); // Auto-select new part
+    await fetchParts();
+    setSelectedPart(newPart.id);
   };
 
   return (
@@ -115,13 +114,72 @@ const PartRequestForm = () => {
             <InputLabel id="part-select-label">Part</InputLabel>
             <Select
               labelId="part-select-label"
-              value={selectedPart || ""} // Add fallback to empty string
+              value={selectedPart || ""}
               onChange={(e) => setSelectedPart(e.target.value)}
               required
+              renderValue={(selected) => {
+                const selectedPartData = parts.find(
+                  (part) => part.id === selected
+                );
+                if (!selectedPartData) return <em>Select a part</em>;
+                return (
+                  <Box
+                    sx={{
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "space-between",
+                    }}
+                  >
+                    <span>
+                      {selectedPartData.name} -{" "}
+                      <em>{selectedPartData.manufacturer.name}</em>
+                    </span>
+                    {selectedPartData.image ? (
+                      <img
+                        src={selectedPartData.image}
+                        alt={selectedPartData.name}
+                        style={{ width: 30, height: 30, marginLeft: 10 }}
+                      />
+                    ) : (
+                      <img
+                        src="/IMG_6769.jpg"
+                        alt="IMG_6769.jpg"
+                        style={{ width: 30, height: 30, marginLeft: 10 }}
+                      />
+                    )}
+                  </Box>
+                );
+              }}
             >
+              <MenuItem value="">
+                <em>Select a part</em>
+              </MenuItem>
               {parts.map((part) => (
-                <MenuItem key={part.id} value={part.id}>
-                  {part.name} - <em>{part.manufacturer.name}</em>
+                <MenuItem
+                  key={part.id}
+                  value={part.id}
+                  sx={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                  }}
+                >
+                  <span>
+                    {part.name} - <em>{part.manufacturer.name}</em>
+                  </span>
+                  {part.image != null ? (
+                    <img
+                      src={part.image}
+                      alt={part.name}
+                      style={{ width: 30, height: 30, marginLeft: 10 }}
+                    />
+                  ) : (
+                    <img
+                      src="/IMG_6769.jpg"
+                      alt="IMG_6769.jpg"
+                      style={{ width: 30, height: 30, marginLeft: 10 }}
+                    />
+                  )}
                 </MenuItem>
               ))}
             </Select>
@@ -143,13 +201,13 @@ const PartRequestForm = () => {
             value={formData.quantity}
             onChange={handleInputChange}
           />
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+          <div className="grid grid-cols-1 gap-4 mt-4">
             <LocalizationProvider dateAdapter={AdapterDateFns}>
               <DatePicker
                 label="Need the part by"
                 value={dateNeeded}
                 onChange={setDateNeeded}
-                slotProps={{ textField: { fullWidth: true } }}
+                slotProps={{ textField: { fullWidth: true, required: true } }}
               />
             </LocalizationProvider>
           </div>
@@ -177,9 +235,10 @@ const PartRequestForm = () => {
 
         <NewPartForm
           open={isNewPartFormOpen}
-          onClose={() => setIsNewPartFormOpen(false)}
-          onSuccess={handleNewPartSuccess} // Add success handler
-          loading={loading}
+          onClose={(newPart) => {
+            setIsNewPartFormOpen(false);
+            handleNewPartSuccess(newPart);
+          }}
         />
       </Box>
 

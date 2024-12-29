@@ -180,7 +180,7 @@ class PartSerializer(serializers.ModelSerializer):
         """Customize the serialized output."""
         data = super().to_representation(instance)
         data["manufacturer"] = PartManufacturerSerializer(instance.manufacturer).data
-        data["category"] = instance.category.name
+        data["category"] = PartCategorySerializer(instance.category).data
         data["image"] = instance.image.url if instance.image else None
         return data
 
