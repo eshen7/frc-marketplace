@@ -305,6 +305,18 @@ def request_view(request, request_id):
         return Response(
             {"error": "Part Request not found"}, status=status.HTTP_404_NOT_FOUND
         )
+    
+@api_view(["GET"])
+def part_view(part, part_id):
+    """Fetch a specific part's details by UUID."""
+    try:
+        part = Part.objects.get(id=part_id)
+        serializer = PartSerializer(part)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+    except PartRequest.DoesNotExist:
+        return Response(
+            {"error": "Part not found"}, status=status.HTTP_404_NOT_FOUND
+        )
 
 
 @api_view(["GET"])

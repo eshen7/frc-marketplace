@@ -87,7 +87,7 @@ const SearchBar = () => {
         navigate(`/profile/frc/${item.team_number}`);
         break;
       case "part":
-        navigate(`/parts/${item.name}`);
+        navigate(`/part/${item.id}`);
         break;
       default:
         console.warn("Unknown result type:", item);
