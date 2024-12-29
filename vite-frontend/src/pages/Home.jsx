@@ -390,7 +390,7 @@ const Home = () => {
         <section className="mb-12 mx-[30px]">
           <div className="flex justify-between items-center mb-4">
             <h2 className="text-2xl font-bold">Recent Parts for Sale Nearby</h2>
-            <a href="requests">
+            <a href="sales">
               <button className="bg-red-800 text-white py-3 px-5 rounded-[5px] hover:bg-red-900 transition-translate duration-100">
                 See All Parts for Sale
               </button>
