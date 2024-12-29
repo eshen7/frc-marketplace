@@ -40,6 +40,7 @@ const NewPartForm = ({ open, onClose, loading }) => {
   });
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState("");
+  const [imageError, setImageError] = useState(false);
   const [preview, setPreview] = useState(null);
 
   const fetchCategories = async () => {
@@ -91,6 +92,7 @@ const NewPartForm = ({ open, onClose, loading }) => {
     const file = acceptedFiles[0];
     setPartData((prev) => ({ ...prev, imageFile: file }));
     setPreview(URL.createObjectURL(file));
+    setImageError(false);
   }, []);
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
@@ -116,6 +118,10 @@ const NewPartForm = ({ open, onClose, loading }) => {
   }, [preview]);
 
   const handleSubmit = async () => {
+    if (!partData.imageFile) {
+      setImageError(true);
+      return; // Prevent submission if no image is added
+    }
     try {
       const formData = new FormData();
       formData.append("name", partData.name);
@@ -123,10 +129,7 @@ const NewPartForm = ({ open, onClose, loading }) => {
       formData.append("category_id", partData.category_id);
       formData.append("partID", partData.partID);
       formData.append("description", partData.description);
-
-      if (partData.imageFile) {
-        formData.append("image", partData.imageFile);
-      }
+      formData.append("image", partData.imageFile);
 
       await axiosInstance.post("parts/", formData, {
         headers: {
@@ -246,7 +249,7 @@ const NewPartForm = ({ open, onClose, loading }) => {
             <div
               {...getRootProps()}
               style={{
-                border: "2px dashed #cccccc",
+                border: `2px dashed ${imageError ? "red" : "#cccccc"}`,
                 borderRadius: "4px",
                 padding: "20px",
                 textAlign: "center",
@@ -257,7 +260,7 @@ const NewPartForm = ({ open, onClose, loading }) => {
               {isDragActive ? (
                 <Typography>Drop the image here ...</Typography>
               ) : (
-                <Typography>Add An Image</Typography>
+                <Typography>Add An Image*</Typography>
               )}
             </div>
 
