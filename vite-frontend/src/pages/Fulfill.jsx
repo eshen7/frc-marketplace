@@ -193,7 +193,7 @@ export default function FulfillRequest() {
           {request && !error ? (
             <div className='px-5 sm:px-12 md:px-20'>
               {/* Main Content */}
-              <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10'>
+              <div className='grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-10'>
                 {/* Name & Description */}
                 <div className='flex flex-col'>
                   <div className='flex flex-row justify-between'>
@@ -256,7 +256,7 @@ export default function FulfillRequest() {
                 </div>
 
                 {/* User Stuff */}
-                <div className='col-span-1 md:col-span-2 lg:col-span-1'>
+                <div className='col-span-1 md:col-span-2 xl:col-span-1'>
                   <div className='flex flex-row justify-between place-items-center'>
                     {/* Team Name */}
                     <h3 className='text-[24px] text-left md:text-center lg:text-left'>
