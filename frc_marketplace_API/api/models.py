@@ -46,7 +46,7 @@ class UserManager(BaseUserManager):
         user.set_password(password)
 
         if "team_number" in extra_fields and extra_fields["team_number"] is not None:
-            user.profile_photo = f"https://www.thebluealliance.com/avatar/2024/frc{extra_fields['team_number']}.png"
+            user.profile_photo = f"https://www.thebluealliance.com/avatar/2025/frc{extra_fields['team_number']}.png"
 
         user.save(using=self._db)
         return user
