@@ -1,20 +1,13 @@
 'use client'
 
-import React, { useEffect, useState } from 'react'
-import {
-  Box,
-  Typography,
-  Button,
-  Paper,
-  Grid,
-  Divider,
-} from '@mui/material'
+import React, { useEffect, useRef, useState } from 'react'
 import TopBar from './../components/TopBar.jsx'
 import Footer from '../components/Footer.jsx'
 import { useParams } from 'react-router-dom'
 import axiosInstance from '../utils/axiosInstance.js'
 import { getDaysUntil, haversine } from '../utils/utils.jsx'
 import { FaComments } from 'react-icons/fa'
+import ItemCard from '../components/ItemCard.jsx'
 
 // example data
 const requestData = {
@@ -68,6 +61,29 @@ export default function FulfillRequest() {
   const [error, setError] = useState(null);
   const [user, setUser] = useState(null);
 
+  const [partRequests, setPartRequests] = useState([]);
+  const [loadingPartRequests, setLoadingPartRequests] = useState(true);
+
+  const scrollContainerRef = useRef(null);
+
+  const scrollLeft = () => {
+    if (scrollContainerRef.current) {
+      scrollContainerRef.current.scrollBy({
+        left: -272, // Adjust the scroll distance as needed
+        behavior: "smooth",
+      });
+    }
+  };
+
+  const scrollRight = () => {
+    if (scrollContainerRef.current) {
+      scrollContainerRef.current.scrollBy({
+        left: 272, // Adjust the scroll distance as needed
+        behavior: "smooth",
+      });
+    }
+  };
+
   useEffect(() => {
     const checkAuthStatus = () => {
       const token = localStorage.getItem("authToken");
@@ -89,12 +105,14 @@ export default function FulfillRequest() {
   useEffect(() => {
     const fetchUser = async () => {
       try {
-        const response = await axiosInstance.get("/users/self/");
-        if (!response.data) {
-          throw new Error('Address or coordinates not found');
-        }
+        if (isAuthenticated) {
+          const response = await axiosInstance.get("/users/self/");
+          if (!response.data) {
+            throw new Error('Address or coordinates not found');
+          }
 
-        setUser(response.data);
+          setUser(response.data);
+        }
       } catch (err) {
         console.error("Error fetching user:", err);
       }
@@ -116,14 +134,23 @@ export default function FulfillRequest() {
     fetchRequest();
   }, [request_id]);
 
+  const fetchRequests = async () => {
+    try {
+      const response = await axiosInstance.get(`/parts/id/${request.part.id}/requests`);
+      setPartRequests(response.data);
+    } catch (error) {
+      console.error("Error fetching requests:", error);
+    } finally {
+      setLoadingPartRequests(false);
+    }
+  };
 
-  const nextImage = () => {
-    setCurrentImageIndex((prevIndex) => (prevIndex + 1) % imageUrls.length)
-  }
+  useEffect(() => {
+    if (request) {
+      fetchRequests();
+    }
+  }, [request])
 
-  const prevImage = () => {
-    setCurrentImageIndex((prevIndex) => (prevIndex - 1 + imageUrls.length) % imageUrls.length)
-  }
   const renderDueDate = (date) => {
     const date_obj = new Date(date);
     const daysUntil = getDaysUntil(date_obj);
@@ -157,15 +184,16 @@ export default function FulfillRequest() {
       </p>
     );
   };
+
   return (
     <div className='flex flex-col min-h-screen'>
       <TopBar />
       <div className='flex-grow flex flex-col'>
         <div className='py-8 md:py-16'>
           {request && !error ? (
-            <>
+            <div className='px-5 sm:px-12 md:px-20'>
               {/* Main Content */}
-              <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 px-5 sm:px-12 md:px-20 gap-10'>
+              <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10'>
                 {/* Name & Description */}
                 <div className='flex flex-col'>
                   <div className='flex flex-row justify-between'>
@@ -274,7 +302,51 @@ export default function FulfillRequest() {
 
                 </div>
               </div>
-            </>
+
+              {/* Other Requests for the Same Part */}
+              {/* Part Requests Section */}
+              <div className="mt-10 relative">
+                <h2 className="text-xl font-semibold text-gray-700 mb-4">
+                  Requests for the same part
+                </h2>
+                <button
+                  onClick={scrollLeft}
+                  className="absolute left-[-15px] top-1/2 transform -translate-y-1/2 bg-gray-800 text-white p-2 rounded-full shadow-lg hover:bg-gray-900 z-10"
+                >
+                  &#8592;
+                </button>
+                {partRequests.length > 0 && !loadingPartRequests ? (
+                  <div
+                    ref={scrollContainerRef}
+                    className="flex overflow-x-auto space-x-4 pb-4"
+                  >
+                    {partRequests
+                      .slice(-10)
+                      .reverse()
+                      .map((request) => (
+                        <ItemCard
+                          key={request.id}
+                          item={request}
+                          currentUser={user}
+                          type="request"
+                        />
+                      ))}
+                  </div>
+                ) : loadingPartRequests ? (
+                  <>
+                    <p>Loading Part Requests</p>
+                  </>
+                ) : (
+                  <p className="text-gray-500">No requests found for this part.</p>
+                )}
+                <button
+                  onClick={scrollRight}
+                  className="absolute right-[-15px] top-1/2 transform -translate-y-1/2 bg-gray-800 text-white p-2 rounded-full shadow-lg hover:bg-gray-900 z-10"
+                >
+                  &#8594;
+                </button>
+              </div>
+            </div>
           ) : !error ? (
             <p className='text-center'>
               Loading Request...
