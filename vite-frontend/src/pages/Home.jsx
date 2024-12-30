@@ -106,7 +106,7 @@ const renderRequest = (request, self_user) => {
           : ""
         }`}
     >
-      <h3 className="text-xl font-semibold mb-2">{request.part.name}</h3>
+      <h3 className="text-xl font-semibold mb-2 truncate">{request.part.name}</h3>
       <p className="text-gray-600 mb-2">{request.user.team_number}</p>
       {renderDueDate()}
       <p className="text-sm text-gray-500">
@@ -163,7 +163,7 @@ const renderSale = (sale, self_user) => {
       key={sale.id}
       className="flex-none w-[256px] bg-white rounded-lg shadow-md p-6 whitespace-nowrap"
     >
-      <h3 className="text-xl font-semibold mb-2">{sale.part.name}</h3>
+      <h3 className="text-xl font-semibold mb-2 truncate">{sale.part.name}</h3>
       <p className="text-gray-600 mb-2">{sale.user.team_number}</p>
       <p className="text-sm text-gray-500 mb-2">
         {distance_string != "0.0 miles" ? distance_string : "Your Listing"}
@@ -354,11 +354,17 @@ const Home = () => {
           {/* Buttons */}
           <div className="flex flex-row justify-center mt-5 max-w-screen border-b border-b-black pb-5">
             {/* Request */}
-            <button className="py-3 px-5 bg-blue-800 text-white text-[14px] rounded-sm hover:bg-blue-900 mr-5">
+            <button className="py-3 px-5 bg-blue-800 text-white text-[14px] rounded-sm hover:bg-blue-900 mr-5"
+            onClick={() => {
+              window.location.href = `/request`
+            }}>
               Make a Request
             </button>
             {/* Sale */}
-            <button className="py-3 px-5 border border-blue-800 text-blue-800 text-[14px] rounded-sm hover:bg-white">
+            <button className="py-3 px-5 border border-blue-800 text-blue-800 text-[14px] rounded-sm hover:bg-white"
+            onClick={() => {
+              window.location.href = `/sale`
+            }}>
               Post a Sale
             </button>
           </div>
@@ -373,7 +379,7 @@ const Home = () => {
           <div className="flex justify-between items-center mb-4">
             <h2 className="text-2xl font-bold">Recent Part Requests Nearby</h2>
             <a href="requests">
-              <button className="bg-red-800 text-white py-3 px-5 rounded-[5px] hover:bg-red-900 transition-translate duration-100">
+              <button className="bg-blue-800 text-white py-3 px-5 rounded-[5px] hover:bg-blue-900 transition-translate duration-100">
                 See All Requests
               </button>
             </a>
@@ -414,11 +420,11 @@ const Home = () => {
             </button>
           </div>
         </section>
-        <section className="mb-12 mx-[30px]">
+        <section className="pb-12 mx-[30px]">
           <div className="flex justify-between items-center mb-4">
             <h2 className="text-2xl font-bold">Recent Parts for Sale Nearby</h2>
             <a href="sales">
-              <button className="bg-red-800 text-white py-3 px-5 rounded-[5px] hover:bg-red-900 transition-translate duration-100">
+              <button className="bg-blue-800 text-white py-3 px-5 rounded-[5px] hover:bg-blue-900 transition-translate duration-100">
                 See All Parts for Sale
               </button>
             </a>

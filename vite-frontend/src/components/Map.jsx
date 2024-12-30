@@ -1,10 +1,12 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import {
-  GoogleMap,
-  MarkerF,
-  useJsApiLoader,
-  InfoWindowF,
-} from "@react-google-maps/api";
+  APIProvider,
+  Map as GoogleMapGL,
+  AdvancedMarker,
+  InfoWindow,
+  useMap,
+  useAdvancedMarkerRef
+} from '@vis.gl/react-google-maps';
 import axiosInstance from "../utils/axiosInstance";
 
 function haversine(lat1, lon1, lat2, lon2) {
@@ -30,11 +32,103 @@ function haversine(lat1, lon1, lat2, lon2) {
   return R * c; // Distance in miles
 }
 
+const MarkerWithInfoWindow = ({ 
+  location, 
+  userLat, 
+  userLon, 
+  loadingUserCoords, 
+  distance, 
+  error,
+  onMarkerClick 
+}) => {
+  const [markerRef, marker] = useAdvancedMarkerRef();
+  const [infoWindowShown, setInfoWindowShown] = useState(false);
+
+  const handleMarkerClick = useCallback(() => {
+    setInfoWindowShown(isShown => !isShown);
+    onMarkerClick(location);
+  }, [location, onMarkerClick]);
+
+  const handleClose = useCallback(() => {
+    setInfoWindowShown(false);
+  }, []);
+
+  return (
+    <>
+      <AdvancedMarker
+        ref={markerRef}
+        position={{
+          lat: location.formatted_address.latitude,
+          lng: location.formatted_address.longitude,
+        }}
+        onClick={handleMarkerClick}
+        title={location.team_name}
+      >
+        <img 
+          src={location.profile_photo} 
+          alt={location.team_name} 
+          className="w-10 h-10 rounded-full object-cover" 
+        />
+      </AdvancedMarker>
+
+      {infoWindowShown && (
+        <InfoWindow anchor={marker} onClose={handleClose}>
+          <div className="items-center text-center min-w-[120px]">
+            <h3 className="font-bold">{location.team_name}</h3>
+            <p>{location.team_number}</p>
+            <button
+              className="mt-1 bg-blue-800 px-2 py-1 rounded-md text-white font-bold
+                hover:bg-blue-900 transition-transform duration-100"
+              onClick={() => {
+                window.location.href = `/profile/frc/${location.team_number}`;
+              }}
+            >
+              Profile
+            </button>
+            {!loadingUserCoords && userLat != null && userLon != null ? (
+              <p className="mt-1">
+                {distance && distance != 0
+                  ? `${distance} Miles`
+                  : distance == 0
+                  ? "You"
+                  : "Calculating..."}
+              </p>
+            ) : (
+              <p>{error}</p>
+            )}
+          </div>
+        </InfoWindow>
+      )}
+    </>
+  );
+};
+
+const MapContent = ({ locations, handleMarkerClick, userLat, userLon, loadingUserCoords, distance, error }) => {
+  const map = useMap();
+  
+  return (
+    <>
+      {locations.map((location, index) => (
+        <MarkerWithInfoWindow
+          key={index}
+          location={location}
+          userLat={userLat}
+          userLon={userLon}
+          loadingUserCoords={loadingUserCoords}
+          distance={distance}
+          error={error}
+          onMarkerClick={handleMarkerClick}
+        />
+      ))}
+    </>
+  );
+};
+
 const Map = ({ zoom = 10, locations = [] }) => {
   const [activeMarker, setActiveMarker] = useState(null);
   const [userLat, setUserLat] = useState(null);
   const [userLon, setUserLon] = useState(null);
-  const [loadingUserCoords, setLoadingUserCoords] = useState(true); // Added loading state
+  const [loadingUserCoords, setLoadingUserCoords] = useState(true);
   const [error, setError] = useState(null);
   const [distance, setDistance] = useState();
   const [mapCenter, setMapCenter] = useState({
@@ -85,11 +179,6 @@ const Map = ({ zoom = 10, locations = [] }) => {
   }, []); // Runs when user auth changes
 
   const handleMarkerClick = (marker) => {
-    if (marker === activeMarker) {
-      handleCloseClick();
-      return;
-    }
-
     // Calculate distance only when marker is clicked
     if (userLat !== null && userLon !== null) {
       const distance = haversine(
@@ -98,74 +187,42 @@ const Map = ({ zoom = 10, locations = [] }) => {
         marker.formatted_address.latitude,
         marker.formatted_address.longitude
       );
-      setDistance(distance.toFixed(1)); // Set the calculated distance
+      setDistance(distance.toFixed(1));
     } else {
       setDistance(null);
     }
-
-    setActiveMarker(marker);
   };
 
-  const handleCloseClick = () => {
-    setActiveMarker(null); // Close InfoWindow.
-    setDistance(null); // Clear distance when InfoWindow is closed
+  const mapOptions = {
+    mapId: import.meta.env.VITE_GOOGLE_MAP_ID,
+    disableDefaultUI: false,
+    clickableIcons: true,
+    scrollwheel: true,
+    gestureHandling: "greedy"
   };
 
   return (
-    <div className=" h-[500px] flex items-center justify-center mx-auto">
-      <GoogleMap
-        mapContainerStyle={{ width: "1000px", height: "500px" }}
-        center={mapCenter}
-        zoom={zoom}
-      >
-        {locations.map((location, index) => (
-          <MarkerF
-            key={index}
-            position={{
-              lat: location.formatted_address.latitude,
-              lng: location.formatted_address.longitude,
-            }}
-            onClick={() => handleMarkerClick(location)}
-          >
-            {activeMarker == location && (
-              <InfoWindowF
-                position={{
-                  lat: activeMarker.formatted_address.latitude,
-                  lng: activeMarker.formatted_address.longitude,
-                }}
-                onCloseClick={handleCloseClick}
-              >
-                <div className="items-center text-center min-w-[120px]">
-                  <h3 className="font-bold">{location.team_name}</h3>
-                  <p>{location.team_number}</p>
-                  <button
-                    className="mt-1 bg-red-800 px-2 py-1 rounded-md text-white font-bold
-                                    hover:bg-red-900 transition-transform duration-100"
-                    onClick={() => {
-                      window.location.href = `/profile/frc/${location.team_number}`;
-                    }}
-                  >
-                    Profile
-                  </button>
-                  {!loadingUserCoords && userLat != null && userLon != null ? (
-                    <p className="mt-1">
-                      {distance && distance != 0
-                        ? `${distance} Miles`
-                        : distance == 0
-                        ? "You"
-                        : "Calculating..."}
-                    </p>
-                  ) : (
-                    <p>{error}</p>
-                  )}
-                </div>
-              </InfoWindowF>
-            )}
-            ;
-          </MarkerF>
-        ))}
-      </GoogleMap>
-    </div>
+    <APIProvider apiKey={import.meta.env.VITE_GOOGLE_API_KEY}>
+      <div className="h-[500px] flex items-center justify-center mx-auto">
+        <GoogleMapGL
+          defaultZoom={zoom}
+          defaultCenter={mapCenter}
+          mapId={import.meta.env.VITE_GOOGLE_MAP_ID}
+          options={mapOptions}
+          style={{ width: "1000px", height: "500px" }}
+        >
+          <MapContent
+            locations={locations}
+            handleMarkerClick={handleMarkerClick}
+            userLat={userLat}
+            userLon={userLon}
+            loadingUserCoords={loadingUserCoords}
+            distance={distance}
+            error={error}
+          />
+        </GoogleMapGL>
+      </div>
+    </APIProvider>
   );
 };
 

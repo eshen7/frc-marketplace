@@ -80,44 +80,39 @@ const ItemCard = ({ item, currentUser, type }) => {
               Condition: {item.condition}
             </Typography>
             <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-              {item.distance} miles away
+              {currentUser
+                ? haversine(
+                  currentUser.formatted_address.latitude,
+                  currentUser.formatted_address.longitude,
+                  item.user.formatted_address.latitude,
+                  item.user.formatted_address.longitude
+                ).toFixed(1) + " miles"
+                : isSale && !currentUser
+                  ? "Please log in to view distance"
+                  : item.distance}
             </Typography>
           </Box>
         )}
 
         {isRequest && (
-          <Button
-            variant="contained"
-            fullWidth
-            sx={{
-              bgcolor: "primary.main",
-              "&:hover": {
-                bgcolor: "primary.dark",
-              },
-            }}
-            onClick={() => {
-              window.location.href = `/requests/${item.id}`;
-            }}
-          >
-            Make Offer
-          </Button>
+          <>
+            <button className="py-2 w-full text-white bg-blue-800 hover:bg-blue-900 transition duration-200 rounded-md"
+              onClick={() => {
+                window.location.href = `/requests/${item.id}`;
+              }}>
+              Offer Part
+            </button>
+          </>
         )}
         {isSale && (
-          <Button
-            variant="contained"
-            fullWidth
-            sx={{
-              bgcolor: "primary.main",
-              "&:hover": {
-                bgcolor: "primary.dark",
-              },
-            }}
-            onClick={() => {
-              window.location.href = `/sales/${item.id}`;
-            }}
-          >
-            Send Bid
-          </Button>
+          <>
+            <button className="py-2 w-full text-white bg-green-600 hover:bg-green-700 transition duration-200 rounded-md"
+              onClick={() => {
+                window.location.href = `/sales/${item.id}`;
+              }}>
+              View Sale
+            </button>
+          </>
         )}
       </CardContent>
     </Card>

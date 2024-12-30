@@ -188,7 +188,7 @@ export default function FulfillRequest() {
   return (
     <div className='flex flex-col min-h-screen'>
       <TopBar />
-      <div className='flex-grow flex flex-col'>
+      <div className='flex-grow flex flex-col bg-gray-100'>
         <div className='py-8 md:py-16'>
           {request && !error ? (
             <div className='px-5 sm:px-12 md:px-20'>
@@ -262,8 +262,8 @@ export default function FulfillRequest() {
                     <h3 className='text-[24px] text-left md:text-center lg:text-left'>
                       {request.user.team_number} | {request.user.team_name}
                     </h3>
-                    <div className='rounded-md p-1 bg-gray-200 mr-3 max-w-fit max-h-fit ml-2'>
-                      <img src={request.user.profile_photo} />
+                    <div className='rounded-full p-1 bg-gray-300 mr-3 max-w-fit max-h-fit ml-2'>
+                      <img src={request.user.profile_photo} className='w-[64px] h-[64px] rounded-full'/>
                     </div>
                   </div>
                   {/* Distance */}
