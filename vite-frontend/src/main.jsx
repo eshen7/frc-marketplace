@@ -11,11 +11,12 @@ import Login from "./pages/Login";
 import Signup from "./pages/Signup";
 import MakeRequest from "./pages/MakeRequest";
 import PostSale from "./pages/PostSale";
-import Fulfill from "./pages/Fulfill";
+import FulfillRequest from "./pages/ViewRequest.jsx";
+import ViewSale from "./pages/ViewSale.jsx";
 import AllRequests from "./pages/AllRequests.jsx";
 import SalesPage from "./pages/AllSales.jsx";
 import LandingPage from "./pages/LandingPage.jsx";
-import UserProfile from "./pages/Profile.jsx";
+import UserProfile from "./pages/ProfileEditPage.jsx";
 import PublicProfilePage from "./pages/PublicProfile.jsx";
 import Chat from "./pages/Messaging.jsx";
 import PartDetails from "./pages/Part.jsx";
@@ -53,7 +54,11 @@ const router = createBrowserRouter(
         },
         {
           path: "requests/:request_id",
-          element: <Fulfill />,
+          element: <FulfillRequest />,
+        },
+        {
+          path: "sales/:sale_id",
+          element: <ViewSale />,
         },
         {
           path: "requests",

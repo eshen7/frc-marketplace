@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useEffect, useRef, useState } from 'react'
-import TopBar from './../components/TopBar.jsx'
+import TopBar from '../components/TopBar.jsx'
 import Footer from '../components/Footer.jsx'
 import { useParams } from 'react-router-dom'
 import axiosInstance from '../utils/axiosInstance.js'
@@ -9,6 +9,10 @@ import { getDaysUntil, haversine } from '../utils/utils.jsx'
 import { FaComments } from 'react-icons/fa'
 import ItemCard from '../components/ItemCard.jsx'
 import { Skeleton } from "@mui/material";
+import { LuSave } from 'react-icons/lu'
+import { MdOutlineEdit } from 'react-icons/md'
+import ErrorBanner from '../components/ErrorBanner.jsx'
+import SuccessBanner from '../components/SuccessBanner.jsx'
 
 export default function FulfillRequest() {
   const { request_id } = useParams();
@@ -26,6 +30,16 @@ export default function FulfillRequest() {
 
   const [imageLoaded, setImageLoaded] = useState(false);
   const [imageError, setImageError] = useState(false);
+
+  const [isRequestOwner, setIsRequestOwner] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
+  const [requestChange, setRequestChange] = useState("");
+
+  const [formData, setFormData] = useState({
+    quantity: { val: 0, edited: false },
+    needed_date: { val: "", edited: false },
+    additional_info: { val: "", edited: false },
+  });
 
   const scrollLeft = () => {
     if (scrollContainerRef.current) {
@@ -86,6 +100,11 @@ export default function FulfillRequest() {
       try {
         const response = await axiosInstance.get(`/requests/id/${request_id}/`)
         setRequest(response.data);
+        setFormData({
+          quantity: { val: response.data.quantity, edited: false },
+          needed_date: { val: response.data.needed_date, edited: false },
+          additional_info: { val: response.data.additional_info, edited: false },
+        });
       } catch (err) {
         console.error("Error fetching Part Request:", err);
         setError(err);
@@ -94,6 +113,12 @@ export default function FulfillRequest() {
 
     fetchRequest();
   }, [request_id]);
+
+  useEffect(() => {
+    if (user && request) {
+      setIsRequestOwner(user.team_number === request.user.team_number);
+    }
+  }, [user, request]);
 
   const fetchRequests = async () => {
     try {
@@ -155,8 +180,49 @@ export default function FulfillRequest() {
     setImageLoaded(true);
   };
 
+  const handleEditClick = () => {
+    setIsEditing(true);
+  }
+
+  const handleSaveClick = async () => {
+    try {
+      const response = await axiosInstance.put(`/requests/id/${request_id}/edit/`, formData);
+
+      setFormData({
+        quantity: { val: formData.quantity.val, edited: false },
+        needed_date: { val: formData.needed_date.val, edited: false },
+        additional_info: { val: formData.additional_info.val, edited: false },
+      });
+
+      setRequest(response.data);
+      setIsEditing(false);
+      setRequestChange("Request Updated Successfully.");
+    } catch (error) {
+      console.error("Error saving request:", error);
+      setRequestChange("Error saving request, please try again.");
+    } finally {
+    }
+  }
+
+  const closeRequestChangeBanner = () => {
+    setRequestChange("");
+  }
+
   return (
     <div className='flex flex-col min-h-screen'>
+      {requestChange == "Request Updated Successfully." ? (
+        <SuccessBanner
+          message={requestChange}
+          onClose={closeRequestChangeBanner}
+        />
+      ) : requestChange != "" ? (
+        <ErrorBanner
+          message={requestChange}
+          onClose={closeRequestChangeBanner}
+        />
+      ) : (
+        <></>
+      )}
       <TopBar />
       <div className='flex-grow flex flex-col bg-gray-100'>
         <div className='py-8 md:py-16'>
@@ -166,21 +232,50 @@ export default function FulfillRequest() {
               <div className='grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-10'>
                 {/* Name & Description */}
                 <div className='flex flex-col'>
-                  <div className='flex flex-row justify-between'>
+                  <div className='flex flex-row justify-between place-items-center'>
                     {/* Request Date */}
                     <p className='text-gray-500 text-sm'>
                       {(new Date(request.request_date)).toLocaleDateString()}
                     </p>
                     {/* Needed By */}
-                    <div>
-                      {renderDueDate(request.needed_date)}
+                    <div className='flex flex-row place-items-center'>
+                      {isEditing ? (
+                        <div>
+                          <span className='text-sm text-gray-500'>Needed By:</span>
+                          <input type="date"
+                            className={`${formData.needed_date.edited ? "border-2 border-blue-800" : "border-2 border-gray-500"}`}
+                            value={formData.needed_date.val} onChange={(e) => setFormData({ ...formData, needed_date: { val: e.target.value, edited: true } })} />
+                        </div>
+                      ) : (
+                        renderDueDate(request.needed_date)
+                      )}
                     </div>
                   </div>
+                  <div className='flex flex-row justify-between place-items-center'>
+                    {/* Part Name */}
+                    <h1 className='text-[30px] font-roboto'>
+                      {request.part.name}
+                    </h1>
+                    {/* Edit Button */}
+                    {isRequestOwner && (
+                      <>
+                        {isEditing ? (
+                          <button className='rounded-full bg-white text-green-500 text-[30px] w-fit p-2
+                                                    hover:scale-105 transition duration-100 hover:cursor-pointer'
+                            onClick={() => handleSaveClick()}>
+                            <LuSave />
+                          </button>
+                        ) : (
+                          <button className='rounded-full bg-white text-blue-500 text-[30px] w-fit p-2
+                                                    hover:scale-105 transition duration-100 hover:cursor-pointer'
+                            onClick={() => handleEditClick()}>
+                            <MdOutlineEdit />
+                          </button>
+                        )}
+                      </>
+                    )}
+                  </div>
 
-                  {/* Part Name */}
-                  <h1 className='text-[30px] font-roboto'>
-                    {request.part.name}
-                  </h1>
                   <h2 className='text-[20px]'>
                     <a href={request.part.manufacturer.website} target='_blank'>
                       <span className='text-blue-600 hover:underline'>
@@ -188,15 +283,21 @@ export default function FulfillRequest() {
                       </span>
                     </a>
                   </h2>
-                  {/* Quantity */}
-                  <div className='flex flex-row justify-between place-items-center'>
+                  {/* Editing Quantity */}
+                  {isEditing ? (
+                    <div className='flex flex-row place-items-center'>
+                      <span className=''>
+                        Qty:
+                      </span>
+                      <input type='number' id='quantity' className={`w-12 ml-2 border-2 ${formData.quantity.edited ? "border-blue-800" : "border-gray-500"}`}
+                        value={formData.quantity.val}
+                        onChange={(e) => setFormData({ ...formData, quantity: { val: e.target.value, edited: true } })} />
+                    </div>
+                  ) : (
                     <p>
                       Qty: {request.quantity}
                     </p>
-                    <p className='text-green-700 text-[24px]'>
-                      $?
-                    </p>
-                  </div>
+                  )}
                   {/* Additional Info */}
                   <div className='flex flex-col mt-6'>
                     <p className='font-semibold'>
@@ -210,11 +311,19 @@ export default function FulfillRequest() {
                     <p className='font-semibold mt-4'>
                       Additional Info
                     </p>
-                    <p className='text-gray-500'>
-                      {request.additional_info ? request.additional_info : (
-                        "No additional info for the request was provided by the user."
+                    <div className='text-gray-500'>
+                      {isEditing ? (
+                        <textarea type='text' id='additional_info'
+                          rows={2}
+                          className={`w-full border-2 ${formData.additional_info.edited ? "border-blue-800" : "border-gray-300"} min-h-[32px]`}
+                          value={formData.additional_info.val}
+                          onChange={(e) => setFormData({ ...formData, additional_info: { val: e.target.value, edited: true } })} />
+                      ) : (
+                        request.additional_info ? request.additional_info : (
+                          "No additional info for the request was provided by the user."
+                        )
                       )}
-                    </p>
+                    </div>
                   </div>
                 </div>
 
@@ -253,7 +362,7 @@ export default function FulfillRequest() {
                       {request.user.team_number} | {request.user.team_name}
                     </h3>
                     <div className='rounded-full p-1 bg-gray-300 mr-3 max-w-fit max-h-fit ml-2'>
-                      <img src={request.user.profile_photo} className='w-[64px] h-[64px] rounded-full'/>
+                      <img src={request.user.profile_photo} className='w-[64px] h-[64px] rounded-full' />
                     </div>
                   </div>
                   {/* Distance */}

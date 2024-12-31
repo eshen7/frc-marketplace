@@ -321,6 +321,64 @@ def request_view(request, request_id):
             {"error": "Part Request not found"}, status=status.HTTP_404_NOT_FOUND
         )
 
+@permission_classes([IsAuthenticated])
+@api_view(["PUT"])
+def request_edit_view(request, request_id):
+    """Edit a specific request's details by id."""
+    try:
+        data = request.data
+        quantity = data.get("quantity").get("val")
+        needed_date = data.get("needed_date").get("val")
+        additional_info = data.get("additional_info").get("val")
+
+        part_request = PartRequest.objects.get(id=request_id)
+        part_request.quantity = quantity
+        part_request.needed_date = needed_date
+        part_request.additional_info = additional_info
+        part_request.save()
+        serializer = PartRequestSerializer(part_request)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+    except PartRequest.DoesNotExist:
+        return Response(
+            {"error": "Part Request not found"}, status=status.HTTP_404_NOT_FOUND
+        )
+
+@api_view(["GET"])
+def sale_view(request, sale_id):
+    """Fetch a specific sale's details by id."""
+    try:
+        part_sale = PartSale.objects.get(id=sale_id)
+        serializer = PartSaleSerializer(part_sale)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+    except PartSale.DoesNotExist:
+        return Response(
+            {"error": "Part Sale not found"}, status=status.HTTP_404_NOT_FOUND
+        )
+
+@permission_classes([IsAuthenticated])
+@api_view(["PUT"])
+def sale_edit_view(request, sale_id):
+    """Edit a specific sale's details by id."""
+    try:
+        data = request.data
+        quantity = data.get("quantity").get("val")
+        ask_price = data.get("ask_price").get("val")
+        condition = data.get("condition").get("val")
+        additional_info = data.get("additional_info").get("val")
+
+        part_sale = PartSale.objects.get(id=sale_id)
+        part_sale.quantity = quantity
+        part_sale.ask_price = ask_price
+        part_sale.condition = condition
+        part_sale.additional_info = additional_info
+        part_sale.save()
+        serializer = PartSaleSerializer(part_sale)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+    except PartSale.DoesNotExist:
+        return Response(
+            {"error": "Part Sale not found"}, status=status.HTTP_404_NOT_FOUND
+        )
+
 
 @api_view(["GET"])
 def part_view(part, part_id):
@@ -329,7 +387,7 @@ def part_view(part, part_id):
         part = Part.objects.get(id=part_id)
         serializer = PartSerializer(part)
         return Response(serializer.data, status=status.HTTP_200_OK)
-    except PartRequest.DoesNotExist:
+    except Part.DoesNotExist:
         return Response({"error": "Part not found"}, status=status.HTTP_404_NOT_FOUND)
 
 
@@ -341,9 +399,22 @@ def requests_by_part_view(part, part_id):
         requests_for_part = PartRequest.objects.filter(part=part)
         serializer = PartRequestSerializer(requests_for_part, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
-    except PartRequest.DoesNotExist:
+    except Part.DoesNotExist:
         return Response(
             {"error": "Part requests not found"}, status=status.HTTP_404_NOT_FOUND
+        )
+
+@api_view(["GET"])
+def sales_by_part_view(part, part_id):
+    """Fetch all of specific part's sales."""
+    try:
+        part = Part.objects.get(id=part_id)
+        sales_for_part = PartSale.objects.filter(part=part)
+        serializer = PartSaleSerializer(sales_for_part, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+    except Part.DoesNotExist:
+        return Response(
+            {"error": "Part sales not found"}, status=status.HTTP_404_NOT_FOUND
         )
 
 
