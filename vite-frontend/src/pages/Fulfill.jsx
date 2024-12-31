@@ -8,49 +8,7 @@ import axiosInstance from '../utils/axiosInstance.js'
 import { getDaysUntil, haversine } from '../utils/utils.jsx'
 import { FaComments } from 'react-icons/fa'
 import ItemCard from '../components/ItemCard.jsx'
-
-// example data
-const requestData = {
-  "id": "ca98f634-ee17-481b-b131-a4f4bb13243c",
-  "quantity": 1,
-  "request_date": "2024-12-29",
-  "needed_date": "2025-02-03",
-  "needed_for": "",
-  "additional_info": "",
-  "part": {
-    "id": "487c4770-edd1-4d33-a7fb-416bee235e88",
-    "name": "Kraken X60 REAL",
-    "manufacturer_id": "7fbe19b9-b7eb-45d5-828b-f16e7861fb29",
-    "category_id": "cb60b85c-80c1-42be-b113-4d8b746bed64",
-    "model_id": null,
-    "image": "https://frcmresources.s3.us-west-1.amazonaws.com/parts/WCP/Motor/kraken.webp",
-    "manufacturer": {
-      "id": "7fbe19b9-b7eb-45d5-828b-f16e7861fb29",
-      "name": "WCP",
-      "website": "https://wcproducts.com/"
-    },
-    "category": "Motor"
-  },
-  "user": {
-    "email": "andrewkkchen@gmail.com",
-    "full_name": "Andrew Chen",
-    "team_name": "The Holy Cows",
-    "team_number": 1538,
-    "profile_photo": "https://www.thebluealliance.com/avatar/2024/frc1538.png",
-    "phone": "1234567890",
-    "formatted_address": {
-      "raw": "5331 Mt Alifan Dr, San Diego, CA 92111, USA",
-      "latitude": 32.8156639,
-      "longitude": -117.1808113
-    }
-  }
-}
-
-// example urls
-const imageUrls = [
-  "https://cdn.andymark.com/product_images/35-inline-chain-tensioner/5cfa67d861a10d516785a4fb/zoom.jpg?c=1559914456",
-  "https://cdn.shopify.com/s/files/1/0440/0326/2624/files/WCP-0963_5163c5ca-14bc-48ed-b9fb-40353dc11a36.png?v=1687826274"
-]
+import { Skeleton } from "@mui/material";
 
 export default function FulfillRequest() {
   const { request_id } = useParams();
@@ -65,6 +23,9 @@ export default function FulfillRequest() {
   const [loadingPartRequests, setLoadingPartRequests] = useState(true);
 
   const scrollContainerRef = useRef(null);
+
+  const [imageLoaded, setImageLoaded] = useState(false);
+  const [imageError, setImageError] = useState(false);
 
   const scrollLeft = () => {
     if (scrollContainerRef.current) {
@@ -185,6 +146,15 @@ export default function FulfillRequest() {
     );
   };
 
+  const handleImageLoad = () => {
+    setImageLoaded(true);
+  };
+
+  const handleImageError = () => {
+    setImageError(true);
+    setImageLoaded(true);
+  };
+
   return (
     <div className='flex flex-col min-h-screen'>
       <TopBar />
@@ -249,9 +219,29 @@ export default function FulfillRequest() {
                 </div>
 
                 {/* Image */}
-                <div className=''>
+                <div className="relative" style={{ paddingTop: "100%" }}>
+                  {!imageLoaded && (
+                    <Skeleton
+                      variant="rectangular"
+                      sx={{
+                        position: "absolute",
+                        top: 0,
+                        left: 0,
+                        width: "100%",
+                        height: "100%",
+                      }}
+                      animation="wave"
+                    />
+                  )}
                   <img
                     src={request.part.image}
+                    alt={request.part.name}
+                    onLoad={handleImageLoad}
+                    onError={handleImageError}
+                    className="absolute top-0 left-0 w-full h-full object-contain"
+                    style={{
+                      display: imageLoaded ? "block" : "none"
+                    }}
                   />
                 </div>
 

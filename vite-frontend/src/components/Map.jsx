@@ -67,7 +67,7 @@ const MarkerWithInfoWindow = ({
         <img 
           src={location.profile_photo} 
           alt={location.team_name} 
-          className="w-10 h-10 rounded-full object-cover" 
+          className="w-10 h-10 rounded-md object-cover bg-black" 
         />
       </AdvancedMarker>
 

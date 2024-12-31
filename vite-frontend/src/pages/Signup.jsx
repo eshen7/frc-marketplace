@@ -94,46 +94,40 @@ const Signup = () => {
     );
 
     if (emptyFields.length > 1) {
-      // Create an error message listing the empty fields
       const errorMessage = `Please fill in all required fields: ${emptyFields
         .map(([key]) => key.replace(/_/g, " "))
         .join(", ")}`;
       setError(errorMessage);
-      return; // Stop form submission
+      return;
     }
 
     if (passwordError) {
-      return; // Don't submit if passwords don't match
+      return;
     }
-    await axiosInstance
-      .post("/users/", formData)
-      .then((res) => {
-        console.log(res);
+
+    try {
+      const response = await axiosInstance.post("/users/", formData);
+      if (response.status === 201 || response.status === 200) {
         navigate("/landingPage");
-      })
-      .catch((err) => {
-
-        // Check if the error is due to duplicate email, team number, or phone and set the error message accordingly
-        const isDuplicateEmail = err.response.data.email == undefined;
-        const isDuplicateTeamNumber =
-          err.response.data.team_number == undefined;
-        const isDuplicatePhone = err.response.data.phone == undefined;
-
-        console.log(isDuplicateEmail, isDuplicateTeamNumber, isDuplicatePhone);
-        switch (err.data != undefined) {
-          case isDuplicateTeamNumber:
-            setError("This team number already exists");
-            break;
-          case isDuplicateEmail:
-            setError("This email already exists!");
-            break;
-          case isDuplicatePhone:
-            setError("This phone number already exists");
-            break;
-          default:
-            setError("An error occurred. Please try again.");
+      } else {
+        setError("An unexpected error occurred. Please try again.");
+      }
+    } catch (err) {
+      if (err.response && err.response.data) {
+        // Handle specific error messages from the backend
+        if (err.response.data.team_number) {
+          setError("This team number is already registered");
+        } else if (err.response.data.email) {
+          setError("This email is already registered");
+        } else if (err.response.data.phone) {
+          setError("This phone number is already registered");
+        } else {
+          setError(err.response.data.message || "An error occurred during registration. Please try again.");
         }
-      });
+      } else {
+        setError("Network error. Please check your connection and try again.");
+      }
+    }
   };
 
   return (

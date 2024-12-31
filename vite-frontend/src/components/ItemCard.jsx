@@ -1,51 +1,74 @@
-import React, { useEffect } from "react";
+import React, { useState } from "react";
 import PropTypes from "prop-types";
-import {
-  Card,
-  CardMedia,
-  CardContent,
-  Typography,
-  Button,
-  Box,
-} from "@mui/material";
+import { Skeleton } from "@mui/material";
 import { getDaysUntil, haversine, isDate } from "../utils/utils";
 
 const ItemCard = ({ item, currentUser, type }) => {
+  const [imageLoaded, setImageLoaded] = useState(false);
+  const [imageError, setImageError] = useState(false);
   const isRequest = type === "request";
   const isSale = type === "sale";
 
-  return (
-    <Card sx={{ maxWidth: 345, height: "100%" }}>
-      <CardMedia
-        component="img"
-        height="200"
-        image={item.part.image != null ? item.part.image : "/IMG_6769.jpg"}
-        alt={item.part.name}
-        sx={{ objectFit: "cover", maxHeight: 200, width: "100%" }}
-      />
-      <CardContent>
-        <Typography variant="h6" gutterBottom>
-          {item.part.name}
-        </Typography>
+  const askPrice = typeof item.ask_price === 'string' ? parseFloat(item.ask_price) : item.ask_price;
 
-        <Typography variant="body2" color="text.secondary" gutterBottom>
+  const handleImageLoad = () => {
+    setImageLoaded(true);
+  };
+
+  const handleImageError = () => {
+    setImageError(true);
+    setImageLoaded(true);
+  };
+
+  return (
+    <div className="max-w-[345px] h-full bg-white rounded-lg shadow-md overflow-hidden">
+      <div className="relative" style={{ paddingTop: "100%" }}>
+        {!imageLoaded && (
+          <Skeleton
+            variant="rectangular"
+            sx={{
+              position: "absolute",
+              top: 0,
+              left: 0,
+              width: "100%",
+              height: "100%",
+            }}
+            animation="wave"
+          />
+        )}
+        <img
+          src={item.part.image || "/IMG_6769.jpg"}
+          alt={item.part.name}
+          onLoad={handleImageLoad}
+          onError={handleImageError}
+          className="absolute top-0 left-0 w-full h-full object-cover"
+          style={{
+            display: imageLoaded ? "block" : "none"
+          }}
+        />
+      </div>
+
+      <div className="p-4">
+        <h2 className="text-xl font-semibold mb-2 truncate">{item.part.name}</h2>
+
+        <p className="text-gray-600 text-sm mb-2">
           {`Team ${item.user.team_number} - ${item.user.team_name}`}
-        </Typography>
+        </p>
 
         {isRequest ? (
-          <Box>
-            <Typography variant="body2" color="text.secondary" gutterBottom>
+          <div>
+            <p className="text-gray-600 text-sm mb-2">
               {currentUser
                 ? haversine(
-                  currentUser.formatted_address.latitude,
-                  currentUser.formatted_address.longitude,
-                  item.user.formatted_address.latitude,
-                  item.user.formatted_address.longitude
-                ).toFixed(1) + " miles"
+                    currentUser.formatted_address.latitude,
+                    currentUser.formatted_address.longitude,
+                    item.user.formatted_address.latitude,
+                    item.user.formatted_address.longitude
+                  ).toFixed(1) + " miles"
                 : isRequest && !currentUser
-                  ? "Please log in to view distance"
-                  : item.distance}
-            </Typography>
+                ? "Please log in to view distance"
+                : item.distance}
+            </p>
             {(() => {
               let temp_date = item.needed_date;
               if (!isDate(temp_date)) {
@@ -55,67 +78,60 @@ const ItemCard = ({ item, currentUser, type }) => {
               const isUrgent = daysUntil < 3;
               return (
                 isRequest && (
-                  <Typography
-                    variant="body2"
-                    color={isUrgent ? "error" : "text.secondary"}
-                    sx={{ fontWeight: isUrgent ? "bold" : "regular", mb: 2 }}
-                  >
+                  <p className={`text-sm mb-4 ${
+                    isUrgent ? "text-red-600 font-bold" : "text-gray-600"
+                  }`}>
                     Due: {temp_date.toLocaleDateString()} ({daysUntil} days)
-                  </Typography>
+                  </p>
                 )
               );
             })()}
-          </Box>
+          </div>
         ) : (
-          <Box>
-            <Typography
-              variant="body2"
-              color="success.main"
-              sx={{ fontWeight: "bold" }}
-              gutterBottom
-            >
-              ask: ${item.ask_price}
-            </Typography>
-            <Typography variant="body2" color="text.secondary" gutterBottom>
+          <div>
+            <p className="text-green-600 font-bold text-sm mb-2">
+              ask: ${askPrice?.toFixed(2)}
+            </p>
+            <p className="text-gray-600 text-sm mb-2">
               Condition: {item.condition}
-            </Typography>
-            <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+            </p>
+            <p className="text-gray-600 text-sm mb-4">
               {currentUser
                 ? haversine(
-                  currentUser.formatted_address.latitude,
-                  currentUser.formatted_address.longitude,
-                  item.user.formatted_address.latitude,
-                  item.user.formatted_address.longitude
-                ).toFixed(1) + " miles"
+                    currentUser.formatted_address.latitude,
+                    currentUser.formatted_address.longitude,
+                    item.user.formatted_address.latitude,
+                    item.user.formatted_address.longitude
+                  ).toFixed(1) + " miles"
                 : isSale && !currentUser
-                  ? "Please log in to view distance"
-                  : item.distance}
-            </Typography>
-          </Box>
+                ? "Please log in to view distance"
+                : item.distance}
+            </p>
+          </div>
         )}
 
         {isRequest && (
-          <>
-            <button className="py-2 w-full text-white bg-blue-800 hover:bg-blue-900 transition duration-200 rounded-md"
-              onClick={() => {
-                window.location.href = `/requests/${item.id}`;
-              }}>
-              Offer Part
-            </button>
-          </>
+          <button
+            className="w-full py-2 text-white bg-blue-800 hover:bg-blue-900 transition duration-200 rounded-md"
+            onClick={() => {
+              window.location.href = `/requests/${item.id}`;
+            }}
+          >
+            Offer Part
+          </button>
         )}
         {isSale && (
-          <>
-            <button className="py-2 w-full text-white bg-green-600 hover:bg-green-700 transition duration-200 rounded-md"
-              onClick={() => {
-                window.location.href = `/sales/${item.id}`;
-              }}>
-              View Sale
-            </button>
-          </>
+          <button
+            className="w-full py-2 text-white bg-green-600 hover:bg-green-700 transition duration-200 rounded-md"
+            onClick={() => {
+              window.location.href = `/sales/${item.id}`;
+            }}
+          >
+            View Sale
+          </button>
         )}
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   );
 };
 
@@ -134,16 +150,22 @@ ItemCard.propTypes = {
         }),
       }),
     ]).isRequired,
-    coverPhoto: PropTypes.string,
-    image: PropTypes.string,
+    part: PropTypes.shape({
+      name: PropTypes.string.isRequired,
+      image: PropTypes.string,
+    }).isRequired,
     distance: PropTypes.number,
     needed_date: PropTypes.oneOfType([
-      PropTypes.instanceOf(Date), // Accepts Date object
-      PropTypes.string, // Accepts string
+      PropTypes.instanceOf(Date),
+      PropTypes.string,
     ]),
-    price: PropTypes.number,
+    ask_price: PropTypes.oneOfType([
+      PropTypes.string,
+      PropTypes.number,
+    ]),
     condition: PropTypes.string,
   }).isRequired,
+  currentUser: PropTypes.object,
   type: PropTypes.oneOf(["request", "sale"]).isRequired,
 };
 

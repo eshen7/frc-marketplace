@@ -3,6 +3,7 @@ import TopBar from "../components/TopBar";
 import Footer from "../components/Footer";
 import Map from "../components/Map";
 import SuccessBanner from "../components/SuccessBanner";
+import ItemCard from "../components/ItemCard";
 
 import { useLocation, useNavigate } from "react-router-dom";
 import axiosInstance from "../utils/axiosInstance";
@@ -44,148 +45,6 @@ const recentSales = [
     distance: 16,
   },
 ];
-
-const renderRequest = (request, self_user) => {
-  const daysUntil = getDaysUntil(new Date(request.needed_date));
-  const isUrgent = daysUntil < 5 && daysUntil > 0;
-  const isOverdue = daysUntil < 0;
-  const isDueToday = daysUntil === 0;
-  const absoluteDaysUntil = Math.abs(daysUntil);
-
-  let distance_string = "Log in for distance";
-
-  if (
-    self_user &&
-    self_user.formatted_address.latitude &&
-    self_user.formatted_address.longitude
-  ) {
-    const dist = haversine(
-      request.user.formatted_address.latitude,
-      request.user.formatted_address.longitude,
-      self_user.formatted_address.latitude,
-      self_user.formatted_address.longitude
-    );
-
-    distance_string = dist.toFixed(1) + " miles";
-  }
-
-  const renderDueDate = () => {
-    return (
-      <p
-        className={`text-sm ${isOverdue || isDueToday
-          ? "text-red-600 font-bold"
-          : isUrgent
-            ? "text-orange-600 font-bold"
-            : "text-gray-500"
-          }`}
-      >
-        {isOverdue ? (
-          <>
-            OVERDUE! ({absoluteDaysUntil}{" "}
-            {absoluteDaysUntil === 1 ? "day" : "days"} ago)
-          </>
-        ) : isDueToday ? (
-          <>Need Today!</>
-        ) : (
-          <>
-            Need By: {new Date(request.needed_date).toLocaleDateString()} (
-            {daysUntil} {daysUntil === 1 ? "day" : "days"})
-          </>
-        )}
-      </p>
-    );
-  };
-
-  return (
-    <div
-      key={request.id}
-      className={`flex-none w-[256px] bg-white rounded-lg shadow-md p-6 whitespace-nowrap ${isUrgent
-        ? "border-2 border-orange-600"
-        : isOverdue || isDueToday
-          ? "border-2 border-red-600"
-          : ""
-        }`}
-    >
-      <h3 className="text-xl font-semibold mb-2 truncate">{request.part.name}</h3>
-      <p className="text-gray-600 mb-2">{request.user.team_number}</p>
-      {renderDueDate()}
-      <p className="text-sm text-gray-500">
-        {distance_string != "0.0 miles" ? distance_string : "Your Listing"}
-      </p>
-      {distance_string != "0.0 miles" && (
-        <button
-          className="mt-4 bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition-colors"
-          onClick={() => {
-            window.location.href = `/requests/${request.id}`;
-          }}
-        >
-          Offer Part
-        </button>
-      )}
-    </div>
-  );
-};
-
-const renderSale = (sale, self_user) => {
-  const isOwnListing = sale.user.id === self_user?.id;
-  const isFree = sale.ask_price === 0;
-  const isTrade = sale.ask_price === -1;
-
-  let distance_string = "Log in for distance";
-
-  if (
-    self_user &&
-    self_user.formatted_address.latitude &&
-    self_user.formatted_address.longitude
-  ) {
-    const dist = haversine(
-      sale.user.formatted_address.latitude,
-      sale.user.formatted_address.longitude,
-      self_user.formatted_address.latitude,
-      self_user.formatted_address.longitude
-    );
-
-    distance_string = dist.toFixed(1) + " miles";
-  }
-
-  const renderPrice = () => {
-    if (isFree) {
-      return <span className="text-green-600 font-bold">FREE</span>;
-    } else if (isTrade) {
-      return <span className="text-blue-600 font-bold">For Trade</span>;
-    } else {
-      return <span className="text-green-600 font-bold">${sale.ask_price}</span>;
-    }
-  };
-
-  return (
-    <div
-      key={sale.id}
-      className="flex-none w-[256px] bg-white rounded-lg shadow-md p-6 whitespace-nowrap"
-    >
-      <h3 className="text-xl font-semibold mb-2 truncate">{sale.part.name}</h3>
-      <p className="text-gray-600 mb-2">{sale.user.team_number}</p>
-      <p className="text-sm text-gray-500 mb-2">
-        {distance_string != "0.0 miles" ? distance_string : "Your Listing"}
-      </p>
-      <p className="text-lg mb-2">{renderPrice()}</p>
-      <p className="text-sm text-gray-600 mb-2">Quantity: {sale.quantity}</p>
-      {sale.condition && (
-        <p className="text-sm text-gray-600 mb-2">Condition: {sale.condition}</p>
-      )}
-      {!isOwnListing && (
-        <button
-          className="w-full mt-4 bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition-colors"
-          onClick={() => {
-            window.location.href = `/sales/${sale.id}`;
-          }}
-        >
-          Make Offer
-        </button>
-      )}
-    </div>
-  );
-};
 
 const Home = () => {
   const location = useLocation();
@@ -399,13 +258,15 @@ const Home = () => {
                 requests
                   .slice(-10)
                   .reverse()
-                  .map((request) => {
-                    return (
-                      <React.Fragment key={request.id}>
-                        {renderRequest(request, user)}
-                      </React.Fragment>
-                    );
-                  })
+                  .map((request) => (
+                    <div key={request.id} className="flex-none w-[272px]">
+                      <ItemCard
+                        item={request}
+                        currentUser={user}
+                        type="request"
+                      />
+                    </div>
+                  ))
               ) : requests.length === 0 ? (
                 <p className="text-center">No teams need your help!</p>
               ) : (
@@ -444,13 +305,15 @@ const Home = () => {
                 sales
                   .slice(-10)
                   .reverse()
-                  .map((sale) => {
-                    return (
-                      <React.Fragment key={sale.id}>
-                        {renderSale(sale, user)}
-                      </React.Fragment>
-                    );
-                  })
+                  .map((sale) => (
+                    <div key={sale.id} className="flex-none w-[272px]">
+                      <ItemCard
+                        item={sale}
+                        currentUser={user}
+                        type="sale"
+                      />
+                    </div>
+                  ))
               ) : sales.length === 0 ? (
                 <p className="text-center">No parts for sale!</p>
               ) : (
