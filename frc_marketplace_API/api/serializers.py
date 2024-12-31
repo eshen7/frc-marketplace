@@ -139,6 +139,26 @@ class UserSerializer(serializers.ModelSerializer):
         return representation
 
 
+class PublicUserSerializer(serializers.ModelSerializer):
+    """Public serializer for the User model."""
+
+    class Meta:
+        model = User
+        fields = ["team_name", "team_number", "profile_photo", "address"]
+
+    def to_representation(self, instance):
+        """Output representation"""
+        representation = super().to_representation(instance)
+
+        if instance.address:
+            representation["formatted_address"] = {
+                "latitude": instance.address.latitude,
+                "longitude": instance.address.longitude,
+            }
+
+        return representation
+
+
 class PartSerializer(serializers.ModelSerializer):
     """Serializer for the Part model."""
 
@@ -154,7 +174,15 @@ class PartSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Part
-        fields = ["id", "name", "manufacturer_id", "category_id", "model_id", "description", "image"]
+        fields = [
+            "id",
+            "name",
+            "manufacturer_id",
+            "category_id",
+            "model_id",
+            "description",
+            "image",
+        ]
 
     def validate_image(self, value):
         if value:
@@ -234,7 +262,7 @@ class PartRequestSerializer(serializers.ModelSerializer):
 
         # Optionally include `user` or other computed fields here
         data["part"] = PartSerializer(instance.part).data  # Include part details
-        data["user"] = UserSerializer(instance.user).data  # Include user details
+        data["user"] = PublicUserSerializer(instance.user).data  # Include user details
         return data
 
 
@@ -269,7 +297,7 @@ class PartSaleSerializer(serializers.ModelSerializer):
         data = super().to_representation(instance)
 
         data["part"] = PartSerializer(instance.part).data
-        data["user"] = UserSerializer(instance.user).data
+        data["user"] = PublicUserSerializer(instance.user).data
         return data
 
 

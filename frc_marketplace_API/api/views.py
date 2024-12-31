@@ -20,6 +20,7 @@ from .serializers import (
     MessageSerializer,
     PartSaleSerializer,
     UserSerializer,
+    PublicUserSerializer,
     PartSerializer,
     PartRequestSerializer,
     PartCategorySerializer,
@@ -42,7 +43,7 @@ def search_all_view(request):
         users = User.objects.all()
         parts = Part.objects.all()
         requests = PartRequest.objects.all()
-        user_serializer = UserSerializer(users, many=True)
+        user_serializer = PublicUserSerializer(users, many=True)
         part_serializer = PartSerializer(parts, many=True)
         request_serializer = PartRequestSerializer(requests, many=True)
 
@@ -59,7 +60,7 @@ def user_views(request):
     """views for GETTING and CREATING users"""
     if request.method == "GET":
         users = User.objects.all()
-        serializer = UserSerializer(users, many=True)
+        serializer = PublicUserSerializer(users, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
     if request.method == "POST":
@@ -86,7 +87,7 @@ def user_by_team_number_view(request, team_number):
     """Fetch a specific user's details by id."""
     try:
         user = User.objects.get(team_number=team_number)
-        serializer = UserSerializer(user)
+        serializer = PublicUserSerializer(user)
         return Response(serializer.data, status=status.HTTP_200_OK)
     except User.DoesNotExist:
         return Response(
