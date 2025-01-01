@@ -23,6 +23,7 @@ import { MdHome } from "react-icons/md";
 import { CgProfile } from "react-icons/cg";
 import { LuMessageCircle } from "react-icons/lu";
 import SearchBar from "./SearchBar";
+import DropdownButton from "./DropdownButton.jsx";
 
 const NavButton = ({ name, link, navigate }) => {
   return (
@@ -32,32 +33,32 @@ const NavButton = ({ name, link, navigate }) => {
   );
 };
 
-const ProfileDropdownButton = ({
-  Logo,
-  name,
-  buttonLink = undefined,
-  func = undefined,
-  navigate,
-}) => {
-  return (
-    <div className="hover:bg-gray-300 transition duration-200 rounded-lg">
-      <button
-        onClick={() => {
-          if (func) {
-            func();
-          }
-          navigate(buttonLink);
-        }}
-        className="flex flex-row my-1 py-1 px-3 mx-1 place-items-center"
-      >
-        <div className="mr-2">
-          <Logo />
-        </div>
-        <div>{name}</div>
-      </button>
-    </div>
-  );
-};
+// const ProfileDropdownButton = ({
+//   Logo,
+//   name,
+//   buttonLink = undefined,
+//   func = undefined,
+//   navigate,
+// }) => {
+//   return (
+//     <div className="hover:bg-gray-300 transition duration-200 rounded-lg">
+//       <button
+//         onClick={() => {
+//           if (func) {
+//             func();
+//           }
+//           navigate(buttonLink);
+//         }}
+//         className="flex flex-row my-1 py-1 px-3 mx-1 place-items-center"
+//       >
+//         <div className="mr-2">
+//           <Logo />
+//         </div>
+//         <div>{name}</div>
+//       </button>
+//     </div>
+//   );
+// };
 
 const InsideHamburgerButton = ({ name, Logo, link, navigate, func=undefined }) => {
   return (
@@ -230,13 +231,13 @@ const TopBar = () => {
             <div className="absolute top-[48px] right-[0px] bg-gray-100 whitespace-nowrap z-50 rounded-lg px-1">
               {isAuthenticated && user ? (
                 <>
-                  <ProfileDropdownButton
+                  <DropdownButton
                     Logo={CgProfile}
                     name={"Profile"}
                     buttonLink={`/profile/frc/${user.team_number}`}
                     navigate={navigate}
                   />
-                  <ProfileDropdownButton
+                  <DropdownButton
                     Logo={FaSignOutAlt}
                     name={"Log Out"}
                     func={handleLogout}
@@ -245,13 +246,13 @@ const TopBar = () => {
                 </>
               ) : (
                 <>
-                  <ProfileDropdownButton
+                  <DropdownButton
                     Logo={FaSignInAlt}
                     name={"Log In"}
                     buttonLink={`/login`}
                     navigate={navigate}
                   />
-                  <ProfileDropdownButton
+                  <DropdownButton
                     Logo={FaWpforms}
                     name={"Register"}
                     buttonLink={"/signup"}

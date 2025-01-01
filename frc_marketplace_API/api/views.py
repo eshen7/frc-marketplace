@@ -343,6 +343,22 @@ def request_edit_view(request, request_id):
             {"error": "Part Request not found"}, status=status.HTTP_404_NOT_FOUND
         )
 
+@permission_classes([IsAuthenticated])
+@api_view(["DELETE"])
+def delete_request_view(request, request_id):
+    """
+    Allow the authenticated user to delete a request.
+    """
+    try:
+        user = request.user
+        part_request = PartRequest.objects.get(id=request_id)
+        if part_request.user.team_number != user.team_number:
+            return Response({"error": "You are not authorized to delete this request."}, status=403)
+        part_request.delete()
+        return Response({"message": "Request deleted successfully."}, status=200)
+    except Exception as e:
+        return Response({"error": str(e)}, status=500)
+
 @api_view(["GET"])
 def sale_view(request, sale_id):
     """Fetch a specific sale's details by id."""
@@ -378,6 +394,22 @@ def sale_edit_view(request, sale_id):
         return Response(
             {"error": "Part Sale not found"}, status=status.HTTP_404_NOT_FOUND
         )
+
+@permission_classes([IsAuthenticated])
+@api_view(["DELETE"])
+def delete_sale_view(request, sale_id):
+    """
+    Allow the authenticated user to delete a sale.
+    """
+    try:
+        user = request.user
+        part_sale = PartSale.objects.get(id=sale_id)
+        if part_sale.user.team_number != user.team_number:
+            return Response({"error": "You are not authorized to delete this sale."}, status=403)
+        part_sale.delete()
+        return Response({"message": "Sale deleted successfully."}, status=200)
+    except Exception as e:
+        return Response({"error": str(e)}, status=500)
 
 
 @api_view(["GET"])

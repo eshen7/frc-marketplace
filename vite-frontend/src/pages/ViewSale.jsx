@@ -9,11 +9,12 @@ import { getDaysUntil, haversine } from '../utils/utils.jsx'
 import { FaComments } from 'react-icons/fa'
 import ItemCard from '../components/ItemCard.jsx'
 import { Skeleton } from "@mui/material";
-import { MdOutlineEdit } from 'react-icons/md'
+import { MdDelete, MdOutlineEdit } from 'react-icons/md'
 import { LuSave } from 'react-icons/lu'
 import SuccessBanner from '../components/SuccessBanner.jsx'
 import ErrorBanner from '../components/ErrorBanner.jsx'
 import ItemScrollBar from '../components/ItemScrollBar.jsx'
+import DropdownButton from '../components/DropdownButton.jsx'
 
 export default function ViewSale() {
   const { sale_id } = useParams();
@@ -37,6 +38,9 @@ export default function ViewSale() {
   const [isEditing, setIsEditing] = useState(false);
   const [saleChange, setSaleChange] = useState("");
 
+  const [editDropdownOpen, setEditDropdownOpen] = useState(false);
+  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
+  
   const [formData, setFormData] = useState({
     quantity: { val: 0, edited: false },
     ask_price: { val: 0, edited: false },
@@ -138,24 +142,44 @@ export default function ViewSale() {
   }
 
   const handleSaveClick = async () => {
-    try {
-      const response = await axiosInstance.put(`/sales/id/${sale_id}/edit/`, formData);
+    if (formData.quantity.edited || formData.ask_price.edited || formData.condition.edited || formData.additional_info.edited) {
+      try {
+        const response = await axiosInstance.put(`/sales/id/${sale_id}/edit/`, formData);
 
-      setFormData({
-        quantity: { val: formData.quantity.val, edited: false },
-        ask_price: { val: formData.ask_price.val, edited: false },
-        condition: { val: formData.condition.val, edited: false },
-        additional_info: { val: formData.additional_info.val, edited: false },
-      });
+        setFormData({
+          quantity: { val: formData.quantity.val, edited: false },
+          ask_price: { val: formData.ask_price.val, edited: false },
+          condition: { val: formData.condition.val, edited: false },
+          additional_info: { val: formData.additional_info.val, edited: false },
+        });
 
-      setSale(response.data);
+        setSale(response.data);
+        setIsEditing(false);
+        setSaleChange("Sale Updated Successfully.");
+      } catch (error) {
+        console.error("Error saving sale:", error);
+        setSaleChange("Error saving sale, please try again.");
+      }
+    } else {
       setIsEditing(false);
-      setSaleChange("Sale Updated Successfully.");
-    } catch (error) {
-      console.error("Error saving sale:", error);
-      setSaleChange("Error saving sale, please try again.");
-    } finally {
     }
+  }
+
+  const handleDeleteConfirm = async () => {
+    try {
+      await axiosInstance.delete(`/sales/id/${sale_id}/delete/`);
+      setSaleChange("Sale deleted successfully.");
+      navigate("/");
+    } catch (error) {
+      console.error("Error deleting sale:", error);
+      setSaleChange("Error deleting sale, please try again.");
+    } finally {
+      setDeleteConfirmOpen(false);
+    }
+  }
+
+  const handleDeleteInitialClick = async () => {
+    setDeleteConfirmOpen(true);
   }
 
   const closeSaleChangeBanner = () => {
@@ -177,6 +201,32 @@ export default function ViewSale() {
       ) : (
         <></>
       )}
+      {deleteConfirmOpen && (
+        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full flex items-center justify-center z-50">
+          <div className="bg-white p-5 rounded-lg shadow-xl max-w-[320px]">
+            <h2 className="text-xl font-bold mb-4">Confirmation</h2>
+            <p className="mb-4">Are you sure you want to delete this sale? This process is irreversible.</p>
+            <div className="flex justify-end">
+              <button
+                onClick={() => {
+                  setDeleteConfirmOpen(false);
+                }}
+                className="bg-gray-300 hover:bg-gray-400 text-gray-800 py-2 px-4 rounded mr-2"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => {
+                  handleDeleteConfirm();
+                }}
+                className="bg-red-500 hover:bg-red-600 text-white py-2 px-4 rounded"
+              >
+                Confirm
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
       <TopBar />
       <div className='flex-grow flex flex-col bg-gray-100'>
         <div className='py-8 md:py-16'>
@@ -194,7 +244,7 @@ export default function ViewSale() {
                   </div>
 
                   {/* Part Name */}
-                  <div className='flex flex-row justify-between place-items-center'>
+                  <div className='flex flex-row justify-between place-items-center relative'>
                     <h1 className='text-[30px] font-roboto'>
                       {sale.part.name}
                     </h1>
@@ -210,11 +260,39 @@ export default function ViewSale() {
                         ) : (
                           <button className='rounded-full bg-white text-blue-500 text-[30px] w-fit p-2
                                                     hover:scale-105 transition duration-100 hover:cursor-pointer'
-                            onClick={() => handleEditClick()}>
+                            onClick={() => {
+                              setEditDropdownOpen(!editDropdownOpen);
+                            }}>
                             <MdOutlineEdit />
                           </button>
                         )}
                       </>
+                    )}
+
+                    {/* Edit Dropdown */}
+                    {editDropdownOpen && (
+                      <div className="absolute top-[50px] right-[-20px] bg-white whitespace-nowrap z-50 rounded-lg px-1">
+                        <DropdownButton
+                          Logo={MdOutlineEdit}
+                          name={"Edit"}
+                          func={() => {
+                            setEditDropdownOpen(false);
+                            handleEditClick();
+                          }}
+                          navigate={navigate}
+                        />
+                        <div className='text-red-600'>
+                          <DropdownButton
+                            Logo={MdDelete}
+                            name={"Delete"}
+                            func={() => {
+                              setEditDropdownOpen(false);
+                              handleDeleteInitialClick();
+                            }}
+                            navigate={navigate}
+                          />
+                        </div>
+                      </div>
                     )}
                   </div>
                   <h2 className='text-[20px]'>
