@@ -183,7 +183,7 @@ const Home = () => {
           {/* Description */}
           <div className="text-center border-b-white max-w-[600px]">
             <p className="text-sm">
-              RoboExchange is an online marketplace designed specifically for high school robotics teams to buy,
+              Millennium Market is an online marketplace designed specifically for high school robotics teams to buy,
               sell, and trade parts and components. Whether you're looking for motors, sensors, gears, or even
               custom-built parts, this platform connects teams across the region, making it easier to source specific
               materials and tools for your robotics projects. Users can list surplus components, negotiate prices, and
@@ -206,7 +206,7 @@ const Home = () => {
             </button>
           </div>
         </div>
-        <section className="mx-[30px] mb-[30px]">
+        <section className="mx-[30px] mb-[40px]">
           <div>
             <h2 className="text-2xl font-bold mb-[30px]">See Nearby Teams</h2>
             <Map zoom={10} locations={allTeams} />

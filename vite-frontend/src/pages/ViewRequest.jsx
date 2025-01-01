@@ -372,22 +372,18 @@ export default function FulfillRequest() {
                   </div>
 
                   <div className='flex flex-col mt-3'>
-                    <button className='py-3 px-6 bg-black hover:bg-gray-800 transition duration-200 text-white rounded-md mb-4'>
-                      <button onClick={() => navigate(`/profile/frc/${request.user.team_number}`)}>
-                        <div className='flex flex-row justify-center place-items-center'>
-                          <p>Profile Page</p>
-                        </div>
-                      </button>
+                    <button onClick={() => navigate(`/profile/frc/${request.user.team_number}`)} className='py-3 px-6 bg-black hover:bg-gray-800 transition duration-200 text-white rounded-md mb-4'>
+                      <div className='flex flex-row justify-center place-items-center'>
+                        <p>Profile Page</p>
+                      </div>
                     </button>
-                    <button className='py-3 px-6 bg-blue-700 hover:bg-blue-800 transition duration-200 text-white rounded-md'>
-                      <button onClick={() => navigate(`/chat/${request.user.team_number}`)}>
-                        <div className='flex flex-row justify-center place-items-center'>
-                          <FaComments className='mr-3' />
-                          <p>
-                            Message
-                          </p>
-                        </div>
-                      </button>
+                    <button onClick={() => navigate(`/chat/${request.user.team_number}`)} className='py-3 px-6 bg-blue-700 hover:bg-blue-800 transition duration-200 text-white rounded-md'>
+                      <div className='flex flex-row justify-center place-items-center'>
+                        <FaComments className='mr-3' />
+                        <p>
+                          Message
+                        </p>
+                      </div>
                     </button>
                   </div>
 
