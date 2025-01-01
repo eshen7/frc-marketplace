@@ -231,9 +231,9 @@ const Signup = () => {
               </div>
               <div className="flex flex-row mx-10 justify-center">
                 <div className="w-1/2 flex justify-center">
-                  <a href="login" className="text-blue-600 hover:text-blue-800">
+                  <button onClick={() => navigate("/login")} className="text-blue-600 hover:text-blue-800">
                     Sign In Instead
-                  </a>
+                  </button>
                 </div>
                 <div className="w-1/2 flex justify-center">
                   <Button

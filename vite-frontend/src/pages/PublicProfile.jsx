@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react'
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import axiosInstance from "../utils/axiosInstance";
 import TopBar from '../components/TopBar';
 import Footer from '../components/Footer';
@@ -8,6 +8,8 @@ import ItemCard from '../components/ItemCard';
 import { MdOutlineEdit } from "react-icons/md";
 
 const PublicProfileComponent = ({ user }) => {
+    const navigate = useNavigate();
+
     const [requests, setRequests] = useState([]);
     const [loadingRequests, setLoadingRequests] = useState(true);
 
@@ -56,12 +58,12 @@ const PublicProfileComponent = ({ user }) => {
                     <div className="rounded-lg w-full max-w-2xl relative">
                         {/* Edit Button */}
                         {currentUser?.team_number === user.team_number && (
-                            <a href='/profile'>
+                            <button onClick={() => navigate("/profile")}>
                                 <div className='absolute top-[15px] right-[15px] rounded-full bg-gray-100 text-blue-500 text-[30px] w-fit p-2
                                         hover:scale-105 transition duration-100 hover:cursor-pointer'>
                                     <MdOutlineEdit />
                                 </div>
-                            </a>
+                            </button>
                         )}
 
                         {/* Main Profile Content */}
@@ -93,13 +95,13 @@ const PublicProfileComponent = ({ user }) => {
                             {/* Chat Button */}
                             {currentUser?.team_number !== user.team_number && (
                                 <div className="mt-4 flex justify-center">
-                                    <a
-                                        href={`/chat/${user.team_number}`}
+                                    <button
+                                        onClick={() => {navigate(`/chat/${user.team_number}`)}}
                                         className="inline-flex items-center px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors duration-200"
                                     >
                                         <FaComments className="mr-2" />
                                         Chat with {user.team_name}
-                                    </a>
+                                    </button>
                                 </div>
                             )}
                         </div>

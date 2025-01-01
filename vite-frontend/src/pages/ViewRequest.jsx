@@ -3,7 +3,7 @@
 import React, { useEffect, useRef, useState } from 'react'
 import TopBar from '../components/TopBar.jsx'
 import Footer from '../components/Footer.jsx'
-import { useParams } from 'react-router-dom'
+import { useNavigate, useParams } from 'react-router-dom'
 import axiosInstance from '../utils/axiosInstance.js'
 import { getDaysUntil, haversine } from '../utils/utils.jsx'
 import { FaComments } from 'react-icons/fa'
@@ -17,6 +17,8 @@ import ItemScrollBar from '../components/ItemScrollBar.jsx'
 
 export default function FulfillRequest() {
   const { request_id } = useParams();
+
+  const navigate = useNavigate();
 
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -371,21 +373,21 @@ export default function FulfillRequest() {
 
                   <div className='flex flex-col mt-3'>
                     <button className='py-3 px-6 bg-black hover:bg-gray-800 transition duration-200 text-white rounded-md mb-4'>
-                      <a href={`/profile/frc/${request.user.team_number}`}>
+                      <button onClick={() => navigate(`/profile/frc/${request.user.team_number}`)}>
                         <div className='flex flex-row justify-center place-items-center'>
                           <p>Profile Page</p>
                         </div>
-                      </a>
+                      </button>
                     </button>
                     <button className='py-3 px-6 bg-blue-700 hover:bg-blue-800 transition duration-200 text-white rounded-md'>
-                      <a href={`/chat/${request.user.team_number}`}>
+                      <button onClick={() => navigate(`/chat/${request.user.team_number}`)}>
                         <div className='flex flex-row justify-center place-items-center'>
                           <FaComments className='mr-3' />
                           <p>
                             Message
                           </p>
                         </div>
-                      </a>
+                      </button>
                     </button>
                   </div>
 
