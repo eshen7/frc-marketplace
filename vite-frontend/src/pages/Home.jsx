@@ -59,20 +59,21 @@ const Home = () => {
   const [loadingSales, setLoadingSales] = useState(true);
   const [loadingUser, setLoadingUser] = useState(true);
 
-  const scrollContainerRef = useRef(null);
+  const saleScrollContainerRef = useRef(null);
+  const requestScrollContainerRef = useRef(null);
 
-  const scrollLeft = () => {
-    if (scrollContainerRef.current) {
-      scrollContainerRef.current.scrollBy({
+  const scrollLeft = (containerRef) => {
+    if (containerRef.current) {
+      containerRef.current.scrollBy({
         left: -272, // Adjust the scroll distance as needed
         behavior: "smooth",
       });
     }
   };
 
-  const scrollRight = () => {
-    if (scrollContainerRef.current) {
-      scrollContainerRef.current.scrollBy({
+  const scrollRight = (containerRef) => {
+    if (containerRef.current) {
+      containerRef.current.scrollBy({
         left: 272, // Adjust the scroll distance as needed
         behavior: "smooth",
       });
@@ -192,7 +193,7 @@ const Home = () => {
       <TopBar />
       <div className="bg-gray-100">
         {/* Title Section */}
-        <div className="flex flex-col place-items-center pt-[80px] mb-[80px]">
+        <div className="flex flex-col place-items-center pt-[80px] mb-[80px] mx-[16px]">
           {/* Title */}
           <div className="text-5xl text-center text-black font-semibold text-shadow-md mb-10">
             <h1>Where Teamwork</h1>
@@ -245,13 +246,13 @@ const Home = () => {
           </div>
           <div className="relative">
             <button
-              onClick={scrollLeft}
+              onClick={() => scrollLeft(requestScrollContainerRef)}
               className="absolute left-[-15px] top-1/2 transform -translate-y-1/2 bg-gray-800 text-white p-2 rounded-full shadow-lg hover:bg-gray-900 z-10"
             >
               &#8592;
             </button>
             <div
-              ref={scrollContainerRef}
+              ref={requestScrollContainerRef}
               className="flex overflow-x-auto space-x-4 pb-4"
             >
               {!loadingRequests && !loadingUser && requests.length !== 0 ? (
@@ -274,7 +275,7 @@ const Home = () => {
               )}
             </div>
             <button
-              onClick={scrollRight}
+              onClick={() => scrollRight(requestScrollContainerRef)}
               className="absolute right-[-15px] top-1/2 transform -translate-y-1/2 bg-gray-800 text-white p-2 rounded-full shadow-lg hover:bg-gray-900 z-10"
             >
               &#8594;
@@ -292,13 +293,13 @@ const Home = () => {
           </div>
           <div className="relative">
             <button
-              onClick={scrollLeft}
+              onClick={() => scrollLeft(saleScrollContainerRef)}
               className="absolute left-[-15px] top-1/2 transform -translate-y-1/2 bg-gray-800 text-white p-2 rounded-full shadow-lg hover:bg-gray-900 z-10"
             >
               &#8592;
             </button>
             <div
-              ref={scrollContainerRef}
+              ref={saleScrollContainerRef}
               className="flex overflow-x-auto space-x-4 pb-4"
             >
               {!loadingSales && !loadingUser && sales.length !== 0 ? (
@@ -321,7 +322,7 @@ const Home = () => {
               )}
             </div>
             <button
-              onClick={scrollRight}
+              onClick={() => scrollRight(saleScrollContainerRef)}
               className="absolute right-[-15px] top-1/2 transform -translate-y-1/2 bg-gray-800 text-white p-2 rounded-full shadow-lg hover:bg-gray-900 z-10"
             >
               &#8594;

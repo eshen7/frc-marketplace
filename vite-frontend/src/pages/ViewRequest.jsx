@@ -185,22 +185,26 @@ export default function FulfillRequest() {
   }
 
   const handleSaveClick = async () => {
-    try {
-      const response = await axiosInstance.put(`/requests/id/${request_id}/edit/`, formData);
+    if (formData.quantity.edited || formData.needed_date.edited || formData.additional_info.edited) {
+      try {
+        const response = await axiosInstance.put(`/requests/id/${request_id}/edit/`, formData);
 
-      setFormData({
-        quantity: { val: formData.quantity.val, edited: false },
-        needed_date: { val: formData.needed_date.val, edited: false },
-        additional_info: { val: formData.additional_info.val, edited: false },
-      });
+        setFormData({
+          quantity: { val: formData.quantity.val, edited: false },
+          needed_date: { val: formData.needed_date.val, edited: false },
+          additional_info: { val: formData.additional_info.val, edited: false },
+        });
 
-      setRequest(response.data);
+        setRequest(response.data);
+        setIsEditing(false);
+        setRequestChange("Request Updated Successfully.");
+      } catch (error) {
+        console.error("Error saving request:", error);
+        setRequestChange("Error saving request, please try again.");
+      }
+    } else {
       setIsEditing(false);
-      setRequestChange("Request Updated Successfully.");
-    } catch (error) {
-      console.error("Error saving request:", error);
-      setRequestChange("Error saving request, please try again.");
-    } finally {
+      setRequestChange("No changes to save.");
     }
   }
 
@@ -210,7 +214,7 @@ export default function FulfillRequest() {
 
   return (
     <div className='flex flex-col min-h-screen'>
-      {requestChange == "Request Updated Successfully." ? (
+      {requestChange == "Request Updated Successfully." || requestChange == "No changes to save." ? (
         <SuccessBanner
           message={requestChange}
           onClose={closeRequestChangeBanner}
@@ -241,7 +245,7 @@ export default function FulfillRequest() {
                     <div className='flex flex-row place-items-center'>
                       {isEditing ? (
                         <div>
-                          <span className='text-sm text-gray-500'>Needed By:</span>
+                          <span className='text-sm text-gray-500'>Need By:</span>
                           <input type="date"
                             className={`${formData.needed_date.edited ? "border-2 border-blue-800" : "border-2 border-gray-500"}`}
                             value={formData.needed_date.val} onChange={(e) => setFormData({ ...formData, needed_date: { val: e.target.value, edited: true } })} />
@@ -368,13 +372,15 @@ export default function FulfillRequest() {
                   {/* Distance */}
                   <div>
                     <p className='text-sm'>
-                      {user ? (
+                      {user && !isRequestOwner ? (
                         `${haversine(
                           request.user.formatted_address.latitude,
                           request.user.formatted_address.longitude,
                           user.formatted_address.latitude,
                           user.formatted_address.longitude
                         ).toFixed(1)} miles`
+                      ) : user && isRequestOwner ? (
+                        "Your Listing"
                       ) : ("Log in to view distance")}
                     </p>
                   </div>
@@ -423,12 +429,13 @@ export default function FulfillRequest() {
                       .slice(-10)
                       .reverse()
                       .map((request) => (
-                        <ItemCard
-                          key={request.id}
-                          item={request}
-                          currentUser={user}
-                          type="request"
-                        />
+                        <div key={request.id} className="flex-none w-[272px]">
+                          <ItemCard
+                            item={request}
+                            currentUser={user}
+                            type="request"
+                          />
+                        </div>
                       ))}
                   </div>
                 ) : loadingPartRequests ? (

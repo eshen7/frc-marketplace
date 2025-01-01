@@ -246,7 +246,7 @@ export default function ViewSale() {
                                                 <span className=''>
                                                     Qty:
                                                 </span>
-                                                <input type='number' id='quantity' className={`w-12 ml-2 border-2 ${formData.quantity.edited ? "border-blue-800" : "border-gray-300"}`}
+                                                <input type='number' id='quantity' className={`w-12 ml-2 border-2 ${formData.quantity.edited ? "border-green-500" : "border-gray-300"}`}
                                                     value={formData.quantity.val}
                                                     onChange={(e) => setFormData({ ...formData, quantity: { val: e.target.value, edited: true } })} />
                                             </div>
@@ -261,7 +261,7 @@ export default function ViewSale() {
                                                 <span className='text-green-700 text-[24px]'>
                                                     $
                                                 </span>
-                                                <input type='number' id='ask_price' className={`text-green-700 text-[24px] w-28 border-2 ${formData.ask_price.edited ? "border-blue-800" : "border.gray.300"}`}
+                                                <input type='number' id='ask_price' className={`text-green-700 text-[24px] w-28 border-2 ${formData.ask_price.edited ? "border-green-500" : "border.gray.300"}`}
                                                     value={formData.ask_price.val}
                                                     onChange={(e) => setFormData({ ...formData, ask_price: { val: e.target.value, edited: true } })} />
                                             </div>
@@ -286,7 +286,7 @@ export default function ViewSale() {
                                         {/* Condition */}
                                         <div className='mt-4'>
                                             <span className='font-semibold'>Condition:</span> {isEditing ? (
-                                                <select type='text' id='condition' className={`w-28 border-2 ${formData.condition.edited ? "border-blue-800" : "border-gray-300"}`}
+                                                <select type='text' id='condition' className={`w-28 border-2 ${formData.condition.edited ? "border-green-500" : "border-gray-300"}`}
                                                     value={formData.condition.val}
                                                     onChange={(e) => setFormData({ ...formData, condition: { val: e.target.value, edited: true } })}>
                                                     <option value="new">New</option>
@@ -306,7 +306,7 @@ export default function ViewSale() {
                                             {isEditing ? (
                                                 <textarea type='text' id='additional_info'
                                                     rows={2}
-                                                    className={`w-full border-2 ${formData.additional_info.edited ? "border-blue-800" : "border-gray-300"} min-h-[32px]`}
+                                                    className={`w-full border-2 ${formData.additional_info.edited ? "border-green-500" : "border-gray-300"} min-h-[32px]`}
                                                     value={formData.additional_info.val}
                                                     onChange={(e) => setFormData({ ...formData, additional_info: { val: e.target.value, edited: true } })} />
                                             ) : (
@@ -359,13 +359,15 @@ export default function ViewSale() {
                                     {/* Distance */}
                                     <div>
                                         <p className='text-sm'>
-                                            {user ? (
+                                            {user && !isSaleOwner ? (
                                                 `${haversine(
                                                     sale.user.formatted_address.latitude,
                                                     sale.user.formatted_address.longitude,
                                                     user.formatted_address.latitude,
                                                     user.formatted_address.longitude
                                                 ).toFixed(1)} miles`
+                                            ) : user && isSaleOwner ? (
+                                                "Your Listing"
                                             ) : ("Log in to view distance")}
                                         </p>
                                     </div>
@@ -414,12 +416,13 @@ export default function ViewSale() {
                                             .slice(-10)
                                             .reverse()
                                             .map((sale) => (
-                                                <ItemCard
-                                                    key={sale.id}
-                                                    item={sale}
-                                                    currentUser={user}
-                                                    type="sale"
-                                                />
+                                                <div key={sale.id} className="flex-none w-[272px]">
+                                                    <ItemCard
+                                                        item={sale}
+                                                        currentUser={user}
+                                                        type="sale"
+                                                    />
+                                                </div>
                                             ))}
                                     </div>
                                 ) : loadingPartSales ? (

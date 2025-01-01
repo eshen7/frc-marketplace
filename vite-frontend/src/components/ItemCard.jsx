@@ -58,16 +58,18 @@ const ItemCard = ({ item, currentUser, type }) => {
         {isRequest ? (
           <div>
             <p className="text-gray-600 text-sm mb-2">
-              {currentUser
+              {currentUser && currentUser.team_number !== item.user.team_number
                 ? haversine(
                     currentUser.formatted_address.latitude,
                     currentUser.formatted_address.longitude,
                     item.user.formatted_address.latitude,
                     item.user.formatted_address.longitude
                   ).toFixed(1) + " miles"
-                : isRequest && !currentUser
+                : currentUser
+                ? "Your Listing"
+                : !currentUser
                 ? "Please log in to view distance"
-                : item.distance}
+                : ""}
             </p>
             {(() => {
               let temp_date = item.needed_date;
@@ -93,19 +95,21 @@ const ItemCard = ({ item, currentUser, type }) => {
               ask: ${askPrice?.toFixed(2)}
             </p>
             <p className="text-gray-600 text-sm mb-2">
-              Condition: {item.condition}
+              Condition: {item.condition === "new" ? "New" : item.condition === "like-new" ? "Like New" : item.condition === "good" ? "Good" : item.condition === "fair" ? "Fair" : "Poor"}
             </p>
             <p className="text-gray-600 text-sm mb-4">
-              {currentUser
+              {currentUser && currentUser.team_number !== item.user.team_number
                 ? haversine(
                     currentUser.formatted_address.latitude,
                     currentUser.formatted_address.longitude,
                     item.user.formatted_address.latitude,
                     item.user.formatted_address.longitude
                   ).toFixed(1) + " miles"
-                : isSale && !currentUser
+                : currentUser
+                ? "Your Listing"
+                : !currentUser
                 ? "Please log in to view distance"
-                : item.distance}
+                : ""}
             </p>
           </div>
         )}
@@ -117,7 +121,7 @@ const ItemCard = ({ item, currentUser, type }) => {
               window.location.href = `/requests/${item.id}`;
             }}
           >
-            Offer Part
+            {currentUser && currentUser.team_number !== item.user.team_number ? "Offer Part" : "View Request"}
           </button>
         )}
         {isSale && (
