@@ -465,6 +465,21 @@ def requests_by_user_view(request, team_number):
     serializer = PartRequestSerializer(part_request, many=True)
     return Response(serializer.data, status=status.HTTP_200_OK)
 
+@api_view(["GET"])
+def sales_by_user_view(request, team_number):
+    """Fetch all sales by a user."""
+    try:
+        # Fetch the user by team_number
+        user = User.objects.get(team_number=team_number)
+    except User.DoesNotExist:
+        return Response(
+            {"error": f"User with team number {team_number} not found."},
+            status=status.HTTP_404_NOT_FOUND,
+        )
+    part_sale = PartSale.objects.filter(user_id=user)
+    serializer = PartSaleSerializer(part_sale, many=True)
+    return Response(serializer.data, status=status.HTTP_200_OK)
+
 
 @api_view(["GET", "POST"])
 def part_sale_views(request):
