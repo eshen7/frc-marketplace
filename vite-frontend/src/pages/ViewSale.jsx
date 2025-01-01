@@ -13,6 +13,7 @@ import { MdOutlineEdit } from 'react-icons/md'
 import { LuSave } from 'react-icons/lu'
 import SuccessBanner from '../components/SuccessBanner.jsx'
 import ErrorBanner from '../components/ErrorBanner.jsx'
+import ItemScrollBar from '../components/ItemScrollBar.jsx'
 
 export default function ViewSale() {
     const { sale_id } = useParams();
@@ -22,11 +23,10 @@ export default function ViewSale() {
     const [sale, setSale] = useState(null);
     const [error, setError] = useState(null);
     const [user, setUser] = useState(null);
+    const [loadingUser, setLoadingUser] = useState(true);
 
     const [partSales, setPartSales] = useState([]);
     const [loadingPartSales, setLoadingPartSales] = useState(true);
-
-    const scrollContainerRef = useRef(null);
 
     const [imageLoaded, setImageLoaded] = useState(false);
     const [imageError, setImageError] = useState(false);
@@ -41,24 +41,6 @@ export default function ViewSale() {
         condition: { val: "", edited: false },
         additional_info: { val: "", edited: false },
     });
-
-    const scrollLeft = () => {
-        if (scrollContainerRef.current) {
-            scrollContainerRef.current.scrollBy({
-                left: -272,
-                behavior: "smooth",
-            });
-        }
-    };
-
-    const scrollRight = () => {
-        if (scrollContainerRef.current) {
-            scrollContainerRef.current.scrollBy({
-                left: 272,
-                behavior: "smooth",
-            });
-        }
-    };
 
     useEffect(() => {
         const checkAuthStatus = () => {
@@ -90,6 +72,8 @@ export default function ViewSale() {
                 }
             } catch (err) {
                 console.error("Error fetching user:", err);
+            } finally {
+                setLoadingUser(false);
             }
         }
         fetchUser();
@@ -401,43 +385,7 @@ export default function ViewSale() {
                                 <h2 className="text-xl font-semibold text-gray-700 mb-4">
                                     Sales for the same part
                                 </h2>
-                                <button
-                                    onClick={scrollLeft}
-                                    className="absolute left-[-15px] top-1/2 transform -translate-y-1/2 bg-gray-800 text-white p-2 rounded-full shadow-lg hover:bg-gray-900 z-10"
-                                >
-                                    &#8592;
-                                </button>
-                                {partSales.length > 0 && !loadingPartSales ? (
-                                    <div
-                                        ref={scrollContainerRef}
-                                        className="flex overflow-x-auto space-x-4 pb-4"
-                                    >
-                                        {partSales
-                                            .slice(-10)
-                                            .reverse()
-                                            .map((sale) => (
-                                                <div key={sale.id} className="flex-none w-[272px]">
-                                                    <ItemCard
-                                                        item={sale}
-                                                        currentUser={user}
-                                                        type="sale"
-                                                    />
-                                                </div>
-                                            ))}
-                                    </div>
-                                ) : loadingPartSales ? (
-                                    <>
-                                        <p>Loading Part Sales</p>
-                                    </>
-                                ) : (
-                                    <p className="text-gray-500">No sales found for this part.</p>
-                                )}
-                                <button
-                                    onClick={scrollRight}
-                                    className="absolute right-[-15px] top-1/2 transform -translate-y-1/2 bg-gray-800 text-white p-2 rounded-full shadow-lg hover:bg-gray-900 z-10"
-                                >
-                                    &#8594;
-                                </button>
+                                <ItemScrollBar items={partSales} loadingItems={loadingPartSales} user={user} loadingUser={loadingUser} type="sale" />
                             </div>
                         </div>
                     ) : !error ? (

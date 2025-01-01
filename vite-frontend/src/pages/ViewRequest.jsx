@@ -13,6 +13,7 @@ import { LuSave } from 'react-icons/lu'
 import { MdOutlineEdit } from 'react-icons/md'
 import ErrorBanner from '../components/ErrorBanner.jsx'
 import SuccessBanner from '../components/SuccessBanner.jsx'
+import ItemScrollBar from '../components/ItemScrollBar.jsx'
 
 export default function FulfillRequest() {
   const { request_id } = useParams();
@@ -22,11 +23,10 @@ export default function FulfillRequest() {
   const [request, setRequest] = useState(null);
   const [error, setError] = useState(null);
   const [user, setUser] = useState(null);
+  const [loadingUser, setLoadingUser] = useState(true);
 
   const [partRequests, setPartRequests] = useState([]);
   const [loadingPartRequests, setLoadingPartRequests] = useState(true);
-
-  const scrollContainerRef = useRef(null);
 
   const [imageLoaded, setImageLoaded] = useState(false);
   const [imageError, setImageError] = useState(false);
@@ -40,24 +40,6 @@ export default function FulfillRequest() {
     needed_date: { val: "", edited: false },
     additional_info: { val: "", edited: false },
   });
-
-  const scrollLeft = () => {
-    if (scrollContainerRef.current) {
-      scrollContainerRef.current.scrollBy({
-        left: -272, // Adjust the scroll distance as needed
-        behavior: "smooth",
-      });
-    }
-  };
-
-  const scrollRight = () => {
-    if (scrollContainerRef.current) {
-      scrollContainerRef.current.scrollBy({
-        left: 272, // Adjust the scroll distance as needed
-        behavior: "smooth",
-      });
-    }
-  };
 
   useEffect(() => {
     const checkAuthStatus = () => {
@@ -90,6 +72,8 @@ export default function FulfillRequest() {
         }
       } catch (err) {
         console.error("Error fetching user:", err);
+      } finally {
+        setLoadingUser(false);
       }
     }
     fetchUser();
@@ -414,43 +398,7 @@ export default function FulfillRequest() {
                 <h2 className="text-xl font-semibold text-gray-700 mb-4">
                   Requests for the same part
                 </h2>
-                <button
-                  onClick={scrollLeft}
-                  className="absolute left-[-15px] top-1/2 transform -translate-y-1/2 bg-gray-800 text-white p-2 rounded-full shadow-lg hover:bg-gray-900 z-10"
-                >
-                  &#8592;
-                </button>
-                {partRequests.length > 0 && !loadingPartRequests ? (
-                  <div
-                    ref={scrollContainerRef}
-                    className="flex overflow-x-auto space-x-4 pb-4"
-                  >
-                    {partRequests
-                      .slice(-10)
-                      .reverse()
-                      .map((request) => (
-                        <div key={request.id} className="flex-none w-[272px]">
-                          <ItemCard
-                            item={request}
-                            currentUser={user}
-                            type="request"
-                          />
-                        </div>
-                      ))}
-                  </div>
-                ) : loadingPartRequests ? (
-                  <>
-                    <p>Loading Part Requests</p>
-                  </>
-                ) : (
-                  <p className="text-gray-500">No requests found for this part.</p>
-                )}
-                <button
-                  onClick={scrollRight}
-                  className="absolute right-[-15px] top-1/2 transform -translate-y-1/2 bg-gray-800 text-white p-2 rounded-full shadow-lg hover:bg-gray-900 z-10"
-                >
-                  &#8594;
-                </button>
+                <ItemScrollBar items={partRequests} loadingItems={loadingPartRequests} user={user} loadingUser={loadingUser} type="request" />
               </div>
             </div>
           ) : !error ? (

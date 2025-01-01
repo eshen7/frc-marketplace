@@ -152,6 +152,8 @@ class PublicUserSerializer(serializers.ModelSerializer):
 
         if instance.address:
             representation["formatted_address"] = {
+                "city": instance.address.locality.name,
+                "state": instance.address.locality.state.name,
                 "latitude": instance.address.latitude,
                 "longitude": instance.address.longitude,
             }

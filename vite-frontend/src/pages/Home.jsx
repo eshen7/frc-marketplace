@@ -8,6 +8,7 @@ import ItemCard from "../components/ItemCard";
 import { useLocation, useNavigate } from "react-router-dom";
 import axiosInstance from "../utils/axiosInstance";
 import { haversine, getDaysUntil } from "../utils/utils";
+import ItemScrollBar from "../components/ItemScrollBar";
 
 const recentSales = [
   { id: 1, title: "NEO Motor", team: "Team 2468", price: 50, distance: 3 },
@@ -59,26 +60,6 @@ const Home = () => {
   const [loadingSales, setLoadingSales] = useState(true);
   const [loadingUser, setLoadingUser] = useState(true);
 
-  const saleScrollContainerRef = useRef(null);
-  const requestScrollContainerRef = useRef(null);
-
-  const scrollLeft = (containerRef) => {
-    if (containerRef.current) {
-      containerRef.current.scrollBy({
-        left: -272, // Adjust the scroll distance as needed
-        behavior: "smooth",
-      });
-    }
-  };
-
-  const scrollRight = (containerRef) => {
-    if (containerRef.current) {
-      containerRef.current.scrollBy({
-        left: 272, // Adjust the scroll distance as needed
-        behavior: "smooth",
-      });
-    }
-  };
   const fetchUser = async () => {
     const token = localStorage.getItem("authToken");
 
@@ -215,16 +196,16 @@ const Home = () => {
           <div className="flex flex-row justify-center mt-5 max-w-screen border-b border-b-black pb-5">
             {/* Request */}
             <button className="py-3 px-5 bg-blue-800 text-white text-[14px] rounded-sm hover:bg-blue-900 mr-5"
-            onClick={() => {
-              window.location.href = `/request`
-            }}>
+              onClick={() => {
+                window.location.href = `/request`
+              }}>
               Make a Request
             </button>
             {/* Sale */}
             <button className="py-3 px-5 border border-blue-800 text-blue-800 text-[14px] rounded-sm hover:bg-white"
-            onClick={() => {
-              window.location.href = `/sale`
-            }}>
+              onClick={() => {
+                window.location.href = `/sale`
+              }}>
               Post a Sale
             </button>
           </div>
@@ -244,43 +225,7 @@ const Home = () => {
               </button>
             </a>
           </div>
-          <div className="relative">
-            <button
-              onClick={() => scrollLeft(requestScrollContainerRef)}
-              className="absolute left-[-15px] top-1/2 transform -translate-y-1/2 bg-gray-800 text-white p-2 rounded-full shadow-lg hover:bg-gray-900 z-10"
-            >
-              &#8592;
-            </button>
-            <div
-              ref={requestScrollContainerRef}
-              className="flex overflow-x-auto space-x-4 pb-4"
-            >
-              {!loadingRequests && !loadingUser && requests.length !== 0 ? (
-                requests
-                  .slice(-10)
-                  .reverse()
-                  .map((request) => (
-                    <div key={request.id} className="flex-none w-[272px]">
-                      <ItemCard
-                        item={request}
-                        currentUser={user}
-                        type="request"
-                      />
-                    </div>
-                  ))
-              ) : requests.length === 0 ? (
-                <p className="text-center">No teams need your help!</p>
-              ) : (
-                <></>
-              )}
-            </div>
-            <button
-              onClick={() => scrollRight(requestScrollContainerRef)}
-              className="absolute right-[-15px] top-1/2 transform -translate-y-1/2 bg-gray-800 text-white p-2 rounded-full shadow-lg hover:bg-gray-900 z-10"
-            >
-              &#8594;
-            </button>
-          </div>
+          <ItemScrollBar key={requests[0]} items={requests} loadingItems={loadingRequests} user={user} loadingUser={loadingUser} type="request" />
         </section>
         <section className="pb-12 mx-[30px]">
           <div className="flex justify-between items-center mb-4">
@@ -291,43 +236,7 @@ const Home = () => {
               </button>
             </a>
           </div>
-          <div className="relative">
-            <button
-              onClick={() => scrollLeft(saleScrollContainerRef)}
-              className="absolute left-[-15px] top-1/2 transform -translate-y-1/2 bg-gray-800 text-white p-2 rounded-full shadow-lg hover:bg-gray-900 z-10"
-            >
-              &#8592;
-            </button>
-            <div
-              ref={saleScrollContainerRef}
-              className="flex overflow-x-auto space-x-4 pb-4"
-            >
-              {!loadingSales && !loadingUser && sales.length !== 0 ? (
-                sales
-                  .slice(-10)
-                  .reverse()
-                  .map((sale) => (
-                    <div key={sale.id} className="flex-none w-[272px]">
-                      <ItemCard
-                        item={sale}
-                        currentUser={user}
-                        type="sale"
-                      />
-                    </div>
-                  ))
-              ) : sales.length === 0 ? (
-                <p className="text-center">No parts for sale!</p>
-              ) : (
-                <></>
-              )}
-            </div>
-            <button
-              onClick={() => scrollRight(saleScrollContainerRef)}
-              className="absolute right-[-15px] top-1/2 transform -translate-y-1/2 bg-gray-800 text-white p-2 rounded-full shadow-lg hover:bg-gray-900 z-10"
-            >
-              &#8594;
-            </button>
-          </div>
+          <ItemScrollBar key={sales[0]} items={sales} loadingItems={loadingSales} user={user} loadingUser={loadingUser} type="sale" />
         </section>
       </div>
       <Footer />

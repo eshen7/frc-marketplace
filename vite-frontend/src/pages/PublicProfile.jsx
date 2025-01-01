@@ -53,7 +53,7 @@ const PublicProfileComponent = ({ user }) => {
         <>
             <div className="h-full bg-gray-100 flex flex-col p-4">
                 <div className='flex items-center justify-center'>
-                    <div className="bg-white shadow-lg rounded-lg w-full max-w-2xl relative">
+                    <div className="rounded-lg w-full max-w-2xl relative">
                         {/* Edit Button */}
                         {currentUser?.team_number === user.team_number && (
                             <a href='/profile'>
@@ -67,28 +67,15 @@ const PublicProfileComponent = ({ user }) => {
                         {/* Main Profile Content */}
                         <div className="p-6 space-y-6">
                             <div className="flex items-center justify-center">
-                                <img src={user.profile_photo} />
+                                <img src={user.profile_photo} className="w-[64px] h-[64px] rounded-full bg-gray-400 p-1" />
                             </div>
 
                             <h1 className="text-3xl font-bold text-center text-gray-800">
-                                {user.team_name}
+                                {user.team_number} | {user.team_name}
                             </h1>
-
-                            <div className="bg-gray-200 p-4 rounded-lg">
-                                <h2 className="text-xl font-semibold mb-2 text-gray-700">
-                                    Team Information
-                                </h2>
-                                <div className="space-y-2">
-                                    <div className="flex items-center">
-                                        <FaRobot className="mr-2 text-blue-500" />
-                                        <span className="text-gray-700">Team Number: {user.team_number}</span>
-                                    </div>
-                                    <div className="flex items-center">
-                                        <FaUser className="mr-2 text-blue-500" />
-                                        <span className="text-gray-700">Head Coach: {user.full_name}</span>
-                                    </div>
-                                </div>
-                            </div>
+                            <h2 className="text-xl text-center text-gray-800">
+                                {user.formatted_address.city}, {user.formatted_address.state}
+                            </h2>
 
                             {/* Blue Alliance Link */}
                             <div className="flex justify-center">
@@ -125,13 +112,16 @@ const PublicProfileComponent = ({ user }) => {
                     </h1>
                     <div>
                         {requests && !loadingRequests ? (
-                            <div className='flex justify-center'>
+                            <div className='flex flex-col flex-grow p-4'>
                                 {requests.length !== 0 ? (
-                                    <div className='grid grid-cols-1 lg:grid-cols-4 md:grid-cols-3 sm:grid-cols-2 place-items-center'>
+                                    <div className='grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6'>
                                         {requests.map((request) => (
-                                            <div className='p-3'>
-                                                <ItemCard item={request} currentUser={currentUser} type='request' />
-                                            </div>
+                                            <ItemCard
+                                                key={request.id}
+                                                item={request}
+                                                currentUser={currentUser}
+                                                type='request'
+                                            />
                                         ))}
                                     </div>
                                 ) : (

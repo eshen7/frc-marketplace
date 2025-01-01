@@ -593,7 +593,7 @@ const Chat = () => {
         {!loading && user ? (
           <>
             {/* Left Nav Bar */}
-            <div className="w-1/3 bg-white rounded-3xl shadow-md">
+            <div className="w-1/2 lg:w-1/3 bg-white rounded-3xl shadow-md">
               <h1 className="text-3xl text-center p-3">Chats</h1>
               {!loadingTeams && subsetTeams ? (
                 <div className="flex flex-col overflow-y-auto">
@@ -620,8 +620,8 @@ const Chat = () => {
                               <img
                                 className="h-[40px] w-[40px]"
                                 src={team.profile_photo}
-                                alt="Team Logo"
-                              />
+                                alt={`${team.team_number} logo`}
+                                />
                             </div>
 
                             {/* Text container that fills the remaining space */}
@@ -663,11 +663,11 @@ const Chat = () => {
                             <img
                               className="h-[40px] min-w-[40px]"
                               src={team.profile_photo}
-                              alt="3647 logo"
+                              alt={`${team.team_number} logo`}
                             />
                           </div>
                           <div className="flex flex-col w-full px-2 py-2">
-                            <div className="">
+                            <div className="truncate">
                               <p className="">{team.team_name}</p>
                             </div>
                             <div className="flex flex-row justify-between">
