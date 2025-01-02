@@ -14,14 +14,14 @@ import {
   DialogContent,
   DialogActions,
 } from "@mui/material";
+import { useUser } from "../contexts/UserContext";
 
 const UserProfile = () => {
-  const [profileData, setProfileData] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const { user, loadingUser, isAuthenticated } = useUser();
   const [profileChange, setProfileChange] = useState("");
   const [autocomplete, setAutocomplete] = useState(null);
   const [passwordError, setPasswordError] = useState("");
+  
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [deleteConfirmation, setDeleteConfirmation] = useState("");
   const CONFIRMATION_TEXT = "DELETE MY ACCOUNT";
@@ -40,12 +40,39 @@ const UserProfile = () => {
 
   const navigate = useNavigate();
 
+  // Initialize form data when user data is available
+  useEffect(() => {
+    if (!loadingUser && user) {
+      setFormData({
+        full_name: user.full_name || "",
+        email: user.email || "",
+        address: user.formatted_address?.raw || "",
+        phone: user.phone || "",
+      });
+    }
+  }, [user, loadingUser]);
+
+  // Check authentication
+  useEffect(() => {
+    if (!loadingUser && !isAuthenticated) {
+      navigate("/login");
+    }
+  }, [loadingUser, isAuthenticated, navigate]);
+
   useEffect(() => {
     // Initialize Google Places Autocomplete
     const initAutocomplete = () => {
       if (window.google && window.google.maps) {
+        // Get the actual input element from the Material-UI TextField
+        const input = document.querySelector('#address-input');
+        
+        if (!input) {
+          console.error('Address input element not found');
+          return;
+        }
+
         const autocompleteInstance = new window.google.maps.places.Autocomplete(
-          document.getElementById("address-input"),
+          input,
           {
             types: ["address"],
           }
@@ -74,7 +101,8 @@ const UserProfile = () => {
       script.onload = initAutocomplete;
       document.head.appendChild(script);
     } else {
-      initAutocomplete();
+      // Small delay to ensure the TextField is mounted
+      setTimeout(initAutocomplete, 100);
     }
 
     // Cleanup
@@ -112,63 +140,12 @@ const UserProfile = () => {
     }
   };
 
-  // Fetch self user
-  const fetchUser = async () => {
-    try {
-      const response = await axiosInstance.get("/users/self/");
-      console.log("User Fetch Response:", response);
-      const data = response.data;
-      console.log("data", data);
-
-      setProfileData(data);
-      setFormData({
-        full_name: data.full_name || "",
-        email: data.email || "",
-        address: data.formatted_address?.raw || "",
-        phone: data.phone || "",
-      });
-      setLoading(false);
-    } catch (error) {
-      console.error("Error fetching User Data:", error);
-      setError(error);
-      setLoading(false);
-    }
-  };
-
-  // Fetch user on mount
-  useEffect(() => {
-    const checkUserAndFetchData = async () => {
-      const token = localStorage.getItem("authToken");
-
-      if (!token) {
-        navigate("/login");
-        setError("User not logged in, please login to display profile editor"); // Display login message if no user
-        setLoading(false);
-        return;
-      }
-
-      try {
-        await fetchUser(); // Fetch user data if a token exists
-      } catch (error) {
-        console.error("Error fetching User Data:", error);
-        setError(error);
-      }
-    };
-
-    checkUserAndFetchData();
-  }, []);
-
   // Changing Profile
   const handleSubmit = async (e) => {
-    e.preventDefault(); // Prevent form from refreshing the page
+    e.preventDefault();
 
     try {
       const response = await axiosInstance.put("/users/self/", formData);
-      console.log("Profile updated successfully:", response.data);
-
-      // Optionally, you can update the `profileData` state with the response
-      setProfileData(response.data);
-
       setProfileChange("Profile Updated Successfully.");
     } catch (error) {
       console.error("Error updating profile:", error.response || error.message);
@@ -263,22 +240,17 @@ const UserProfile = () => {
       <div className="flex flex-col flex-grow px-20 pt-10">
         <div className="container mx-auto py-10 px-4">
           <h1 className="text-3xl font-bold mb-6">Profile</h1>
-          {error ? (
-            <>
-              <div>
-                <h1>Error message: </h1>
-                <p>{error}</p>
-              </div>
-            </>
+          {!isAuthenticated ? (
+            <div>
+              <h1>Please log in to view your profile</h1>
+            </div>
           ) : (
             <>
               <div className="grid gap-6 md:grid-cols-2">
                 {/* Editable Information */}
                 <div className="bg-white shadow-md rounded-lg p-6">
-                  {loading || !profileData ? (
-                    <>
-                      <Skeleton count={13} />
-                    </>
+                  {loadingUser ? (
+                    <Skeleton count={13} />
                   ) : (
                     <>
                       <h2 className="text-xl font-semibold mb-4">
@@ -417,18 +389,16 @@ const UserProfile = () => {
 
                 {/* Uneditable Information */}
                 <div className="bg-white shadow-md rounded-lg p-6 relative">
-                  {loading || !profileData ? (
-                    <>
-                      <Skeleton className="" />
-                    </>
-                  ) : (
+                  {loadingUser ? (
+                    <Skeleton className="" />
+                  ) : user && !loadingUser ? (
                     <>
                       <h2 className="text-xl font-semibold mb-4">
                         Uneditable Information
                       </h2>
                       <div className="absolute right-[20px] top-[20px] rounded-lg bg-gray-200">
                         <img
-                          src={profileData.profile_photo}
+                          src={user.profile_photo}
                           width={60}
                           className="p-2"
                         />
@@ -438,17 +408,17 @@ const UserProfile = () => {
                           <h3 className="text-sm font-medium text-gray-700">
                             Team Name
                           </h3>
-                          <p className="mt-1 py-2">{profileData.team_name}</p>
+                          <p className="mt-1 py-2">{user.team_name}</p>
                         </div>
                         <div>
                           <h3 className="text-sm font-medium text-gray-700">
                             Team Number
                           </h3>
-                          <p className="mt-1 py-2">{profileData.team_number}</p>
+                          <p className="mt-1 py-2">{user.team_number}</p>
                         </div>
                       </div>
                     </>
-                  )}
+                  ) : (<></>)}
                 </div>
 
                 {/* Delete Account */}

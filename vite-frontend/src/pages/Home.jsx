@@ -9,6 +9,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import axiosInstance from "../utils/axiosInstance";
 import { haversine, getDaysUntil } from "../utils/utils";
 import ItemScrollBar from "../components/ItemScrollBar";
+import { useUser } from "../contexts/UserContext";
 
 const recentSales = [
   { id: 1, title: "NEO Motor", team: "Team 2468", price: 50, distance: 3 },
@@ -50,43 +51,18 @@ const recentSales = [
 const Home = () => {
   const location = useLocation();
   const navigate = useNavigate();
+
+  const { user, setUser, loadingUser, setLoadingUser, isAuthenticated, setIsAuthenticated } = useUser();
+
   const [showLoginSuccessBanner, setShowLoginSuccessBanner] = useState(false);
   const [bannerMessage, setBannerMessage] = useState("");
   const [allTeams, setAllTeams] = useState([]);
+
   const [requests, setRequests] = useState([]);
   const [sales, setSales] = useState([]);
-  const [user, setUser] = useState(null);
+
   const [loadingRequests, setLoadingRequests] = useState(true);
   const [loadingSales, setLoadingSales] = useState(true);
-  const [loadingUser, setLoadingUser] = useState(true);
-
-  const fetchUser = async () => {
-    const token = localStorage.getItem("authToken");
-
-    if (!token) {
-      setLoadingUser(false);
-      return;
-    }
-
-    try {
-      const response = await axiosInstance.get("/users/self/");
-      const data = response.data;
-
-      if (!data || !data.formatted_address) {
-        throw new Error("Address or coordinates not found");
-      }
-
-      setUser(data);
-      setLoadingUser(false);
-    } catch (error) {
-      console.error("Error fetching User Data:", error);
-      setLoadingUser(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchUser();
-  }, []);
 
   const fetchRequests = async () => {
     try {

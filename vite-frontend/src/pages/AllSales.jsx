@@ -6,6 +6,7 @@ import axiosInstance from "../utils/axiosInstance";
 import { FiSearch, FiSliders } from "react-icons/fi";
 import Fuse from "fuse.js";
 import ItemCard from "../components/ItemCard";
+import { useUser } from "../contexts/UserContext";
 
 // Fuse.js options
 const fuseOptions = {
@@ -15,15 +16,14 @@ const fuseOptions = {
 };
 
 const SalesPage = () => {
+  const { user, setUser, loadingUser, setLoadingUser, isAuthenticated, setIsAuthenticated } = useUser();
+
   const [searchTerm, setSearchTerm] = useState("");
   const [distance, setDistance] = useState(50);
   const [sortBy, setSortBy] = useState("newest");
   const [showFilters, setShowFilters] = useState(false);
   const [selectedCategories, setSelectedCategories] = useState([]);
   const [allCategories, setAllCategories] = useState([]);
-
-  const [user, setUser] = useState(null);
-  const [loadingUser, setLoadingUser] = useState(true);
 
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -37,23 +37,6 @@ const SalesPage = () => {
     } catch (err) {
       setError("Failed to fetch data");
       setLoading(false);
-    }
-  };
-
-  const fetchUser = async () => {
-    try {
-      const response = await axiosInstance.get("/users/self/");
-      const data = response.data;
-
-      if (!data || !data.formatted_address) {
-        throw new Error("Address or coordinates not found");
-      }
-
-      setUser(data);
-      setLoadingUser(false);
-    } catch (error) {
-      console.error("Error fetching User Data:", error);
-      setLoadingUser(false);
     }
   };
 
@@ -114,7 +97,7 @@ const SalesPage = () => {
   useEffect(() => {
     const setupPage = async () => {
       try {
-        await fetchUser();
+        // await fetchUser();
         await fetchData();
         await fetchCategories();
         if (user && items) calculateDistanceForAll(items);

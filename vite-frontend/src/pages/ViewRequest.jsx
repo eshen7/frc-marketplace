@@ -5,9 +5,7 @@ import TopBar from '../components/TopBar.jsx'
 import Footer from '../components/Footer.jsx'
 import { useNavigate, useParams } from 'react-router-dom'
 import axiosInstance from '../utils/axiosInstance.js'
-import { getDaysUntil, haversine } from '../utils/utils.jsx'
-import { FaComments } from 'react-icons/fa'
-import ItemCard from '../components/ItemCard.jsx'
+import { getDaysUntil } from '../utils/utils.jsx'
 import { Skeleton } from "@mui/material";
 import { LuSave } from 'react-icons/lu'
 import { MdDelete, MdOutlineEdit } from 'react-icons/md'
@@ -15,18 +13,19 @@ import ErrorBanner from '../components/ErrorBanner.jsx'
 import SuccessBanner from '../components/SuccessBanner.jsx'
 import ItemScrollBar from '../components/ItemScrollBar.jsx'
 import DropdownButton from '../components/DropdownButton.jsx'
+import ItemProfileSection from '../components/ItemProfileSection.jsx'
+import { useUser } from '../contexts/UserContext.jsx'
 
 export default function FulfillRequest() {
   const { request_id } = useParams();
 
   const navigate = useNavigate();
 
+  const { user, loadingUser, isAuthenticated } = useUser();
+
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [request, setRequest] = useState(null);
   const [error, setError] = useState(null);
-  const [user, setUser] = useState(null);
-  const [loadingUser, setLoadingUser] = useState(true);
 
   const [partRequests, setPartRequests] = useState([]);
   const [loadingPartRequests, setLoadingPartRequests] = useState(true);
@@ -46,44 +45,6 @@ export default function FulfillRequest() {
     needed_date: { val: "", edited: false },
     additional_info: { val: "", edited: false },
   });
-
-  useEffect(() => {
-    const checkAuthStatus = () => {
-      const token = localStorage.getItem("authToken");
-      setIsAuthenticated(!!token);
-    };
-
-    checkAuthStatus(); // Check on mount
-
-    // Set up an event listener for storage changes
-    window.addEventListener("storage", checkAuthStatus);
-
-    // Clean up the event listener on component unmount
-    return () => {
-      window.removeEventListener("storage", checkAuthStatus);
-    };
-  }, []);
-
-
-  useEffect(() => {
-    const fetchUser = async () => {
-      try {
-        if (isAuthenticated) {
-          const response = await axiosInstance.get("/users/self/");
-          if (!response.data) {
-            throw new Error('Address or coordinates not found');
-          }
-
-          setUser(response.data);
-        }
-      } catch (err) {
-        console.error("Error fetching user:", err);
-      } finally {
-        setLoadingUser(false);
-      }
-    }
-    fetchUser();
-  }, [isAuthenticated])
 
   useEffect(() => {
     const fetchRequest = async () => {
@@ -418,50 +379,7 @@ export default function FulfillRequest() {
                   />
                 </div>
 
-                {/* User Stuff */}
-                <div className='col-span-1 md:col-span-2 xl:col-span-1'>
-                  <div className='flex flex-row justify-between place-items-center'>
-                    {/* Team Name */}
-                    <h3 className='text-[24px] text-left md:text-center lg:text-left'>
-                      {request.user.team_number} | {request.user.team_name}
-                    </h3>
-                    <div className='rounded-full p-1 bg-gray-300 mr-3 max-w-fit max-h-fit ml-2'>
-                      <img src={request.user.profile_photo} className='w-[64px] h-[64px] rounded-full' />
-                    </div>
-                  </div>
-                  {/* Distance */}
-                  <div>
-                    <p className='text-sm'>
-                      {user && !isRequestOwner ? (
-                        `${haversine(
-                          request.user.formatted_address.latitude,
-                          request.user.formatted_address.longitude,
-                          user.formatted_address.latitude,
-                          user.formatted_address.longitude
-                        ).toFixed(1)} miles`
-                      ) : user && isRequestOwner ? (
-                        "Your Listing"
-                      ) : ("Log in to view distance")}
-                    </p>
-                  </div>
-
-                  <div className='flex flex-col mt-3'>
-                    <button onClick={() => navigate(`/profile/frc/${request.user.team_number}`)} className='py-3 px-6 bg-black hover:bg-gray-800 transition duration-200 text-white rounded-md mb-4'>
-                      <div className='flex flex-row justify-center place-items-center'>
-                        <p>Profile Page</p>
-                      </div>
-                    </button>
-                    <button onClick={() => navigate(`/chat/${request.user.team_number}`)} className='py-3 px-6 bg-blue-700 hover:bg-blue-800 transition duration-200 text-white rounded-md'>
-                      <div className='flex flex-row justify-center place-items-center'>
-                        <FaComments className='mr-3' />
-                        <p>
-                          Message
-                        </p>
-                      </div>
-                    </button>
-                  </div>
-
-                </div>
+                <ItemProfileSection user={request.user} selfUser={user} isOwner={isRequestOwner} />
               </div>
 
               {/* Other Requests for the Same Part */}

@@ -2,8 +2,10 @@ import React, { useState } from "react";
 import PropTypes from "prop-types";
 import { Skeleton } from "@mui/material";
 import { getDaysUntil, haversine, isDate } from "../utils/utils";
+import { useNavigate } from "react-router-dom";
 
 const ItemCard = ({ item, currentUser, type }) => {
+  const navigate = useNavigate();
   const [imageLoaded, setImageLoaded] = useState(false);
   const [imageError, setImageError] = useState(false);
   const isRequest = type === "request";
@@ -51,9 +53,9 @@ const ItemCard = ({ item, currentUser, type }) => {
       <div className="p-4">
         <h2 className="text-xl font-semibold mb-2 truncate">{item.part.name}</h2>
 
-        <p className="text-gray-600 text-sm mb-2">
+        <div onClick={() => navigate(`/profile/frc/${item.user.team_number}`)} className="text-gray-600 text-sm mb-2 truncate hover:underline cursor-pointer">
           {`Team ${item.user.team_number} - ${item.user.team_name}`}
-        </p>
+        </div>
 
         {isRequest ? (
           <div>
@@ -83,7 +85,7 @@ const ItemCard = ({ item, currentUser, type }) => {
                   <p className={`text-sm mb-4 ${
                     isUrgent ? "text-red-600 font-bold" : "text-gray-600"
                   }`}>
-                    Due: {temp_date.toLocaleDateString()} ({daysUntil} days)
+                    Need By: {temp_date.toLocaleDateString()} ({daysUntil} days)
                   </p>
                 )
               );

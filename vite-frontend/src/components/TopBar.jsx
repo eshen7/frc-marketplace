@@ -1,13 +1,5 @@
 import React, { useState, useEffect } from "react";
-import Avatar from "@mui/material/Avatar";
-import Stack from "@mui/material/Stack";
-import SettingsOutlinedIcon from "@mui/icons-material/SettingsOutlined";
-import Person2OutlinedIcon from "@mui/icons-material/Person2Outlined";
-import IosShareOutlinedIcon from "@mui/icons-material/IosShareOutlined";
-import { IconButton } from "@mui/material";
-import Button from "@mui/material/Button";
 import axiosInstance from "../utils/axiosInstance.js";
-import TextField from "@mui/material/TextField";
 import { useNavigate } from "react-router-dom";
 import { RxHamburgerMenu } from "react-icons/rx";
 import {
@@ -24,6 +16,7 @@ import { CgProfile } from "react-icons/cg";
 import { LuMessageCircle } from "react-icons/lu";
 import SearchBar from "./SearchBar";
 import DropdownButton from "./DropdownButton.jsx";
+import { useUser } from "../contexts/UserContext.jsx";
 
 const NavButton = ({ name, link, navigate }) => {
   return (
@@ -32,33 +25,6 @@ const NavButton = ({ name, link, navigate }) => {
     </button>
   );
 };
-
-// const ProfileDropdownButton = ({
-//   Logo,
-//   name,
-//   buttonLink = undefined,
-//   func = undefined,
-//   navigate,
-// }) => {
-//   return (
-//     <div className="hover:bg-gray-300 transition duration-200 rounded-lg">
-//       <button
-//         onClick={() => {
-//           if (func) {
-//             func();
-//           }
-//           navigate(buttonLink);
-//         }}
-//         className="flex flex-row my-1 py-1 px-3 mx-1 place-items-center"
-//       >
-//         <div className="mr-2">
-//           <Logo />
-//         </div>
-//         <div>{name}</div>
-//       </button>
-//     </div>
-//   );
-// };
 
 const InsideHamburgerButton = ({ name, Logo, link, navigate, func=undefined }) => {
   return (
@@ -75,57 +41,17 @@ const InsideHamburgerButton = ({ name, Logo, link, navigate, func=undefined }) =
 }
 
 const TopBar = () => {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const { user, setUser, loadingUser, setLoadingUser, isAuthenticated, setIsAuthenticated } = useUser();
   const [isOpen, setIsOpen] = useState(false);
-
-  const [user, setUser] = useState(null);
-  const [loadingUser, setLoadingUser] = useState(true);
 
   const navigate = useNavigate();
 
   const [profileDropdownIsOpen, setProfileDropdownIsOpen] = useState(false);
 
-  useEffect(() => {
-    const checkAuthStatus = () => {
-      const token = localStorage.getItem("authToken");
-      setIsAuthenticated(!!token);
-    };
-
-    checkAuthStatus(); // Check on mount
-
-    // Set up an event listener for storage changes
-    window.addEventListener("storage", checkAuthStatus);
-
-    // Clean up the event listener on component unmount
-    return () => {
-      window.removeEventListener("storage", checkAuthStatus);
-    };
-  }, []);
-
-  const fetchSelf = async () => {
-    try {
-      if (isAuthenticated) {
-        const response = await axiosInstance.get("/users/self/");
-        const data = response.data;
-
-        setUser(data);
-      } else {
-        console.log("No user logged in!");
-      }
-    } catch (err) {
-      console.error("Error fetching Self User Data:", err);
-    } finally {
-      setLoadingUser(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchSelf();
-  }, [isAuthenticated]);
-
   const handleLogout = async (e) => {
     localStorage.removeItem("authToken");
     setIsAuthenticated(false);
+    setUser(null);
     try {
       const response = await axiosInstance.post(
         "/logout/",
@@ -292,7 +218,7 @@ const TopBar = () => {
               <img
                 className="absolute top-[12px] left-[8px] h-[40px] min-w-[32px] mr-3 hover:cursor-pointer hover:scale-105 transition-translate duration-100"
                 src="/millenniumMarket.svg"
-                alt="3647 logo"
+                alt="Millennium Market Logo"
               />
             </button>
             <button

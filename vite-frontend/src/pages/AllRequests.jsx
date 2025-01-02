@@ -7,6 +7,7 @@ import { FiSearch, FiSliders } from "react-icons/fi";
 import Fuse from "fuse.js";
 import ItemCard from "../components/ItemCard";
 import { getDaysUntil } from "../utils/utils";
+import { useUser } from "../contexts/UserContext";
 
 // Fuse.js options
 const fuseOptions = {
@@ -23,9 +24,7 @@ const AllRequests = () => {
   const [selectedCategories, setSelectedCategories] = useState([]);
   const [allCategories, setAllCategories] = useState([]);
 
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [user, setUser] = useState(null);
-  const [loadingUser, setLoadingUser] = useState(true);
+  const { user, setUser, loadingUser, setLoadingUser, isAuthenticated, setIsAuthenticated } = useUser();
 
   const [items, setItems] = useState([]); // Initialize as empty array
   const [loading, setLoading] = useState(true);
@@ -39,42 +38,6 @@ const AllRequests = () => {
     } catch (err) {
       setError("Failed to fetch data");
       setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    const checkAuthStatus = () => {
-      const token = localStorage.getItem("authToken");
-      setIsAuthenticated(!!token);
-    };
-
-    checkAuthStatus(); // Check on mount
-
-    // Set up an event listener for storage changes
-    window.addEventListener("storage", checkAuthStatus);
-
-    // Clean up the event listener on component unmount
-    return () => {
-      window.removeEventListener("storage", checkAuthStatus);
-    };
-  }, []);
-
-  const fetchUser = async () => {
-    try {
-      if (isAuthenticated) {
-        const response = await axiosInstance.get("/users/self/");
-        const data = response.data;
-
-        if (!data || !data.formatted_address) {
-          throw new Error("Address or coordinates not found");
-        }
-
-        setUser(data);
-        setLoadingUser(false);
-      }
-    } catch (error) {
-      console.error("Error fetching User Data:", error);
-      setLoadingUser(false);
     }
   };
 
@@ -135,10 +98,7 @@ const AllRequests = () => {
   useEffect(() => {
     const setupPage = async () => {
       try {
-        if (isAuthenticated) {
-          await fetchUser(); // Fetch user first
-        }
-        await fetchData(); // Then fetch items
+        await fetchData();
         await fetchCategories();
         if (user && items) calculateDistanceForAll(items);
       } catch (error) {
@@ -147,7 +107,7 @@ const AllRequests = () => {
     };
 
     setupPage();
-  }, [isAuthenticated]); // Run once on component mount
+  }, [isAuthenticated]);
 
   // Update Fuse instance to include new items when they change
   const fuse = useMemo(() => new Fuse(items, fuseOptions), [items]);

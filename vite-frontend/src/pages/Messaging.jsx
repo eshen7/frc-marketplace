@@ -4,11 +4,12 @@ import TopBar from "../components/TopBar";
 import Footer from "../components/Footer";
 import { IoMdSend } from "react-icons/io";
 import axiosInstance from "../utils/axiosInstance";
-import { v4 as uuidv4 } from "uuid"; // Add this at the top (install `uuid` if necessary)
+import { v4 as uuidv4 } from "uuid";
 import { formatTimestamp, timeSince } from "../utils/utils";
 import { GlobalSocketContext } from "../contexts/GlobalSocketContext";
 import useScreenSize from "../components/useScreenSize";
 import { FaArrowLeft } from "react-icons/fa";
+import { useUser } from "../contexts/UserContext";
 
 const MessageSent = ({ message, allTeams }) => {
   const senderTeam = allTeams.find(
@@ -61,9 +62,8 @@ const Chat = () => {
 
   const { socket: globalSocket, isConnected } = useContext(GlobalSocketContext);
 
-  const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const { user, setUser, loadingUser, setLoadingUser, isAuthenticated, setIsAuthenticated } = useUser();
+
   const [receiverUser, setReceiverUser] = useState(null);
 
   const [allTeams, setAllTeams] = useState([]);
@@ -124,7 +124,7 @@ const Chat = () => {
   // Set Max Height for the Message container
   useEffect(() => {
     const messageMaxHeight = () => {
-      if (loading) return;
+      if (loadingUser) return;
       const topBarHeight = document.querySelector(".top-bar").offsetHeight;
       const footerHeight = document.querySelector(".footer").offsetHeight;
       const messagesSection = document.querySelector(".messages-section");
@@ -134,7 +134,7 @@ const Chat = () => {
     };
 
     messageMaxHeight();
-  }, [loading]);
+  }, [loadingUser]);
 
   // Fetch List of current users you are messaging with
   const fetchList = async () => {
@@ -239,47 +239,6 @@ const Chat = () => {
     };
 
     fetchTeams();
-  }, []);
-
-  // Fetch Self User Function
-  const fetchUser = async () => {
-    try {
-      const response = await axiosInstance.get("/users/self/");
-      // console.log('User Fetch Response:', response);
-      const data = response.data;
-      // console.log('data', data);
-
-      setUser(data);
-      setLoading(false);
-    } catch (error) {
-      console.error("Error fetching User Data:", error);
-      setError(error);
-      setLoading(false);
-    }
-  };
-
-  // Fetch user on mount
-  useEffect(() => {
-    const checkUserAndFetchData = async () => {
-      const token = localStorage.getItem("authToken");
-
-      if (!token) {
-        navigate("/login");
-        setError("User not logged in, please login to display profile editor"); // Display login message if no user
-        setLoading(false);
-        return;
-      }
-
-      try {
-        await fetchUser(); // Fetch user data if a token exists
-      } catch (error) {
-        console.error("Error fetching User Data:", error);
-        setError(error);
-        setLoading(false);
-      }
-    };
-
-    checkUserAndFetchData();
   }, []);
 
   // Fetch user data of the receiver user
@@ -612,7 +571,7 @@ const Chat = () => {
     <div className="h-screen flex flex-col">
       <TopBar />
       <div className="messages-section p-5 flex flex-grow flex-row bg-gray-100 relative">
-        {!loading && user ? (
+        {!loadingUser && user ? (
           <>
             {!isLargerThanSmall && isOnMessagePage && (
               <>
@@ -792,9 +751,7 @@ const Chat = () => {
               </>
             )}
           </>
-        ) : error ? (
-          <p>error: {error}</p>
-        ) : loading ? (
+        ) : loadingUser ? (
           <p>loading</p>
         ) : !user ? (
           <p>Login to view messages</p>

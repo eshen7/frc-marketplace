@@ -6,6 +6,7 @@ import Footer from '../components/Footer';
 import { FaRobot, FaUser, FaExternalLinkAlt, FaComments } from 'react-icons/fa';
 import ItemCard from '../components/ItemCard';
 import { MdOutlineEdit } from "react-icons/md";
+import { useUser } from '../contexts/UserContext';
 
 const PublicProfileComponent = ({ user }) => {
   const navigate = useNavigate();
@@ -15,8 +16,7 @@ const PublicProfileComponent = ({ user }) => {
   const [sales, setSales] = useState([]);
   const [loadingSales, setLoadingSales] = useState(true);
 
-  const [currentUser, setCurrentUser] = useState(null);
-  const [loadingUser, setLoadingUser] = useState(true);
+  const { user: currentUser, loadingUser, isAuthenticated } = useUser();
 
   const [onRequests, setOnRequests] = useState(true);
 
@@ -47,24 +47,6 @@ const PublicProfileComponent = ({ user }) => {
       }
     };
 
-    const fetchUser = async () => {
-      try {
-        const token = localStorage.getItem('authToken'); // Or wherever you store the token
-
-        if (token) {
-          const response = await axiosInstance.get("/users/self");
-          const data = response.data;
-
-          setCurrentUser(data);
-        }
-      } catch (err) {
-        console.error("Error fetching current user:", err);
-      } finally {
-        setLoadingUser(false);
-      }
-    };
-
-    fetchUser();
     fetchRequests();
     fetchSales();
   }, []);
