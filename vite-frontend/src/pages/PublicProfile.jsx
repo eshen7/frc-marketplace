@@ -143,7 +143,7 @@ const PublicProfileComponent = ({ user }) => {
                 ) : loadingRequests ? (
                   <p>Loading Requests...</p>
                 ) : (
-                  <p className="text-gray-500">No requests found for this part.</p>
+                  <p className="text-gray-500">This user hasn't made any requests yet.</p>
                 )}
               </div>
             ) : (
@@ -162,7 +162,7 @@ const PublicProfileComponent = ({ user }) => {
                 ) : loadingSales ? (
                   <p>Loading Sales...</p>
                 ) : (
-                  <p className="text-gray-500">No sales found for this part.</p>
+                  <p className="text-gray-500">This user hasn't made any sales yet.</p>
                 )}
               </div>
             )}

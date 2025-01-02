@@ -9,6 +9,7 @@ import {
 } from '@vis.gl/react-google-maps';
 import axiosInstance from "../utils/axiosInstance";
 import { useUser } from "../contexts/UserContext";
+import { useNavigate } from "react-router-dom";
 
 function haversine(lat1, lon1, lat2, lon2) {
   const R = 3958.8; // Radius of Earth in miles
@@ -40,7 +41,8 @@ const MarkerWithInfoWindow = ({
   loadingUserCoords, 
   distance, 
   error,
-  onMarkerClick 
+  onMarkerClick,
+  navigate
 }) => {
   const [markerRef, marker] = useAdvancedMarkerRef();
   const [infoWindowShown, setInfoWindowShown] = useState(false);
@@ -81,7 +83,7 @@ const MarkerWithInfoWindow = ({
               className="mt-1 bg-blue-800 px-2 py-1 rounded-md text-white font-bold
                 hover:bg-blue-900 transition-transform duration-100"
               onClick={() => {
-                window.location.href = `/profile/frc/${location.team_number}`;
+                navigate(`/profile/frc/${location.team_number}`);
               }}
             >
               Profile
@@ -104,7 +106,7 @@ const MarkerWithInfoWindow = ({
   );
 };
 
-const MapContent = ({ locations, handleMarkerClick, userLat, userLon, loadingUserCoords, distance, error }) => {
+const MapContent = ({ locations, handleMarkerClick, userLat, userLon, loadingUserCoords, distance, error, navigate }) => {
   const map = useMap();
   
   return (
@@ -119,6 +121,7 @@ const MapContent = ({ locations, handleMarkerClick, userLat, userLon, loadingUse
           distance={distance}
           error={error}
           onMarkerClick={handleMarkerClick}
+          navigate={navigate}
         />
       ))}
     </>
@@ -127,6 +130,7 @@ const MapContent = ({ locations, handleMarkerClick, userLat, userLon, loadingUse
 
 const Map = ({ zoom = 10, locations = [] }) => {
   const { user, loadingUser, isAuthenticated } = useUser();
+  const navigate = useNavigate();
 
   const [userLat, setUserLat] = useState(null);
   const [userLon, setUserLon] = useState(null);
@@ -193,6 +197,7 @@ const Map = ({ zoom = 10, locations = [] }) => {
             loadingUserCoords={loadingUserCoords}
             distance={distance}
             error={error}
+            navigate={navigate}
           />
         </GoogleMapGL>
       </div>

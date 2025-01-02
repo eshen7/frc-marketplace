@@ -120,7 +120,7 @@ const ItemCard = ({ item, currentUser, type }) => {
           <button
             className="w-full py-2 text-white bg-blue-800 hover:bg-blue-900 transition duration-200 rounded-md"
             onClick={() => {
-              window.location.href = `/requests/${item.id}`;
+              navigate(`/requests/${item.id}`);
             }}
           >
             {currentUser && currentUser.team_number !== item.user.team_number ? "Offer Part" : "View Request"}
@@ -130,7 +130,7 @@ const ItemCard = ({ item, currentUser, type }) => {
           <button
             className="w-full py-2 text-white bg-green-600 hover:bg-green-700 transition duration-200 rounded-md"
             onClick={() => {
-              window.location.href = `/sales/${item.id}`;
+              navigate(`/sales/${item.id}`);
             }}
           >
             View Sale
