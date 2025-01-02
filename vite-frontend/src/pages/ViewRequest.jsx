@@ -3,27 +3,29 @@
 import React, { useEffect, useRef, useState } from 'react'
 import TopBar from '../components/TopBar.jsx'
 import Footer from '../components/Footer.jsx'
-import { useParams } from 'react-router-dom'
+import { useNavigate, useParams } from 'react-router-dom'
 import axiosInstance from '../utils/axiosInstance.js'
-import { getDaysUntil, haversine } from '../utils/utils.jsx'
-import { FaComments } from 'react-icons/fa'
-import ItemCard from '../components/ItemCard.jsx'
+import { getDaysUntil } from '../utils/utils.jsx'
 import { Skeleton } from "@mui/material";
 import { LuSave } from 'react-icons/lu'
-import { MdOutlineEdit } from 'react-icons/md'
+import { MdDelete, MdOutlineEdit } from 'react-icons/md'
 import ErrorBanner from '../components/ErrorBanner.jsx'
 import SuccessBanner from '../components/SuccessBanner.jsx'
 import ItemScrollBar from '../components/ItemScrollBar.jsx'
+import DropdownButton from '../components/DropdownButton.jsx'
+import ItemProfileSection from '../components/ItemProfileSection.jsx'
+import { useUser } from '../contexts/UserContext.jsx'
 
 export default function FulfillRequest() {
   const { request_id } = useParams();
 
+  const navigate = useNavigate();
+
+  const { user, loadingUser, isAuthenticated } = useUser();
+
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [request, setRequest] = useState(null);
   const [error, setError] = useState(null);
-  const [user, setUser] = useState(null);
-  const [loadingUser, setLoadingUser] = useState(true);
 
   const [partRequests, setPartRequests] = useState([]);
   const [loadingPartRequests, setLoadingPartRequests] = useState(true);
@@ -35,49 +37,14 @@ export default function FulfillRequest() {
   const [isEditing, setIsEditing] = useState(false);
   const [requestChange, setRequestChange] = useState("");
 
+  const [editDropdownOpen, setEditDropdownOpen] = useState(false);
+  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
+
   const [formData, setFormData] = useState({
     quantity: { val: 0, edited: false },
     needed_date: { val: "", edited: false },
     additional_info: { val: "", edited: false },
   });
-
-  useEffect(() => {
-    const checkAuthStatus = () => {
-      const token = localStorage.getItem("authToken");
-      setIsAuthenticated(!!token);
-    };
-
-    checkAuthStatus(); // Check on mount
-
-    // Set up an event listener for storage changes
-    window.addEventListener("storage", checkAuthStatus);
-
-    // Clean up the event listener on component unmount
-    return () => {
-      window.removeEventListener("storage", checkAuthStatus);
-    };
-  }, []);
-
-
-  useEffect(() => {
-    const fetchUser = async () => {
-      try {
-        if (isAuthenticated) {
-          const response = await axiosInstance.get("/users/self/");
-          if (!response.data) {
-            throw new Error('Address or coordinates not found');
-          }
-
-          setUser(response.data);
-        }
-      } catch (err) {
-        console.error("Error fetching user:", err);
-      } finally {
-        setLoadingUser(false);
-      }
-    }
-    fetchUser();
-  }, [isAuthenticated])
 
   useEffect(() => {
     const fetchRequest = async () => {
@@ -188,8 +155,24 @@ export default function FulfillRequest() {
       }
     } else {
       setIsEditing(false);
-      setRequestChange("No changes to save.");
     }
+  }
+
+  const handleDeleteConfirm = async () => {
+    try {
+      await axiosInstance.delete(`/requests/id/${request_id}/delete/`);
+      setRequestChange("Request deleted successfully.");
+      navigate("/");
+    } catch (error) {
+      console.error("Error deleting request:", error);
+      setRequestChange("Error deleting request, please try again.");
+    } finally {
+      setDeleteConfirmOpen(false);
+    }
+  }
+
+  const handleDeleteInitialClick = async () => {
+    setDeleteConfirmOpen(true);
   }
 
   const closeRequestChangeBanner = () => {
@@ -198,6 +181,7 @@ export default function FulfillRequest() {
 
   return (
     <div className='flex flex-col min-h-screen'>
+      {/* Success / Failure Banners */}
       {requestChange == "Request Updated Successfully." || requestChange == "No changes to save." ? (
         <SuccessBanner
           message={requestChange}
@@ -210,6 +194,33 @@ export default function FulfillRequest() {
         />
       ) : (
         <></>
+      )}
+      {/* Delete Confirmation */}
+      {deleteConfirmOpen && (
+        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full flex items-center justify-center z-50">
+          <div className="bg-white p-5 rounded-lg shadow-xl max-w-[320px]">
+            <h2 className="text-xl font-bold mb-4">Confirmation</h2>
+            <p className="mb-4">Are you sure you want to delete this request? This process is irreversible.</p>
+            <div className="flex justify-end">
+              <button
+                onClick={() => {
+                  setDeleteConfirmOpen(false);
+                }}
+                className="bg-gray-300 hover:bg-gray-400 text-gray-800 py-2 px-4 rounded mr-2"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => {
+                  handleDeleteConfirm();
+                }}
+                className="bg-red-500 hover:bg-red-600 text-white py-2 px-4 rounded"
+              >
+                Confirm
+              </button>
+            </div>
+          </div>
+        </div>
       )}
       <TopBar />
       <div className='flex-grow flex flex-col bg-gray-100'>
@@ -239,7 +250,7 @@ export default function FulfillRequest() {
                       )}
                     </div>
                   </div>
-                  <div className='flex flex-row justify-between place-items-center'>
+                  <div className='flex flex-row justify-between place-items-center relative'>
                     {/* Part Name */}
                     <h1 className='text-[30px] font-roboto'>
                       {request.part.name}
@@ -256,11 +267,37 @@ export default function FulfillRequest() {
                         ) : (
                           <button className='rounded-full bg-white text-blue-500 text-[30px] w-fit p-2
                                                     hover:scale-105 transition duration-100 hover:cursor-pointer'
-                            onClick={() => handleEditClick()}>
+                            onClick={() => setEditDropdownOpen(!editDropdownOpen)}>
                             <MdOutlineEdit />
                           </button>
                         )}
                       </>
+                    )}
+
+                    {/* Edit Dropdown */}
+                    {editDropdownOpen && (
+                      <div className="absolute top-[50px] right-[-20px] bg-white whitespace-nowrap z-50 rounded-lg px-1">
+                        <DropdownButton
+                          Logo={MdOutlineEdit}
+                          name={"Edit"}
+                          func={() => {
+                            setEditDropdownOpen(false);
+                            handleEditClick();
+                          }}
+                          navigate={navigate}
+                        />
+                        <div className='text-red-600'>
+                          <DropdownButton
+                            Logo={MdDelete}
+                            name={"Delete"}
+                            func={() => {
+                              setEditDropdownOpen(false);
+                              handleDeleteInitialClick();
+                            }}
+                            navigate={navigate}
+                          />
+                        </div>
+                      </div>
                     )}
                   </div>
 
@@ -342,54 +379,7 @@ export default function FulfillRequest() {
                   />
                 </div>
 
-                {/* User Stuff */}
-                <div className='col-span-1 md:col-span-2 xl:col-span-1'>
-                  <div className='flex flex-row justify-between place-items-center'>
-                    {/* Team Name */}
-                    <h3 className='text-[24px] text-left md:text-center lg:text-left'>
-                      {request.user.team_number} | {request.user.team_name}
-                    </h3>
-                    <div className='rounded-full p-1 bg-gray-300 mr-3 max-w-fit max-h-fit ml-2'>
-                      <img src={request.user.profile_photo} className='w-[64px] h-[64px] rounded-full' />
-                    </div>
-                  </div>
-                  {/* Distance */}
-                  <div>
-                    <p className='text-sm'>
-                      {user && !isRequestOwner ? (
-                        `${haversine(
-                          request.user.formatted_address.latitude,
-                          request.user.formatted_address.longitude,
-                          user.formatted_address.latitude,
-                          user.formatted_address.longitude
-                        ).toFixed(1)} miles`
-                      ) : user && isRequestOwner ? (
-                        "Your Listing"
-                      ) : ("Log in to view distance")}
-                    </p>
-                  </div>
-
-                  <div className='flex flex-col mt-3'>
-                    <button className='py-3 px-6 bg-black hover:bg-gray-800 transition duration-200 text-white rounded-md mb-4'>
-                      <a href={`/profile/frc/${request.user.team_number}`}>
-                        <div className='flex flex-row justify-center place-items-center'>
-                          <p>Profile Page</p>
-                        </div>
-                      </a>
-                    </button>
-                    <button className='py-3 px-6 bg-blue-700 hover:bg-blue-800 transition duration-200 text-white rounded-md'>
-                      <a href={`/chat/${request.user.team_number}`}>
-                        <div className='flex flex-row justify-center place-items-center'>
-                          <FaComments className='mr-3' />
-                          <p>
-                            Message
-                          </p>
-                        </div>
-                      </a>
-                    </button>
-                  </div>
-
-                </div>
+                <ItemProfileSection user={request.user} selfUser={user} isOwner={isRequestOwner} />
               </div>
 
               {/* Other Requests for the Same Part */}

@@ -8,6 +8,8 @@ import {
   useAdvancedMarkerRef
 } from '@vis.gl/react-google-maps';
 import axiosInstance from "../utils/axiosInstance";
+import { useUser } from "../contexts/UserContext";
+import { useNavigate } from "react-router-dom";
 
 function haversine(lat1, lon1, lat2, lon2) {
   const R = 3958.8; // Radius of Earth in miles
@@ -39,7 +41,8 @@ const MarkerWithInfoWindow = ({
   loadingUserCoords, 
   distance, 
   error,
-  onMarkerClick 
+  onMarkerClick,
+  navigate
 }) => {
   const [markerRef, marker] = useAdvancedMarkerRef();
   const [infoWindowShown, setInfoWindowShown] = useState(false);
@@ -80,7 +83,7 @@ const MarkerWithInfoWindow = ({
               className="mt-1 bg-blue-800 px-2 py-1 rounded-md text-white font-bold
                 hover:bg-blue-900 transition-transform duration-100"
               onClick={() => {
-                window.location.href = `/profile/frc/${location.team_number}`;
+                navigate(`/profile/frc/${location.team_number}`);
               }}
             >
               Profile
@@ -103,7 +106,7 @@ const MarkerWithInfoWindow = ({
   );
 };
 
-const MapContent = ({ locations, handleMarkerClick, userLat, userLon, loadingUserCoords, distance, error }) => {
+const MapContent = ({ locations, handleMarkerClick, userLat, userLon, loadingUserCoords, distance, error, navigate }) => {
   const map = useMap();
   
   return (
@@ -118,6 +121,7 @@ const MapContent = ({ locations, handleMarkerClick, userLat, userLon, loadingUse
           distance={distance}
           error={error}
           onMarkerClick={handleMarkerClick}
+          navigate={navigate}
         />
       ))}
     </>
@@ -125,7 +129,9 @@ const MapContent = ({ locations, handleMarkerClick, userLat, userLon, loadingUse
 };
 
 const Map = ({ zoom = 10, locations = [] }) => {
-  const [activeMarker, setActiveMarker] = useState(null);
+  const { user, loadingUser, isAuthenticated } = useUser();
+  const navigate = useNavigate();
+
   const [userLat, setUserLat] = useState(null);
   const [userLon, setUserLon] = useState(null);
   const [loadingUserCoords, setLoadingUserCoords] = useState(true);
@@ -136,50 +142,22 @@ const Map = ({ zoom = 10, locations = [] }) => {
     lng: -117.22508357787281,
   });
 
-  const fetchUserCoords = async () => {
-    try {
-      const response = await axiosInstance.get("/users/self/");
-      console.log("response:", response);
-      const data = response.data;
-      console.log("data:", data);
-
-      if (!data || !data.formatted_address) {
-        throw new Error("Address or coordinates not found");
-      }
-
-      const { latitude, longitude } = data.formatted_address;
-      setUserLat(latitude);
-      setUserLon(longitude);
-      setMapCenter({ lat: latitude, lng: longitude }); // Set map center to user's location
-      setLoadingUserCoords(false);
-    } catch (error) {
-      console.error("Error fetching User Data:", error);
-      setError("Failed to fetch user data. Please reload page and try again.");
-      setLoadingUserCoords(false);
-    }
-  };
   useEffect(() => {
-    const checkUserAndFetchCoords = async () => {
-      const token = localStorage.getItem("authToken"); // Or wherever you store the token
-
-      if (!token) {
-        setError("Log in to display distance"); // Display login message if no user
+    if (!loadingUser) {
+      if (isAuthenticated && user?.formatted_address) {
+        const { latitude, longitude } = user.formatted_address;
+        setUserLat(latitude);
+        setUserLon(longitude);
+        setMapCenter({ lat: latitude, lng: longitude });
         setLoadingUserCoords(false);
-        return;
+      } else {
+        setError("Log in to display distance");
+        setLoadingUserCoords(false);
       }
-
-      try {
-        await fetchUserCoords(); // Fetch user data if a token exists
-      } catch (error) {
-        console.error("Error initializing user coordinates:", error);
-      }
-    };
-
-    checkUserAndFetchCoords();
-  }, []); // Runs when user auth changes
+    }
+  }, [user, loadingUser, isAuthenticated]);
 
   const handleMarkerClick = (marker) => {
-    // Calculate distance only when marker is clicked
     if (userLat !== null && userLon !== null) {
       const distance = haversine(
         userLat,
@@ -219,6 +197,7 @@ const Map = ({ zoom = 10, locations = [] }) => {
             loadingUserCoords={loadingUserCoords}
             distance={distance}
             error={error}
+            navigate={navigate}
           />
         </GoogleMapGL>
       </div>

@@ -9,6 +9,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import axiosInstance from "../utils/axiosInstance";
 import { haversine, getDaysUntil } from "../utils/utils";
 import ItemScrollBar from "../components/ItemScrollBar";
+import { useUser } from "../contexts/UserContext";
 
 const recentSales = [
   { id: 1, title: "NEO Motor", team: "Team 2468", price: 50, distance: 3 },
@@ -50,43 +51,18 @@ const recentSales = [
 const Home = () => {
   const location = useLocation();
   const navigate = useNavigate();
+
+  const { user, setUser, loadingUser, setLoadingUser, isAuthenticated, setIsAuthenticated } = useUser();
+
   const [showLoginSuccessBanner, setShowLoginSuccessBanner] = useState(false);
   const [bannerMessage, setBannerMessage] = useState("");
   const [allTeams, setAllTeams] = useState([]);
+
   const [requests, setRequests] = useState([]);
   const [sales, setSales] = useState([]);
-  const [user, setUser] = useState(null);
+
   const [loadingRequests, setLoadingRequests] = useState(true);
   const [loadingSales, setLoadingSales] = useState(true);
-  const [loadingUser, setLoadingUser] = useState(true);
-
-  const fetchUser = async () => {
-    const token = localStorage.getItem("authToken");
-
-    if (!token) {
-      setLoadingUser(false);
-      return;
-    }
-
-    try {
-      const response = await axiosInstance.get("/users/self/");
-      const data = response.data;
-
-      if (!data || !data.formatted_address) {
-        throw new Error("Address or coordinates not found");
-      }
-
-      setUser(data);
-      setLoadingUser(false);
-    } catch (error) {
-      console.error("Error fetching User Data:", error);
-      setLoadingUser(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchUser();
-  }, []);
 
   const fetchRequests = async () => {
     try {
@@ -183,7 +159,7 @@ const Home = () => {
           {/* Description */}
           <div className="text-center border-b-white max-w-[600px]">
             <p className="text-sm">
-              RoboExchange is an online marketplace designed specifically for high school robotics teams to buy,
+              Millennium Market is an online marketplace designed specifically for high school robotics teams to buy,
               sell, and trade parts and components. Whether you're looking for motors, sensors, gears, or even
               custom-built parts, this platform connects teams across the region, making it easier to source specific
               materials and tools for your robotics projects. Users can list surplus components, negotiate prices, and
@@ -196,21 +172,17 @@ const Home = () => {
           <div className="flex flex-row justify-center mt-5 max-w-screen border-b border-b-black pb-5">
             {/* Request */}
             <button className="py-3 px-5 bg-blue-800 text-white text-[14px] rounded-sm hover:bg-blue-900 mr-5"
-              onClick={() => {
-                window.location.href = `/request`
-              }}>
+              onClick={() => {navigate("/request")}}>
               Make a Request
             </button>
             {/* Sale */}
             <button className="py-3 px-5 border border-blue-800 text-blue-800 text-[14px] rounded-sm hover:bg-white"
-              onClick={() => {
-                window.location.href = `/sale`
-              }}>
+              onClick={() => {navigate("/sale")}}>
               Post a Sale
             </button>
           </div>
         </div>
-        <section className="mx-[30px] mb-[30px]">
+        <section className="mx-[30px] mb-[40px]">
           <div>
             <h2 className="text-2xl font-bold mb-[30px]">See Nearby Teams</h2>
             <Map zoom={10} locations={allTeams} />
@@ -219,22 +191,18 @@ const Home = () => {
         <section className="mb-12 mx-[30px]">
           <div className="flex justify-between items-center mb-4">
             <h2 className="text-2xl font-bold">Recent Part Requests Nearby</h2>
-            <a href="requests">
-              <button className="bg-blue-800 text-white py-3 px-5 rounded-[5px] hover:bg-blue-900 transition-translate duration-100">
+              <button onClick={() => navigate("/requests")} className="bg-blue-800 text-white py-3 px-5 rounded-[5px] hover:bg-blue-900 transition-translate duration-100">
                 See All Requests
               </button>
-            </a>
           </div>
           <ItemScrollBar key={requests[0]} items={requests} loadingItems={loadingRequests} user={user} loadingUser={loadingUser} type="request" />
         </section>
         <section className="pb-12 mx-[30px]">
           <div className="flex justify-between items-center mb-4">
             <h2 className="text-2xl font-bold">Recent Parts for Sale Nearby</h2>
-            <a href="sales">
-              <button className="bg-blue-800 text-white py-3 px-5 rounded-[5px] hover:bg-blue-900 transition-translate duration-100">
+              <button onClick={() => navigate("/sales")} className="bg-blue-800 text-white py-3 px-5 rounded-[5px] hover:bg-blue-900 transition-translate duration-100">
                 See All Parts for Sale
               </button>
-            </a>
           </div>
           <ItemScrollBar key={sales[0]} items={sales} loadingItems={loadingSales} user={user} loadingUser={loadingUser} type="sale" />
         </section>

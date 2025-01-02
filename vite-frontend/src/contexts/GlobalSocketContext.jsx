@@ -1,15 +1,16 @@
 import React, { createContext, useRef, useEffect, useState } from "react";
-import axiosInstance from "../utils/axiosInstance";
+import { useUser } from "./UserContext";
 
 export const GlobalSocketContext = createContext(null);
 
 /**
  * Provide a single global WebSocket for the entire app.
  */
-export const GlobalSocketProvider = ({ children, user }) => {
+export const GlobalSocketProvider = ({ children }) => {
     const [isConnected, setIsConnected] = useState(false);
-    const socketRef = useRef(null);
     const [globalSocket, setGlobalSocket] = useState(null);
+
+    const {user, loadingUser} = useUser();
 
     useEffect(() => {
         // Only open the global socket if the user is logged in

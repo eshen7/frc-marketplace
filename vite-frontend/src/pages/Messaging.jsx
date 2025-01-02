@@ -4,9 +4,12 @@ import TopBar from "../components/TopBar";
 import Footer from "../components/Footer";
 import { IoMdSend } from "react-icons/io";
 import axiosInstance from "../utils/axiosInstance";
-import { v4 as uuidv4 } from "uuid"; // Add this at the top (install `uuid` if necessary)
+import { v4 as uuidv4 } from "uuid";
 import { formatTimestamp, timeSince } from "../utils/utils";
 import { GlobalSocketContext } from "../contexts/GlobalSocketContext";
+import useScreenSize from "../components/useScreenSize";
+import { FaArrowLeft } from "react-icons/fa";
+import { useUser } from "../contexts/UserContext";
 
 const MessageSent = ({ message, allTeams }) => {
   const senderTeam = allTeams.find(
@@ -49,6 +52,8 @@ const MessageReceived = ({ message, allTeams }) => {
 const Chat = () => {
   const navigate = useNavigate();
 
+  const isLargerThanSmall = useScreenSize();
+
   const { roomName } = useParams(); // Get roomName from the URL
   const [messagesByRoom, setMessagesByRoom] = useState({});
   const [newMessage, setNewMessage] = useState("");
@@ -57,9 +62,8 @@ const Chat = () => {
 
   const { socket: globalSocket, isConnected } = useContext(GlobalSocketContext);
 
-  const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const { user, setUser, loadingUser, setLoadingUser, isAuthenticated, setIsAuthenticated } = useUser();
+
   const [receiverUser, setReceiverUser] = useState(null);
 
   const [allTeams, setAllTeams] = useState([]);
@@ -76,6 +80,16 @@ const Chat = () => {
   const [loadingMoreMessages, setLoadingMoreMessages] = useState(false);
   const messagesContainerRef = useRef(null);
   const [isAtBottom, setIsAtBottom] = useState(true);
+
+  const [isOnMessagePage, setIsOnMessagePage] = useState(false);
+
+  useEffect(() => {
+    if (roomName) {
+      setIsOnMessagePage(true);
+    } else {
+      setIsOnMessagePage(false);
+    }
+  }, [roomName]);
 
   // Auto Fetching by Scroll
   const handleScroll = () => {
@@ -105,12 +119,12 @@ const Chat = () => {
         container.removeEventListener("scroll", handleScroll);
       }
     };
-  }, [hasMoreMessages, loadingMoreMessages, currentOffset, roomName]);
+  }, [hasMoreMessages, loadingMoreMessages, currentOffset, roomName, messagesContainerRef]);
 
   // Set Max Height for the Message container
   useEffect(() => {
     const messageMaxHeight = () => {
-      if (loading) return;
+      if (loadingUser) return;
       const topBarHeight = document.querySelector(".top-bar").offsetHeight;
       const footerHeight = document.querySelector(".footer").offsetHeight;
       const messagesSection = document.querySelector(".messages-section");
@@ -120,7 +134,7 @@ const Chat = () => {
     };
 
     messageMaxHeight();
-  }, [loading]);
+  }, [loadingUser]);
 
   // Fetch List of current users you are messaging with
   const fetchList = async () => {
@@ -225,47 +239,6 @@ const Chat = () => {
     };
 
     fetchTeams();
-  }, []);
-
-  // Fetch Self User Function
-  const fetchUser = async () => {
-    try {
-      const response = await axiosInstance.get("/users/self/");
-      // console.log('User Fetch Response:', response);
-      const data = response.data;
-      // console.log('data', data);
-
-      setUser(data);
-      setLoading(false);
-    } catch (error) {
-      console.error("Error fetching User Data:", error);
-      setError(error);
-      setLoading(false);
-    }
-  };
-
-  // Fetch user on mount
-  useEffect(() => {
-    const checkUserAndFetchData = async () => {
-      const token = localStorage.getItem("authToken");
-
-      if (!token) {
-        navigate("/login");
-        setError("User not logged in, please login to display profile editor"); // Display login message if no user
-        setLoading(false);
-        return;
-      }
-
-      try {
-        await fetchUser(); // Fetch user data if a token exists
-      } catch (error) {
-        console.error("Error fetching User Data:", error);
-        setError(error);
-        setLoading(false);
-      }
-    };
-
-    checkUserAndFetchData();
   }, []);
 
   // Fetch user data of the receiver user
@@ -483,6 +456,7 @@ const Chat = () => {
   // Reset messages & fetch
   useEffect(() => {
     const resetAndFetchMessages = async () => {
+      if (!messagesContainerRef.current) return;
       // Reset states
       setHasMoreMessages(true);
       setCurrentOffset(0);
@@ -507,8 +481,15 @@ const Chat = () => {
       }
     };
 
-    resetAndFetchMessages();
-  }, [roomName, user]);
+    const interval = setInterval(() => {
+      if (messagesContainerRef.current) {
+        clearInterval(interval);
+        resetAndFetchMessages();
+      }
+    }, 50); // Check every 50ms
+  
+    return () => clearInterval(interval); // Cleanup on unmount
+  }, [roomName, user, messagesContainerRef]);
 
   // Send a message function
   const sendMessage = async () => {
@@ -589,175 +570,193 @@ const Chat = () => {
   return (
     <div className="h-screen flex flex-col">
       <TopBar />
-      <div className="messages-section p-5 flex flex-grow flex-row bg-gray-100">
-        {!loading && user ? (
+      <div className="messages-section p-5 flex flex-grow flex-row bg-gray-100 relative">
+        {!loadingUser && user ? (
           <>
-            {/* Left Nav Bar */}
-            <div className="w-1/2 lg:w-1/3 bg-white rounded-3xl shadow-md">
-              <h1 className="text-3xl text-center p-3">Chats</h1>
-              {!loadingTeams && subsetTeams ? (
-                <div className="flex flex-col overflow-y-auto">
-                  <p className="mx-3 py-2 text-[20px] border-b border-gray-300">
-                    Current Messages
-                  </p>
-                  {subsetTeams.map((team, index) => (
-                    <div key={index}>
-                      {team.team_number != user.team_number && (
-                        <div
-                          onClick={() => {
-                            navigate(`/chat/${team.team_number}`);
-                            fetchList();
-                          }}
-                          className={`flex flex-row px-1 place-items-center ${roomName == team.team_number ? "bg-gray-100" : ""
-                            } hover:cursor-pointer hover:bg-gray-100 ${!team.is_read &&
-                            team.receiver == user.team_number &&
-                            "border-blue-300"
-                            } border-2 border-white transition duration-200 my-2 mx-3 rounded-xl`}
-                        >
-                          <div className="flex w-full items-center">
-                            {/* Image container with a fixed or min width */}
-                            <div className="flex-shrink-0 w-[60px] p-2">
-                              <img
-                                className="h-[40px] w-[40px]"
-                                src={team.profile_photo}
-                                alt={`${team.team_number} logo`}
-                                />
-                            </div>
-
-                            {/* Text container that fills the remaining space */}
-                            <div className="flex flex-col flex-grow overflow-hidden px-2">
-                              <div className="">
-                                <p className="truncate">
-                                  {team.team_number} | {team.team_name}
-                                </p>
-                              </div>
-                              <div className="flex justify-between items-center w-full overflow-hidden">
-                                {/* Truncate the message if it’s too long */}
-                                <p className="truncate text-gray-400 text-sm">
-                                  {team.most_recent_message}
-                                </p>
-                                <p className="ml-2 whitespace-nowrap text-[12px]">
-                                  {timeSince(team.timestamp)}
-                                </p>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                  ))}
-                  <p className="mx-3 py-2 text-[20px] border-t border-gray-300">
-                    Other Teams
-                  </p>
-                  {unmessagedTeams.map((team, index) => (
-                    <div key={index}>
-                      {team.team_number != user.team_number && (
-                        <div
-                          onClick={() => {
-                            navigate(`/chat/${team.team_number}`);
-                          }}
-                          className={`flex flex-row place-items-center ${roomName == team.team_number ? "bg-gray-100" : ""
-                            } hover:cursor-pointer hover:bg-gray-100 transition duration-200 my-2 mx-3 rounded-xl`}
-                        >
-                          <div className="rounded-lg p-2 ml-2">
-                            <img
-                              className="h-[40px] min-w-[40px]"
-                              src={team.profile_photo}
-                              alt={`${team.team_number} logo`}
-                            />
-                          </div>
-                          <div className="flex flex-col w-full px-2 py-2">
-                            <div className="truncate">
-                              <p className="">{team.team_name}</p>
-                            </div>
-                            <div className="flex flex-row justify-between">
-                              <p>{team.team_number}</p>
-                              <p>{team.full_name}</p>
-                            </div>
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              ) : loadingTeams ? (
-                <p>Loading Teams</p>
-              ) : (
-                <p>error loading teams</p>
-              )}
-            </div>
-
-            {/* Right Panel with messages */}
-            <div className="w-2/3 flex flex-col">
-              <div>
-                <h1 className="text-3xl text-center">
-                  {roomName ? roomName : "Select a user to chat with!"}
-                </h1>
-              </div>
-              {/* Messages Section */}
-              <div
-                className="overflow-y-auto flex-grow"
-                ref={messagesContainerRef}
-              >
-                {!loadingTeams && allTeams ? (
-                  <>
-                    {(messagesByRoom[roomName] || []).map((msg, index) => (
-                      <div key={index}>
-                        {msg.sender === user.team_number ? (
-                          <MessageSent message={msg} allTeams={allTeams} />
-                        ) : msg.receiver === user.team_number ? (
-                          <MessageReceived message={msg} allTeams={allTeams} />
-                        ) : (
-                          <>
-                            <p>Loading...</p>
-                          </>
-                        )}
-                      </div>
-                    ))}
-                  </>
-                ) : (
-                  <>
-                    <p>Loading Messages</p>
-                  </>
-                )}
-
-                <div ref={messagesEndRef} />
-              </div>
-
-              {/* Input Section */}
-              <div className="flex flex-row w-full justify-end">
-                <input
-                  type="text"
-                  value={newMessage}
-                  onChange={(e) => setNewMessage(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter" && newMessage.trim()) {
-                      sendMessage();
-                    }
-                  }}
-                  className="mr-3 border-b border-b-[#2A9EFC] 
-                                focus:shadow-md focus:border-b-2 focus:ring-0 px-3 py-1 bg-inherit w-[87%]"
-                />
-                <button
-                  disabled={!newMessage || !roomName}
-                  onClick={sendMessage}
-                  className="p-2 rounded-full bg-[#2A9EFC] text-white disabled:bg-gray-200 disabled:text-[#2A9EFC] transition duration-200"
-                >
-                  <div>
-                    <IoMdSend className="text-xl" />
-                  </div>
+            {!isLargerThanSmall && isOnMessagePage && (
+              <>
+                {/* Back Button */}
+                <button className="absolute hover:bg-gray-200 shadow-sm rounded-full p-[6px] transition duration-200"
+                  onClick={() => {
+                    navigate("/chat");
+                    setIsOnMessagePage(!isOnMessagePage);
+                  }}>
+                  <FaArrowLeft className="text-2xl" />
                 </button>
-              </div>
-            </div>
+              </>
+            )}
+
+            {((!isLargerThanSmall && !isOnMessagePage) || isLargerThanSmall) && (
+              <>
+                {/* Left Nav Bar */}
+                <div className="w-full sm:w-1/2 lg:w-1/3 bg-white rounded-3xl shadow-md">
+                  <h1 className="text-3xl text-center p-3">Chats</h1>
+                  {!loadingTeams && subsetTeams ? (
+                    <div className="flex flex-col overflow-y-auto">
+                      <p className="mx-3 py-2 text-[20px] border-b border-gray-300">
+                        Current Messages
+                      </p>
+                      {subsetTeams.map((team, index) => (
+                        <div key={index}>
+                          {team.team_number != user.team_number && (
+                            <div
+                              onClick={() => {
+                                navigate(`/chat/${team.team_number}`);
+                                fetchList();
+                              }}
+                              className={`flex flex-row px-1 place-items-center ${roomName == team.team_number ? "bg-gray-100" : ""
+                                } hover:cursor-pointer hover:bg-gray-100 ${!team.is_read &&
+                                team.receiver == user.team_number &&
+                                "border-blue-300"
+                                } border-2 border-white transition duration-200 my-2 mx-3 rounded-xl`}
+                            >
+                              <div className="flex w-full items-center">
+                                {/* Image container with a fixed or min width */}
+                                <div className="flex-shrink-0 p-1 my-1 bg-gray-300 rounded-full">
+                                  <img
+                                    className="h-[40px] w-[40px] rounded-full"
+                                    src={team.profile_photo}
+                                    alt={`${team.team_number} logo`}
+                                  />
+                                </div>
+
+                                {/* Text container that fills the remaining space */}
+                                <div className="flex flex-col flex-grow overflow-hidden px-2">
+                                  <div className="">
+                                    <p className="truncate">
+                                      {team.team_number} | {team.team_name}
+                                    </p>
+                                  </div>
+                                  <div className="flex justify-between items-center w-full overflow-hidden">
+                                    {/* Truncate the message if it’s too long */}
+                                    <p className="truncate text-gray-400 text-sm">
+                                      {team.most_recent_message}
+                                    </p>
+                                    <p className="ml-2 whitespace-nowrap text-[12px]">
+                                      {timeSince(team.timestamp)}
+                                    </p>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      ))}
+                      <p className="mx-3 py-2 text-[20px] border-t border-gray-300">
+                        Other Teams
+                      </p>
+                      {unmessagedTeams.map((team, index) => (
+                        <div key={index}>
+                          {team.team_number != user.team_number && (
+                            <div
+                              onClick={() => {
+                                navigate(`/chat/${team.team_number}`);
+                              }}
+                              className={`flex flex-row place-items-center ${roomName == team.team_number ? "bg-gray-100" : ""
+                                } hover:cursor-pointer hover:bg-gray-100 transition duration-200 my-2 mx-3 rounded-xl`}
+                            >
+                              <div className="rounded-lg p-1 bg-gray-300 my-1 ml-2">
+                                <img
+                                  className="h-[40px] min-w-[40px] rounded-full"
+                                  src={team.profile_photo}
+                                  alt={`${team.team_number} logo`}
+                                />
+                              </div>
+                              <div className="flex flex-col w-full px-2 py-2">
+                                <div className="truncate">
+                                  <p className="">{team.team_name}</p>
+                                </div>
+                                <div className="flex flex-row justify-between">
+                                  <p>{team.team_number}</p>
+                                  <p>{team.full_name}</p>
+                                </div>
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  ) : loadingTeams ? (
+                    <p>Loading Teams</p>
+                  ) : (
+                    <p>error loading teams</p>
+                  )}
+                </div>
+              </>
+            )}
+            {((!isLargerThanSmall && isOnMessagePage) || isLargerThanSmall) && (
+              <>
+                {/* Right Panel with messages */}
+                <div className="w-full flex flex-col">
+                  <div>
+                    <h1 className="text-3xl text-center">
+                      {roomName ? roomName : "Select a user to chat with!"}
+                    </h1>
+                  </div>
+                  {/* Messages Section */}
+                  <div
+                    className="overflow-y-auto flex-grow"
+                    ref={messagesContainerRef}
+                  >
+                    {!loadingTeams && allTeams ? (
+                      <>
+                        {(messagesByRoom[roomName] || []).map((msg, index) => (
+                          <div key={index}>
+                            {msg.sender === user.team_number ? (
+                              <MessageSent message={msg} allTeams={allTeams} />
+                            ) : msg.receiver === user.team_number ? (
+                              <MessageReceived message={msg} allTeams={allTeams} />
+                            ) : (
+                              <>
+                                <p>Loading...</p>
+                              </>
+                            )}
+                          </div>
+                        ))}
+                      </>
+                    ) : (
+                      <>
+                        <p>Loading Messages</p>
+                      </>
+                    )}
+
+                    <div ref={messagesEndRef} />
+                  </div>
+
+                  {/* Input Section */}
+                  <div className="flex flex-row w-full justify-end">
+                    <input
+                      type="text"
+                      value={newMessage}
+                      onChange={(e) => setNewMessage(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter" && newMessage.trim()) {
+                          sendMessage();
+                        }
+                      }}
+                      className="mr-3 border-b border-b-[#2A9EFC] 
+                                focus:shadow-md focus:border-b-2 focus:ring-0 px-3 py-1 bg-inherit w-[87%]"
+                    />
+                    <button
+                      disabled={!newMessage || !roomName}
+                      onClick={sendMessage}
+                      className="p-2 rounded-full bg-[#2A9EFC] text-white disabled:bg-gray-200 disabled:text-[#2A9EFC] transition duration-200"
+                    >
+                      <div>
+                        <IoMdSend className="text-xl" />
+                      </div>
+                    </button>
+                  </div>
+                </div>
+              </>
+            )}
           </>
-        ) : error ? (
-          <p>error: {error}</p>
-        ) : loading ? (
+        ) : loadingUser ? (
           <p>loading</p>
         ) : !user ? (
           <p>Login to view messages</p>
         ) : (
-          <p>idk gang</p>
+          <p>___</p>
         )}
       </div>
       <Footer />

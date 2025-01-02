@@ -5,6 +5,7 @@ import TopBar from "../components/TopBar";
 import Footer from "../components/Footer";
 import ItemCard from "../components/ItemCard";
 import { FaExternalLinkAlt } from "react-icons/fa";
+import { useUser } from "../contexts/UserContext";
 
 const PartDetailsComponent = ({ part }) => {
   return (
@@ -80,6 +81,9 @@ const PartDetailsComponent = ({ part }) => {
 
 const PartDetailsPage = () => {
   const { id } = useParams();
+
+  const { user } = useUser();
+
   const [part, setPart] = useState(null);
   const [requests, setRequests] = useState([]);
   const [sales, setSales] = useState([]);
@@ -87,7 +91,6 @@ const PartDetailsPage = () => {
   const [loading, setLoading] = useState(true);
   const [loadingRequests, setLoadingRequests] = useState(true);
   const [loadingSales, setLoadingSales] = useState(true);
-  const [currentUser, setCurrentUser] = useState(null);
 
   const [onRequests, setOnRequests] = useState(true);
 
@@ -126,19 +129,9 @@ const PartDetailsPage = () => {
       }
     };
 
-    const fetchCurrentUser = async () => {
-      try {
-        const response = await axiosInstance.get("/users/self");
-        setCurrentUser(response.data);
-      } catch (error) {
-        console.error("Error fetching current user:", error);
-      }
-    };
-
     fetchPart();
     fetchRequests();
     fetchSales();
-    fetchCurrentUser();
   }, [id]);
 
   const handleClickSales = () => {
@@ -186,7 +179,7 @@ const PartDetailsPage = () => {
                     <ItemCard
                       key={request.id}
                       item={request}
-                      currentUser={currentUser}
+                      currentUser={user}
                       type="request"
                     />
                   ))}
@@ -203,7 +196,7 @@ const PartDetailsPage = () => {
                     <ItemCard
                       key={sale.id}
                       item={sale}
-                      currentUser={currentUser}
+                      currentUser={user}
                       type="sale"
                     />
                   ))}
