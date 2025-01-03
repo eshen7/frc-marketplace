@@ -2,8 +2,9 @@ import React from "react";
 import { FaComments } from "react-icons/fa";
 import { haversine } from "../utils/utils";
 import { useUser } from "../contexts/UserContext";
+import ProfilePhoto from "./ProfilePhoto";
 
-export default function ItemProfileSection({ user, isOwner }) {
+export default function ItemProfileSection({ user, isOwner, navigate }) {
   const { user: selfUser } = useUser();
 
   return (
@@ -22,7 +23,11 @@ export default function ItemProfileSection({ user, isOwner }) {
           </div>
 
           <div className='rounded-full p-1 bg-gray-300 mr-3 max-w-fit max-h-fit ml-2'>
-            <img src={user.profile_photo} className='w-[64px] h-[64px] rounded-full' />
+            <ProfilePhoto
+              src={user.profile_photo}
+              teamNumber={user.team_number}
+              alt={"Team Logo"}
+              className='w-[64px] h-[64px] rounded-full' />
           </div>
         </div>
         {/* Distance */}

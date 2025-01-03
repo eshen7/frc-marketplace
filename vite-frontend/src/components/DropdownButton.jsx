@@ -6,9 +6,10 @@ export default function DropdownButton({
   buttonLink = undefined,
   func = undefined,
   navigate,
+  hoverColor = "hover:bg-gray-100",
 }) {
   return (
-    <div className="hover:bg-gray-100 transition duration-200 rounded-lg">
+    <div className={`${hoverColor} transition duration-200 rounded-lg`}>
       <button
         onClick={() => {
           if (func) {

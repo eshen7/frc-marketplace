@@ -3,6 +3,7 @@ import { FaSearch } from "react-icons/fa";
 import Fuse from "fuse.js";
 import axiosInstance from "../utils/axiosInstance";
 import { useNavigate } from "react-router-dom";
+import ProfilePhoto from "./ProfilePhoto";
 
 const SearchBar = () => {
   const [searchTerm, setSearchTerm] = useState("");
@@ -107,9 +108,10 @@ const SearchBar = () => {
       case "team":
         return (
           <div className="flex items-center space-x-2">
-            <img
+            <ProfilePhoto
               src={item.profile_photo}
-              alt="Team Logo"
+              teamNumber={item.team_number}
+              alt={"Team Logo"}
               className="w-6 h-6 rounded-full"
             />
             <div className="flex flex-col">

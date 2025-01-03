@@ -7,6 +7,7 @@ import { FaRobot, FaUser, FaExternalLinkAlt, FaComments } from 'react-icons/fa';
 import ItemCard from '../components/ItemCard';
 import { MdOutlineEdit } from "react-icons/md";
 import { useUser } from '../contexts/UserContext';
+import ProfilePhoto from '../components/ProfilePhoto';
 
 const PublicProfileComponent = ({ user }) => {
   const navigate = useNavigate();
@@ -77,7 +78,12 @@ const PublicProfileComponent = ({ user }) => {
             {/* Main Profile Content */}
             <div className="p-6 space-y-6">
               <div className="flex items-center justify-center">
-                <img src={user.profile_photo} className="w-[64px] h-[64px] rounded-full bg-gray-400 p-1" />
+                <ProfilePhoto 
+                  src={user.profile_photo} 
+                  teamNumber={user.team_number}
+                  className="w-[64px] h-[64px] rounded-full bg-gray-400 p-1"
+                  alt={"Team Logo"}
+                />
               </div>
 
               <h1 className="text-3xl font-bold text-center text-gray-800">
