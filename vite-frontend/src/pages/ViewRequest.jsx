@@ -379,7 +379,7 @@ export default function FulfillRequest() {
                   />
                 </div>
 
-                <ItemProfileSection user={request.user} selfUser={user} isOwner={isRequestOwner} />
+                <ItemProfileSection user={request.user} selfUser={user} isOwner={isRequestOwner} navigate={navigate} />
               </div>
 
               {/* Other Requests for the Same Part */}

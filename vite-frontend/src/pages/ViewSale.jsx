@@ -370,7 +370,7 @@ export default function ViewSale() {
                   />
                 </div>
 
-                <ItemProfileSection user={sale.user} selfUser={user} isOwner={isSaleOwner} />
+                <ItemProfileSection user={sale.user} selfUser={user} isOwner={isSaleOwner} navigate={navigate} />
               </div>
 
               {/* Other Sales for the Same Part */}

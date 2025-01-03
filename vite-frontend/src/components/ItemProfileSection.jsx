@@ -4,7 +4,7 @@ import { haversine } from "../utils/utils";
 import { useUser } from "../contexts/UserContext";
 import ProfilePhoto from "./ProfilePhoto";
 
-export default function ItemProfileSection({ user, isOwner }) {
+export default function ItemProfileSection({ user, isOwner, navigate }) {
   const { user: selfUser } = useUser();
 
   return (

@@ -83,8 +83,44 @@ const Login = () => {
       )}
       <div className="flex flex-col min-h-screen">
         <TopBar />
-        <div className="flex-grow flex justify-center bg-white sm:bg-gradient-to-b from-white to-gray-900">
-          <div className="flex flex-col bg-white min-h-fit container sm:my-20 justify-center w-full h-full sm:h-fit sm:w-[450px] mx-auto py-16 rounded-sm sm:shadow-md">
+        <div className="flex flex-row min-h-screen">
+          {/* Left Side */}
+          <div className="hidden h-screen lg:flex w-[55.5%] overflow-hidden bg-black sticky top-0">
+            {/* Pattern */}
+            <div className="absolute inset-0 opacity-10">
+              <div className="w-full h-full"
+                style={{
+                  backgroundImage: "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40' viewBox='0 0 40 40'%3E%3Cg fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='1'%3E%3Cpath d='M0 38.59l2.83-2.83 1.41 1.41L1.41 40H0v-1.41zM0 1.4l2.83 2.83 1.41-1.41L1.41 0H0v1.41zM38.59 40l-2.83-2.83 1.41-1.41L40 38.59V40h-1.41zM40 1.41l-2.83 2.83-1.41-1.41L38.59 0H40v1.41zM20 18.6l2.83-2.83 1.41 1.41L21.41 20l2.83 2.83-1.41 1.41L20 21.41l-2.83 2.83-1.41-1.41L18.59 20l-2.83-2.83 1.41-1.41L20 18.59z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E\")",
+                }}
+              />
+            </div>
+            <div className="flex flex-col w-full items-center justify-center">
+              <div className="flex flex-col items-center w-full">
+                <h1 className="text-white text-4xl font-bold">Where Teamwork</h1>
+                <h1 className="text-[#3d4df4] text-4xl font-bold">Drives Innovation</h1>
+              </div>
+
+              <div className="flex flex-col px-[15%] w-full mt-[50px] text-center">
+                <p className="text-white text-[24px]">Unite with nearby teams for support when it matters most</p>
+              </div>
+
+              {/* Screenshot Container */}
+              <div className="w-full px-[15%] mt-8">
+                <div className="bg-[#3d4df4]/50 backdrop-blur-lg rounded-xl p-4 shadow-2xl transform -rotate-2">
+                  <div className="relative w-full aspect-[16/9] rounded-lg overflow-hidden">
+                    <img
+                      src="/ExampleScreenshot.png"
+                      alt="Millennium Market Preview"
+                      className="object-cover"
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Right Side */}
+          <div className="flex-grow flex flex-col justify-center items-center bg-white">
             <div className="text-black font-semibold flex flex-row justify-center items-center">
               <img
                 src="/millenniumMarket_Black.svg"
@@ -128,7 +164,7 @@ const Login = () => {
                 <div className="flex flex-col mx-10 justify-center">
                   <button
                     type="submit"
-                    className="w-full whitespace-nowrap bg-black text-white p-3 rounded-sm hover:bg-gray-900 hover:cursor-pointer"
+                    className="w-full whitespace-nowrap bg-black text-white p-3 rounded-sm hover:bg-gray-900 hover:cursor-pointer disabled:bg-gray-400 disabled:cursor-not-allowed"
                     disabled={formData.email === "" || formData.password === ""}
                   >
                     Log In
