@@ -169,7 +169,7 @@ class PartSale(models.Model):
 class Message(models.Model):
     """Message Model."""
 
-    id = models.UUIDField(primary_key=True, unique=True)
+    id = models.UUIDField(primary_key=True, unique=True,default=uuid.uuid4, editable=False)
     sender = models.ForeignKey(User, related_name="sent_messages", on_delete=models.CASCADE)
     receiver = models.ForeignKey(User, related_name="received_messages", on_delete=models.CASCADE)
     message = models.TextField()
