@@ -38,6 +38,7 @@ export const UserProvider = ({ children }) => {
       try {
         const response = await axiosInstance.get("/users/self/");
         setUser(response.data);
+        console.log("User Set Successfully.");
       } catch (err) {
         console.error("Error fetching user:", err);
       } finally {

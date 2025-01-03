@@ -116,7 +116,6 @@ const Home = () => {
       }
 
       setAllTeams(data);
-      console.log(allTeams);
     } catch (error) {
       console.error("Error fetching User Data:", error);
     }
@@ -125,10 +124,6 @@ const Home = () => {
   useEffect(() => {
     fetchTeams();
   }, []);
-
-  useEffect(() => {
-    console.log("Updated allTeams:", allTeams);
-  }, [allTeams]); // Trigger this effect when allTeams changes
 
   useEffect(() => {
     if (location.state?.fromLogin) {

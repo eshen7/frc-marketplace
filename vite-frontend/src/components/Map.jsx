@@ -149,7 +149,6 @@ const Map = ({ zoom = 10, locations = [] }) => {
       setUserLon(longitude);
       setInitialCenter({ lat: latitude, lng: longitude });
       setLoadingUserCoords(false);
-      console.log("Initial Center Set to user's address");
     } else if (!loadingUser && !user && isAuthenticated !== null) {
       setError("Log in to display distance");
       setLoadingUserCoords(false);
@@ -158,7 +157,6 @@ const Map = ({ zoom = 10, locations = [] }) => {
         lat: 32.95747527010932, 
         lng: -117.22508357787281 
       });
-      console.log("Initial Center Set to default");
     }
   }, [user, loadingUser, isAuthenticated]);
 
