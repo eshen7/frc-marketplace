@@ -10,6 +10,8 @@ import {
 import axiosInstance from "../utils/axiosInstance";
 import { useUser } from "../contexts/UserContext";
 import { useNavigate } from "react-router-dom";
+import { Skeleton } from "@mui/material";
+import ProfilePhoto from "./ProfilePhoto";
 
 function haversine(lat1, lon1, lat2, lon2) {
   const R = 3958.8; // Radius of Earth in miles
@@ -67,9 +69,10 @@ const MarkerWithInfoWindow = ({
         onClick={handleMarkerClick}
         title={location.team_name}
       >
-        <img 
+        <ProfilePhoto 
           src={location.profile_photo} 
-          alt={location.team_name} 
+          teamNumber={location.team_number}
+          alt={"Team Logo"} 
           className="w-10 h-10 rounded-md object-cover bg-black" 
         />
       </AdvancedMarker>
@@ -137,23 +140,25 @@ const Map = ({ zoom = 10, locations = [] }) => {
   const [loadingUserCoords, setLoadingUserCoords] = useState(true);
   const [error, setError] = useState(null);
   const [distance, setDistance] = useState();
-  const [mapCenter, setMapCenter] = useState({
-    lat: 32.95747527010932,
-    lng: -117.22508357787281,
-  });
+  const [initialCenter, setInitialCenter] = useState(null);
 
   useEffect(() => {
-    if (!loadingUser) {
-      if (isAuthenticated && user?.formatted_address) {
-        const { latitude, longitude } = user.formatted_address;
-        setUserLat(latitude);
-        setUserLon(longitude);
-        setMapCenter({ lat: latitude, lng: longitude });
-        setLoadingUserCoords(false);
-      } else {
-        setError("Log in to display distance");
-        setLoadingUserCoords(false);
-      }
+    if (!loadingUser && isAuthenticated && user?.formatted_address) {
+      const { latitude, longitude } = user.formatted_address;
+      setUserLat(latitude);
+      setUserLon(longitude);
+      setInitialCenter({ lat: latitude, lng: longitude });
+      setLoadingUserCoords(false);
+      console.log("Initial Center Set to user's address");
+    } else if (!loadingUser && !user && isAuthenticated !== null) {
+      setError("Log in to display distance");
+      setLoadingUserCoords(false);
+      // Set default center for non-authenticated users
+      setInitialCenter({ 
+        lat: 32.95747527010932, 
+        lng: -117.22508357787281 
+      });
+      console.log("Initial Center Set to default");
     }
   }, [user, loadingUser, isAuthenticated]);
 
@@ -181,25 +186,39 @@ const Map = ({ zoom = 10, locations = [] }) => {
 
   return (
     <APIProvider apiKey={import.meta.env.VITE_GOOGLE_API_KEY}>
-      <div className="h-[500px] flex items-center justify-center mx-auto">
-        <GoogleMapGL
-          defaultZoom={zoom}
-          defaultCenter={mapCenter}
-          mapId={import.meta.env.VITE_GOOGLE_MAP_ID}
-          options={mapOptions}
-          style={{ width: "1000px", height: "500px" }}
-        >
-          <MapContent
-            locations={locations}
-            handleMarkerClick={handleMarkerClick}
-            userLat={userLat}
-            userLon={userLon}
-            loadingUserCoords={loadingUserCoords}
-            distance={distance}
-            error={error}
-            navigate={navigate}
+      <div className="h-[500px] flex items-center justify-center mx-auto relative">
+        {(initialCenter && isAuthenticated !== null) ? (
+          <GoogleMapGL
+            defaultZoom={zoom}
+            defaultCenter={initialCenter}
+            mapId={import.meta.env.VITE_GOOGLE_MAP_ID}
+            options={mapOptions}
+            style={{ width: "1000px", height: "500px" }}
+          >
+            <MapContent
+              locations={locations}
+              handleMarkerClick={handleMarkerClick}
+              userLat={userLat}
+              userLon={userLon}
+              loadingUserCoords={loadingUserCoords}
+              distance={distance}
+              error={error}
+              navigate={navigate}
+            />
+          </GoogleMapGL>
+        ) : (
+          <Skeleton
+            variant="rectangular"
+            sx={{
+              position: "absolute",
+              top: 0,
+              left: 0,
+              width: "100%",
+              height: "100%",
+            }}
+            animation="wave"
           />
-        </GoogleMapGL>
+        )}
       </div>
     </APIProvider>
   );

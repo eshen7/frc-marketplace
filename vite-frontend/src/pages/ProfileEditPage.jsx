@@ -15,6 +15,7 @@ import {
   DialogActions,
 } from "@mui/material";
 import { useUser } from "../contexts/UserContext";
+import ProfilePhoto from "../components/ProfilePhoto";
 
 const UserProfile = () => {
   const { user, loadingUser, isAuthenticated } = useUser();
@@ -397,10 +398,11 @@ const UserProfile = () => {
                         Uneditable Information
                       </h2>
                       <div className="absolute right-[20px] top-[20px] rounded-lg bg-gray-200">
-                        <img
+                        <ProfilePhoto 
                           src={user.profile_photo}
-                          width={60}
-                          className="p-2"
+                          teamNumber={user.team_number}
+                          className="p-2 w-[60px] h-[60px] rounded-md"
+                          alt={"Team Logo"}
                         />
                       </div>
                       <div className="space-y-4">

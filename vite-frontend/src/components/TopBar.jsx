@@ -17,6 +17,7 @@ import { LuMessageCircle } from "react-icons/lu";
 import SearchBar from "./SearchBar";
 import DropdownButton from "./DropdownButton.jsx";
 import { useUser } from "../contexts/UserContext.jsx";
+import ProfilePhoto from "./ProfilePhoto.jsx";
 
 const NavButton = ({ name, link, navigate }) => {
   return (
@@ -143,7 +144,12 @@ const TopBar = () => {
             {/* Logo vs Profile Photo */}
             {isAuthenticated && user ? (
               <div className="p-1 rounded-lg bg-gray-100 hover:bg-gray-300 transition duration-100">
-                <img src={user.profile_photo} width={32} />
+                <ProfilePhoto 
+                  src={user.profile_photo} 
+                  teamNumber={user.team_number}
+                  alt={"Team Logo"}
+                  className="w-[32px] h-[32px] rounded-sm"
+                />
               </div>
             ) : (
               <div className="p-2 rounded-full bg-black hover:bg-gray-900 transition duration-200">
@@ -154,7 +160,7 @@ const TopBar = () => {
 
           {/* Profile Dropdown */}
           {profileDropdownIsOpen && (
-            <div className="absolute top-[48px] right-[0px] bg-gray-100 whitespace-nowrap z-50 rounded-lg px-1">
+            <div className="absolute top-[48px] right-[0px] bg-gray-100 whitespace-nowrap z-50 rounded-lg px-1 border border-gray-300 shadow-sm">
               {isAuthenticated && user ? (
                 <>
                   <DropdownButton
@@ -162,12 +168,14 @@ const TopBar = () => {
                     name={"Profile"}
                     buttonLink={`/profile/frc/${user.team_number}`}
                     navigate={navigate}
+                    hoverColor="hover:bg-gray-200"
                   />
                   <DropdownButton
                     Logo={FaSignOutAlt}
                     name={"Log Out"}
                     func={handleLogout}
                     navigate={navigate}
+                    hoverColor="hover:bg-gray-200"
                   />
                 </>
               ) : (
@@ -177,12 +185,14 @@ const TopBar = () => {
                     name={"Log In"}
                     buttonLink={`/login`}
                     navigate={navigate}
+                    hoverColor="hover:bg-gray-200"
                   />
                   <DropdownButton
                     Logo={FaWpforms}
                     name={"Register"}
                     buttonLink={"/signup"}
                     navigate={navigate}
+                    hoverColor="hover:bg-gray-200"
                   />
                 </>
               )}

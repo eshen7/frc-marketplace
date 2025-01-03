@@ -10,6 +10,7 @@ import { GlobalSocketContext } from "../contexts/GlobalSocketContext";
 import useScreenSize from "../components/useScreenSize";
 import { FaArrowLeft } from "react-icons/fa";
 import { useUser } from "../contexts/UserContext";
+import ProfilePhoto from "../components/ProfilePhoto";
 
 const MessageSent = ({ message, allTeams }) => {
   const senderTeam = allTeams.find(
@@ -613,9 +614,10 @@ const Chat = () => {
                               <div className="flex w-full items-center">
                                 {/* Image container with a fixed or min width */}
                                 <div className="flex-shrink-0 p-1 my-1 bg-gray-300 rounded-full">
-                                  <img
-                                    className="h-[40px] w-[40px] rounded-full"
+                                  <ProfilePhoto
                                     src={team.profile_photo}
+                                    teamNumber={team.team_number}
+                                    className="h-[40px] w-[40px] rounded-full"
                                     alt={`${team.team_number} logo`}
                                   />
                                 </div>
@@ -656,10 +658,11 @@ const Chat = () => {
                                 } hover:cursor-pointer hover:bg-gray-100 transition duration-200 my-2 mx-3 rounded-xl`}
                             >
                               <div className="rounded-lg p-1 bg-gray-300 my-1 ml-2">
-                                <img
-                                  className="h-[40px] min-w-[40px] rounded-full"
+                                <ProfilePhoto
                                   src={team.profile_photo}
-                                  alt={`${team.team_number} logo`}
+                                  teamNumber={team.team_number}
+                                  className="h-[40px] min-w-[40px] rounded-full"
+                                  alt={"Team Logo"}
                                 />
                               </div>
                               <div className="flex flex-col w-full px-2 py-2">

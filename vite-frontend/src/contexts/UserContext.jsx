@@ -6,7 +6,7 @@ const UserContext = createContext(null);
 export const UserProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loadingUser, setLoadingUser] = useState(true);
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isAuthenticated, setIsAuthenticated] = useState(null);
 
   useEffect(() => {
     const checkAuthStatus = () => {
@@ -27,6 +27,9 @@ export const UserProvider = ({ children }) => {
 
   useEffect(() => {
     const fetchUser = async () => {
+      if (isAuthenticated === null) {
+        return;
+      }
       if (!isAuthenticated) {
         setLoadingUser(false);
         return;
