@@ -1,18 +1,17 @@
 import React from "react";
 import { Outlet } from "react-router-dom";
 import "./App.css";
-import { GlobalSocketProvider } from "./contexts/GlobalSocketContext";
 import { UserProvider } from "./contexts/UserContext";
+import { WebSocketProvider } from './contexts/WebSocketContext';
 
 const App = () => {
-
   console.log("App component rendered");
   return (
     <>
       <UserProvider>
-        <GlobalSocketProvider>
+        <WebSocketProvider>
           <Outlet />
-        </GlobalSocketProvider>
+        </WebSocketProvider>
       </UserProvider>
     </>
   );

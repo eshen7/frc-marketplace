@@ -28,7 +28,7 @@ from .serializers import (
 )
 from rest_framework.permissions import IsAuthenticated
 from django.db import models
-from django.core.paginator import Paginator
+from django.core.paginator import Paginator, EmptyPage
 from django.core.mail import send_mail
 from django.conf import settings
 from django.shortcuts import get_object_or_404
@@ -517,11 +517,9 @@ def messages_by_user_get_view(request, team_number):
     View for handling direct messages (DMs):
     - GET: Retrieve messages between the logged-in user and a specific user.
     """
+    limit = int(request.query_params.get("limit", 25))
+    offset = int(request.query_params.get("offset", 0))
 
-    limit = int(request.query_params.get("limit", 25))  # Default to 25
-    offset = int(request.query_params.get("offset", 0))  # Default to 0
-
-    # Fetch messages between the logged-in user and another user
     try:
         receiver = User.objects.get(team_number=team_number)
     except User.DoesNotExist:
@@ -531,16 +529,23 @@ def messages_by_user_get_view(request, team_number):
         )
 
     sender = request.user
-
-    # Retrieve messages sent between the logged-in user and the other user
     messages = Message.objects.filter(
         (models.Q(sender=sender) & models.Q(receiver=receiver))
         | (models.Q(sender=receiver) & models.Q(receiver=sender))
     ).order_by("-timestamp")
+
     paginator = Paginator(messages, limit)
-    paginated_messages = (
-        paginator.page(1) if offset == 0 else paginator.page(offset // limit + 1)
-    )
+    
+    try:
+        page_number = offset // limit + 1
+        paginated_messages = paginator.page(page_number)
+    except EmptyPage:
+        return Response([], status=status.HTTP_200_OK)
+    except Exception as e:
+        return Response(
+            {"error": f"Pagination error: {str(e)}"},
+            status=status.HTTP_400_BAD_REQUEST
+        )
 
     serializer = MessageSerializer(paginated_messages, many=True)
     return Response(serializer.data, status=status.HTTP_200_OK)
