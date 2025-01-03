@@ -49,11 +49,12 @@ const MessageReceived = ({ message, allTeams }) => {
   );
 };
 
-const UserInChat = ({ roomName, team, user, navigate }) => {
+const UserInChat = ({ roomName, team, user, navigate, setSearchQuery }) => {
   return (
     <div
       onClick={() => {
         navigate(`/chat/${team.team_number}`);
+        setSearchQuery("");
       }}
       className={`flex flex-row px-1 place-items-center ${roomName == team.team_number ? "bg-gray-100" : ""
         } hover:cursor-pointer hover:bg-gray-100 ${!team.is_read &&
@@ -125,6 +126,18 @@ const Chat = () => {
   const [isOnMessagePage, setIsOnMessagePage] = useState(false);
 
   const { registerHandler, sendMessage: sendWebSocketMessage } = useWebSocket();
+
+  const [searchQuery, setSearchQuery] = useState("");
+
+  const filterTeams = (teams) => {
+    if (!searchQuery) return teams;
+
+    const query = searchQuery.toLowerCase();
+    return teams.filter(team =>
+      team.team_number.toString().includes(query) ||
+      team.team_name.toLowerCase().includes(query)
+    );
+  };
 
   useEffect(() => {
     if (roomName) {
@@ -284,7 +297,7 @@ const Chat = () => {
   // Add new effect to set receiver from allTeams
   useEffect(() => {
     if (!roomName || !allTeams.length) return;
-    
+
     const receiver = allTeams.find(team => team.team_number === Number(roomName));
     if (receiver) {
       setReceiverUser(receiver);
@@ -298,13 +311,31 @@ const Chat = () => {
     const handleMessage = (data) => {
       if (data.type === 'chat_message') {
         const messageRoom = String(data.sender === user.team_number ? data.receiver : data.sender);
+        const otherUser = data.sender === user.team_number ? data.receiver : data.sender;
 
         // Always update DM list for any message
         setSubsetTeams(prevTeams => {
-          const otherUser = data.sender === user.team_number ? data.receiver : data.sender;
+          // Check if this is a new conversation
+          const existingTeam = prevTeams.find(team => team.team_number === otherUser);
+          const teamInfo = allTeams.find(team => team.team_number === otherUser);
 
+          if (!existingTeam && teamInfo) {
+            // This is a new conversation - add it to subsetTeams
+            const newTeam = {
+              ...teamInfo,
+              last_message: data.message,
+              most_recent_message: data.message,
+              timestamp: data.timestamp,
+              unread_count: data.sender !== user.team_number && messageRoom !== roomName ? 1 : 0,
+              is_read: data.sender === user.team_number || messageRoom === roomName
+            };
+
+            // Add new conversation to the beginning of the list
+            return [newTeam, ...prevTeams];
+          }
+
+          // Update existing conversations
           return prevTeams.map(team => {
-            // If this is the team that sent/received the message
             if (team.team_number === otherUser) {
               return {
                 ...team,
@@ -314,9 +345,7 @@ const Chat = () => {
                 unread_count: data.sender !== user.team_number && messageRoom !== roomName ?
                   (team.unread_count || 0) + 1 :
                   0,
-                // Set is_read based on simpler conditions
-                is_read: data.sender === user.team_number || // We sent it
-                  messageRoom === roomName // We're in the room
+                is_read: data.sender === user.team_number || messageRoom === roomName
               };
             }
             return team;
@@ -345,7 +374,7 @@ const Chat = () => {
 
     const cleanup = registerHandler(roomName, handleMessage);
     return cleanup;
-  }, [roomName, user?.team_number]);
+  }, [roomName, user?.team_number, allTeams]);
 
   // Update send message function to avoid unnecessary sorting
   const sendMessage = async () => {
@@ -475,25 +504,49 @@ const Chat = () => {
             {/* Left Nav Bar */}
             <div className={`${!isLargerThanSmall && isOnMessagePage ? "hidden" : "overflow-y-auto w-full sm:w-4/6 lg:w-1/2 bg-white"}`}>
               <h1 className="text-3xl text-center p-3">Chats</h1>
+
+              {/* Add search bar */}
+              <div className="px-3 mb-2">
+                <input
+                  type="text"
+                  placeholder="Search teams..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                />
+              </div>
+
               {!loadingTeams && subsetTeams ? (
                 <div className="flex flex-col">
                   <p className="mx-3 py-2 text-[20px] border-b border-gray-300">
                     Current Messages
                   </p>
-                  {subsetTeams.map((team, index) => (
+                  {filterTeams(subsetTeams).map((team, index) => (
                     <div key={index}>
                       {team.team_number != user.team_number && (
-                        <UserInChat roomName={roomName} team={team} user={user} navigate={navigate} />
+                        <UserInChat
+                          roomName={roomName}
+                          team={team}
+                          user={user}
+                          navigate={navigate}
+                          setSearchQuery={setSearchQuery}
+                        />
                       )}
                     </div>
                   ))}
                   <p className="mx-3 py-2 text-[20px] border-t border-gray-300">
                     Other Teams
                   </p>
-                  {unmessagedTeams.map((team, index) => (
+                  {filterTeams(unmessagedTeams).map((team, index) => (
                     <div key={index}>
                       {team.team_number != user.team_number && (
-                        <UserInChat roomName={roomName} team={team} user={user} navigate={navigate} />
+                        <UserInChat
+                          roomName={roomName}
+                          team={team}
+                          user={user}
+                          navigate={navigate}
+                          setSearchQuery={setSearchQuery}
+                        />
                       )}
                     </div>
                   ))}
@@ -547,14 +600,15 @@ const Chat = () => {
                 <input
                   type="text"
                   value={newMessage}
+                  placeholder="Type a message..."
                   onChange={(e) => setNewMessage(e.target.value)}
                   onKeyDown={(e) => {
                     if (e.key === "Enter" && newMessage.trim()) {
                       sendMessage();
                     }
                   }}
-                  className="mr-3 border-b border-b-[#2A9EFC] 
-                                focus:shadow-md focus:border-b-2 focus:ring-0 px-3 py-1 bg-inherit w-[87%]"
+                  className="mr-3 border border-gray-300 
+                                focus:shadow-md focus:border-b-2 focus:ring-0 px-3 py-1 bg-inherit w-[87%] rounded-md"
                 />
                 <button
                   disabled={!newMessage || !roomName}
