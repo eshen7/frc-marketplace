@@ -12,17 +12,21 @@ import os
 from django.core.asgi import get_asgi_application
 from channels.routing import ProtocolTypeRouter, URLRouter
 from channels.auth import AuthMiddlewareStack
+from channels.security.websocket import AllowedHostsOriginValidator
 from api.routing import websocket_urlpatterns
 
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'frc_marketplace.settings')
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'frc_marketplace_API.settings')
 
-# application = get_asgi_application()
+# Get ASGI application early to avoid circular import
+django_asgi_app = get_asgi_application()
 
 application = ProtocolTypeRouter({
-    "http": get_asgi_application(),  # For HTTP requests
-    "websocket": AuthMiddlewareStack(
-        URLRouter(
-            websocket_urlpatterns
-        )
+    "http": django_asgi_app,
+    "websocket": 
+        AuthMiddlewareStack(
+            URLRouter(
+                websocket_urlpatterns
+            )
+        
     ),
 })
