@@ -148,7 +148,7 @@ class MessageModelTest(TestCase):
     def setUp(self):
         """Set up test data for Message model tests."""
         self.user1 = User.objects.create_user(
-            email="user1@example.com", password="pass123", team_number=1234,phone="123-456-7890"
+            email="user1@example.com", password="pass123", team_number=3647,phone="123-456-7890"
         )
         self.user2 = User.objects.create_user(
             email="user2@example.com", password="pass123", team_number=5678,phone="234-567-8901"
@@ -204,7 +204,7 @@ class PartRequestModelTest(TestCase):
             email="requester@example.com",
             password="testpass123",
             full_name="Test Requester",
-            team_number=1234,
+            team_number=3647,
             phone="555-123-4567",
             address="123 Test St"
         )

@@ -149,10 +149,10 @@ class PublicUserSerializer(serializers.ModelSerializer):
 
         if instance.address:
             representation["formatted_address"] = {
-                "city": instance.address.locality.name,
-                "state": instance.address.locality.state.name,
-                "latitude": instance.address.latitude,
-                "longitude": instance.address.longitude,
+                "city": instance.address.locality.name if instance.address.locality != None else "Unknown",
+                "state": instance.address.locality.state.name if instance.address.locality != None else "Unknown",
+                "latitude": instance.address.latitude or 0,
+                "longitude": instance.address.longitude or 0,
             }
 
         return representation

@@ -111,7 +111,7 @@ class GlobalMessagesConsumer(AsyncWebsocketConsumer):
         event might look like:
         {
           'type': 'chat_message',
-          'sender_team': 1234,
+          'sender_team': 3647,
           'receiver_team': 9999,
           'timestamp': '2024-01-02T12:34:56.789Z',
           'message': 'Hello World',

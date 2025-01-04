@@ -16,7 +16,7 @@ const recentSales = [
   { id: 2, title: "Falcon 500", team: "Team 1357", price: 75, distance: 7 },
   { id: 3, title: "Victor SPX", team: "Team 3690", price: 30, distance: 12 },
   { id: 4, title: "PDP", team: "Team 9876", price: 60, distance: 5 },
-  { id: 5, title: "Spark MAX", team: "Team 1234", price: 45, distance: 9 },
+  { id: 5, title: "Spark MAX", team: "Team 3647", price: 45, distance: 9 },
   {
     id: 6,
     title: "Ultrasonic Sensor",
@@ -52,7 +52,14 @@ const Home = () => {
   const location = useLocation();
   const navigate = useNavigate();
 
-  const { user, setUser, loadingUser, setLoadingUser, isAuthenticated, setIsAuthenticated } = useUser();
+  const {
+    user,
+    setUser,
+    loadingUser,
+    setLoadingUser,
+    isAuthenticated,
+    setIsAuthenticated,
+  } = useUser();
 
   const [showLoginSuccessBanner, setShowLoginSuccessBanner] = useState(false);
   const [bannerMessage, setBannerMessage] = useState("");
@@ -154,25 +161,36 @@ const Home = () => {
           {/* Description */}
           <div className="text-center border-b-white max-w-[600px]">
             <p className="text-sm">
-              Millennium Market is an online marketplace designed specifically for high school robotics teams to buy,
-              sell, and trade parts and components. Whether you're looking for motors, sensors, gears, or even
-              custom-built parts, this platform connects teams across the region, making it easier to source specific
-              materials and tools for your robotics projects. Users can list surplus components, negotiate prices, and
-              offer bulk deals, fostering a collaborative ecosystem where teams help each other by sharing resources.
-              It's a one-stop shop for teams to save on costs, access hard-to-find parts, and build stronger networks
-              within the robotics community.
+              Millennium Market is an online marketplace designed specifically
+              for high school robotics teams to buy, sell, and trade parts and
+              components. Whether you're looking for motors, sensors, gears, or
+              even custom-built parts, this platform connects teams across the
+              region, making it easier to source specific materials and tools
+              for your robotics projects. Users can list surplus components,
+              negotiate prices, and offer bulk deals, fostering a collaborative
+              ecosystem where teams help each other by sharing resources. It's a
+              one-stop shop for teams to save on costs, access hard-to-find
+              parts, and build stronger networks within the robotics community.
             </p>
           </div>
           {/* Buttons */}
           <div className="flex flex-row justify-center mt-5 max-w-screen border-b border-b-black pb-5">
             {/* Request */}
-            <button className="py-3 px-5 bg-blue-800 text-white text-[14px] rounded-sm hover:bg-blue-900 mr-5"
-              onClick={() => {navigate("/request")}}>
+            <button
+              className="py-3 px-5 bg-blue-800 text-white text-[14px] rounded-sm hover:bg-blue-900 mr-5"
+              onClick={() => {
+                navigate("/request");
+              }}
+            >
               Make a Request
             </button>
             {/* Sale */}
-            <button className="py-3 px-5 border border-blue-800 text-blue-800 text-[14px] rounded-sm hover:bg-white"
-              onClick={() => {navigate("/sale")}}>
+            <button
+              className="py-3 px-5 border border-blue-800 text-blue-800 text-[14px] rounded-sm hover:bg-white"
+              onClick={() => {
+                navigate("/sale");
+              }}
+            >
               Post a Sale
             </button>
           </div>
@@ -186,20 +204,40 @@ const Home = () => {
         <section className="mb-12 mx-[30px]">
           <div className="flex justify-between items-center mb-4">
             <h2 className="text-2xl font-bold">Recent Part Requests Nearby</h2>
-              <button onClick={() => navigate("/requests")} className="bg-blue-800 text-white py-3 px-5 rounded-[5px] hover:bg-blue-900 transition-translate duration-100">
-                See All Requests
-              </button>
+            <button
+              onClick={() => navigate("/requests")}
+              className="bg-blue-800 text-white py-3 px-5 rounded-[5px] hover:bg-blue-900 transition-translate duration-100"
+            >
+              See All Requests
+            </button>
           </div>
-          <ItemScrollBar key={requests[0]} items={requests} loadingItems={loadingRequests} user={user} loadingUser={loadingUser} type="request" />
+          <ItemScrollBar
+            key={requests[0]}
+            items={requests}
+            loadingItems={loadingRequests}
+            user={user}
+            loadingUser={loadingUser}
+            type="request"
+          />
         </section>
         <section className="pb-12 mx-[30px]">
           <div className="flex justify-between items-center mb-4">
             <h2 className="text-2xl font-bold">Recent Parts for Sale Nearby</h2>
-              <button onClick={() => navigate("/sales")} className="bg-blue-800 text-white py-3 px-5 rounded-[5px] hover:bg-blue-900 transition-translate duration-100">
-                See All Parts for Sale
-              </button>
+            <button
+              onClick={() => navigate("/sales")}
+              className="bg-blue-800 text-white py-3 px-5 rounded-[5px] hover:bg-blue-900 transition-translate duration-100"
+            >
+              See All Parts for Sale
+            </button>
           </div>
-          <ItemScrollBar key={sales[0]} items={sales} loadingItems={loadingSales} user={user} loadingUser={loadingUser} type="sale" />
+          <ItemScrollBar
+            key={sales[0]}
+            items={sales}
+            loadingItems={loadingSales}
+            user={user}
+            loadingUser={loadingUser}
+            type="sale"
+          />
         </section>
       </div>
       <Footer />

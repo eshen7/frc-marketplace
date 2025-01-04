@@ -111,6 +111,7 @@ def get_logged_in_user_view(request):
             serializer = UserSerializer(user)
             if isinstance(user, User):
                 return Response(serializer.data, status=status.HTTP_200_OK)
+            return Response("User not found", status=status.HTTP_404_NOT_FOUND)
         if request.method == "PUT":
             serializer = UserSerializer(user, data=request.data, partial=True)
             if serializer.is_valid():
@@ -656,7 +657,7 @@ def dm_list_view(request):
 def mark_messages_as_read(request):
     """
     Marks all messages from the given team_number to the current user as read.
-    Expects a JSON body like: { "team_number": 1234 }
+    Expects a JSON body like: { "team_number": 3647 }
     """
     try:
         user = request.user
