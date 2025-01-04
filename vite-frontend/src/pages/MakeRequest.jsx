@@ -106,20 +106,8 @@ const PartRequestForm = () => {
 
       <TopBar />
       <div className="w-screen flex-grow flex flex-col place-items-center bg-white relative">
-        {/* Pattern
-        <div className="absolute inset-0 opacity-10">
-          <div className="w-full h-full" 
-          style={{
-            backgroundImage: "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40' viewBox='0 0 40 40'%3E%3Cg fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='1'%3E%3Cpath d='M0 38.59l2.83-2.83 1.41 1.41L1.41 40H0v-1.41zM0 1.4l2.83 2.83 1.41-1.41L1.41 0H0v1.41zM38.59 40l-2.83-2.83 1.41-1.41L40 38.59V40h-1.41zM40 1.41l-2.83 2.83-1.41-1.41L38.59 0H40v1.41zM20 18.6l2.83-2.83 1.41 1.41L21.41 20l2.83 2.83-1.41 1.41L20 21.41l-2.83 2.83-1.41-1.41L18.59 20l-2.83-2.83 1.41-1.41L20 18.59z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E\")",
-            // backgroundImage: "url('/millenniumMarket.svg')",
-            // backgroundSize: "40px 40px, 40px 40px",
-            // backgroundRepeat: "repeat, repeat",
-            // backgroundPosition: "0 0, 20px 20px",
-          }}/>
-        </div> */}
-
         {/* Form */}
-        <div className="z-50 flex flex-col justify-center place-items-center w-full sm:w-2/3 md:w-[55%] my-[40px] mx-[20px] sm:mx-[30px] bg-white py-10 sm:py-16 px-10">
+        <div className="flex flex-col justify-center place-items-center w-full sm:w-2/3 md:w-[55%] my-[40px] mx-[20px] sm:mx-[30px] bg-white py-10 sm:py-16 px-10">
           <h1 className="text-5xl text-center mb-[40px] sm:mb-[80px] text-black font-semibold text-shadow-md">
             Make a Request
           </h1>

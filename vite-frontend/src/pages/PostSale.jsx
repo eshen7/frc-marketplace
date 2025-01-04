@@ -94,7 +94,7 @@ const PartSaleForm = () => {
       <TopBar />
       <div className="w-screen flex-grow flex flex-col place-items-center bg-white relative">
         {/* Form */}
-        <div className="z-50 flex flex-col justify-center place-items-center w-full sm:w-2/3 md:w-[55%] my-[40px] mx-[20px] sm:mx-[30px] bg-white py-10 sm:py-16 px-10">
+        <div className="flex flex-col justify-center place-items-center w-full sm:w-2/3 md:w-[55%] my-[40px] mx-[20px] sm:mx-[30px] bg-white py-10 sm:py-16 px-10">
           <h1 className="text-5xl text-center mb-[40px] sm:mb-[80px] text-black font-semibold text-shadow-md">
             Post a Sale
           </h1>

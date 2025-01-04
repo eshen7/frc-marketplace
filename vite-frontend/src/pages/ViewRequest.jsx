@@ -302,7 +302,7 @@ export default function FulfillRequest() {
                   </div>
 
                   <h2 className='text-[20px]'>
-                    <a href={request.part.manufacturer.website} target='_blank'>
+                    <a href={request.part.link} target='_blank'>
                       <span className='text-blue-600 hover:underline'>
                         {request.part.manufacturer.name}
                       </span>

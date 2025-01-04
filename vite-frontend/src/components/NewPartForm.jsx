@@ -38,6 +38,7 @@ const NewPartForm = ({ open, onClose }) => {
     partID: "",
     description: "",
     imageFile: null,
+    part_link: "",
   });
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState("");
@@ -133,6 +134,7 @@ const NewPartForm = ({ open, onClose }) => {
       formData.append("model_id", partData.partID);
       formData.append("description", partData.description);
       formData.append("image", partData.imageFile);
+      formData.append("link", partData.part_link);
 
       const response = await axiosInstance.post("parts/", formData, {
         headers: {
@@ -148,6 +150,7 @@ const NewPartForm = ({ open, onClose }) => {
         manufacturer_id: "",
         partID: "",
         imageFile: null,
+        part_link: "",
       });
       setPreview(null);
       onClose(response.data);
@@ -255,6 +258,14 @@ const NewPartForm = ({ open, onClose }) => {
             value={partData.partID}
             onChange={handleChange("partID")}
           />
+          <TextField
+            margin="dense"
+            label="Part Link *"
+            fullWidth
+            placeholder="https://..."
+            value={partData.part_link}
+            onChange={handleChange("part_link")}
+          />
           <Autocomplete
             fullWidth
             options={["create", ...categories]}
@@ -286,7 +297,7 @@ const NewPartForm = ({ open, onClose }) => {
             renderInput={(params) => (
               <TextField
                 {...params}
-                label="Category"
+                label="Category *"
                 margin="dense"
               />
             )}
