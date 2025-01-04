@@ -212,6 +212,7 @@ const UserProfile = () => {
       alert("Account deleted successfully.");
       localStorage.removeItem("authToken");
       navigate("/");
+      window.location.reload();
     } catch (error) {
       console.error("Error deleting account:", error.response || error.message);
       alert("Failed to delete account. Please try again.");
