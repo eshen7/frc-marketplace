@@ -24,11 +24,11 @@ class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = [
+            "id",
             "email",
             "password",
             "full_name",
             "address",
-            "id",
             "date_joined",
             "team_name",
             "team_number",
@@ -132,10 +132,7 @@ class UserSerializer(serializers.ModelSerializer):
         representation.pop("is_active", None)
         representation.pop("is_staff", None)
         representation.pop("is_superuser", None)
-        representation.pop("date_joined", None)
-        representation.pop("id", None)
-        # representation.pop("phone", None)
-
+        
         return representation
 
 
@@ -184,6 +181,7 @@ class PartSerializer(serializers.ModelSerializer):
             "model_id",
             "description",
             "image",
+            "link",
         ]
 
     def validate_image(self, value):

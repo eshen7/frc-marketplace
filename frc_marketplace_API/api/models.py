@@ -110,6 +110,7 @@ class Part(models.Model):
         blank=True,
         validators=[validate_image_file],
     )
+    link = models.URLField(null=True, blank=True)
 
     class Meta:
         constraints = [
@@ -149,7 +150,7 @@ class PartRequest(models.Model):
     bid_price = models.DecimalField(
         max_digits=10, decimal_places=2, null=True, blank=True
     )  # -1 if they are willing to trade, 0 for donation
-
+    # is_open = models.BooleanField(default=True) ADD IN V2
 
 class PartSale(models.Model):
     """Part Sale Model."""
@@ -164,7 +165,7 @@ class PartSale(models.Model):
     )  # -1 if trade, 0 for FREE
     additional_info = models.TextField(null=True, blank=True)
     condition = models.CharField(max_length=255, null=True, blank=True)
-
+    # is_listed = models.BooleanField(default=True) ADD IN V2
 
 class Message(models.Model):
     """Message Model."""
