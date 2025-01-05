@@ -14,7 +14,7 @@ export default function ItemProfileSection({ user, isOwner, navigate }) {
         <div className='flex flex-row justify-between place-items-center'>
           <div className="flex flex-col">
             {/* Team Name */}
-            <h3 className='text-[24px] text-left md:text-center lg:text-left'>
+            <h3 className='text-[24px] text-left lg:text-left'>
               {user.team_number} | {user.team_name}
             </h3>
             <p className='text-sm'>

@@ -228,33 +228,21 @@ export default function FulfillRequest() {
           {request && !error ? (
             <div className='px-5 sm:px-12 md:px-20'>
               {/* Main Content */}
-              <div className='grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-10'>
-                {/* Name & Description */}
+              <div className='grid grid-cols-1 md:grid-cols-2 gap-10'>
+                {/* Left Column - Scrollable Content */}
                 <div className='flex flex-col'>
-                  <div className='flex flex-row justify-between place-items-center'>
+                  <div className='flex flex-row'>
                     {/* Request Date */}
                     <p className='text-gray-500 text-sm'>
                       {(new Date(request.request_date)).toLocaleDateString()}
                     </p>
-                    {/* Needed By */}
-                    <div className='flex flex-row place-items-center'>
-                      {isEditing ? (
-                        <div>
-                          <span className='text-sm text-gray-500'>Need By:</span>
-                          <input type="date"
-                            className={`${formData.needed_date.edited ? "border-2 border-blue-800" : "border-2 border-gray-500"}`}
-                            value={formData.needed_date.val} onChange={(e) => setFormData({ ...formData, needed_date: { val: e.target.value, edited: true } })} />
-                        </div>
-                      ) : (
-                        renderDueDate(request.needed_date)
-                      )}
-                    </div>
                   </div>
+
+                  {/* Part Name */}
                   <div className='flex flex-row justify-between place-items-center relative'>
-                    {/* Part Name */}
-                    <h1 className='text-[30px] font-roboto'>
+                    <button onClick={() => navigate(`/part/${request.part.id}`)} className='text-[30px] font-roboto hover:underline hover:cursor-pointer text-left'>
                       {request.part.name}
-                    </h1>
+                    </button>
                     {/* Edit Button */}
                     {isRequestOwner && (
                       <>
@@ -302,27 +290,41 @@ export default function FulfillRequest() {
                   </div>
 
                   <h2 className='text-[20px]'>
-                    <a href={request.part.link} target='_blank'>
+                    <a href={request.part.link ? request.part.link : request.part.manufacturer.website} target='_blank'>
                       <span className='text-blue-600 hover:underline'>
                         {request.part.manufacturer.name}
                       </span>
                     </a>
                   </h2>
-                  {/* Editing Quantity */}
-                  {isEditing ? (
-                    <div className='flex flex-row place-items-center'>
-                      <span className=''>
-                        Qty:
-                      </span>
-                      <input type='number' id='quantity' className={`w-12 ml-2 border-2 ${formData.quantity.edited ? "border-blue-800" : "border-gray-500"}`}
-                        value={formData.quantity.val}
-                        onChange={(e) => setFormData({ ...formData, quantity: { val: e.target.value, edited: true } })} />
-                    </div>
-                  ) : (
-                    <p>
-                      Qty: {request.quantity}
-                    </p>
-                  )}
+
+                  {/* Quantity & Due Date */}
+                  <div className='flex flex-row justify-between place-items-center'>
+                    {/* Editing Quantity */}
+                    {isEditing ? (
+                      <div className='flex flex-row place-items-center'>
+                        <span className=''>
+                          Qty:
+                        </span>
+                        <input type='number' id='quantity' className={`w-12 ml-2 border-2 ${formData.quantity.edited ? "border-blue-800" : "border-gray-500"}`}
+                          value={formData.quantity.val}
+                          onChange={(e) => setFormData({ ...formData, quantity: { val: e.target.value, edited: true } })} />
+                      </div>
+                    ) : (
+                      <p>Qty: {request.quantity}</p>
+                    )}
+                    {/* Due Date */}
+                    {isEditing ? (
+                      <div className='flex flex-row place-items-center'>
+                        <span className='text-sm text-gray-500'>Need By:</span>
+                        <input type="date"
+                          className={`${formData.needed_date.edited ? "border-2 border-blue-800" : "border-2 border-gray-500"}`}
+                          value={formData.needed_date.val} onChange={(e) => setFormData({ ...formData, needed_date: { val: e.target.value, edited: true } })} />
+                      </div>
+                    ) : (
+                      renderDueDate(request.needed_date)
+                    )}
+                  </div>
+
                   {/* Additional Info */}
                   <div className='flex flex-col mt-6'>
                     <p className='font-semibold'>
@@ -352,53 +354,103 @@ export default function FulfillRequest() {
                   </div>
                 </div>
 
-                {/* Image */}
-                <div className="relative" style={{ paddingTop: "100%" }}>
-                  {!imageLoaded && (
-                    <Skeleton
-                      variant="rectangular"
-                      sx={{
-                        position: "absolute",
-                        top: 0,
-                        left: 0,
-                        width: "100%",
-                        height: "100%",
-                      }}
-                      animation="wave"
-                    />
-                  )}
-                  <img
-                    src={request.part.image}
-                    alt={request.part.name}
-                    onLoad={handleImageLoad}
-                    onError={handleImageError}
-                    className="absolute top-0 left-0 w-full h-full object-contain"
-                    style={{
-                      display: imageLoaded ? "block" : "none"
-                    }}
-                  />
+                {/* Right Column - Sticky Content */}
+                <div className='hidden md:block'>
+                  <div className='sticky top-8'>
+                    {/* Image Container with max height constraint */}
+                    <div className="relative w-full" style={{
+                      height: '100%',
+                      width: '100%'
+                    }}>
+                      {!imageLoaded && (
+                        <Skeleton
+                          variant="rectangular"
+                          sx={{
+                            width: '100%',
+                            height: '100%',
+                            minHeight: '400px'
+                          }}
+                          animation="wave"
+                        />
+                      )}
+                      <img
+                        src={request.part.image}
+                        alt={request.part.name}
+                        onLoad={handleImageLoad}
+                        onError={handleImageError}
+                        className="w-full h-full object-contain"
+                        style={{
+                          display: imageLoaded ? "block" : "none"
+                        }}
+                      />
+                    </div>
+
+                    {/* Profile Section */}
+                    <div className="mt-10">
+                      <ItemProfileSection
+                        user={request.user}
+                        selfUser={user}
+                        isOwner={isRequestOwner}
+                        navigate={navigate}
+                      />
+                    </div>
+                  </div>
                 </div>
 
-                <ItemProfileSection user={request.user} selfUser={user} isOwner={isRequestOwner} navigate={navigate} />
+                {/* Mobile version of right column */}
+                <div className='md:hidden flex flex-col gap-10'>
+                  {/* Image */}
+                  <div className="relative w-full" style={{
+                    height: '400px'
+                  }}>
+                    {!imageLoaded && (
+                      <Skeleton
+                        variant="rectangular"
+                        sx={{
+                          width: '100%',
+                          height: '100%'
+                        }}
+                        animation="wave"
+                      />
+                    )}
+                    <img
+                      src={request.part.image}
+                      alt={request.part.name}
+                      onLoad={handleImageLoad}
+                      onError={handleImageError}
+                      className="w-full h-full object-contain"
+                      style={{
+                        display: imageLoaded ? "block" : "none"
+                      }}
+                    />
+                  </div>
+                  <ItemProfileSection
+                    user={request.user}
+                    selfUser={user}
+                    isOwner={isRequestOwner}
+                    navigate={navigate}
+                  />
+                </div>
               </div>
 
               {/* Other Requests for the Same Part */}
-              {/* Part Requests Section */}
-              <div className="mt-10 relative">
+              <div className="mt-10 md:mt-20 w-full">
                 <h2 className="text-xl font-semibold text-gray-700 mb-4">
                   Requests for the same part
                 </h2>
-                <ItemScrollBar items={partRequests} loadingItems={loadingPartRequests} user={user} loadingUser={loadingUser} type="request" />
+                <ItemScrollBar
+                  items={partRequests}
+                  loadingItems={loadingPartRequests}
+                  user={user}
+                  loadingUser={loadingUser}
+                  type="request"
+                />
               </div>
             </div>
           ) : !error ? (
-            <p className='text-center'>
-              Loading Request...
-            </p>
+            <p className='text-center'>Loading Request...</p>
           ) : (
-            <p className='text-center'>
-              Error loading request, please try again.
-            </p>
+            <p className='text-center'>Error loading request, please try again.</p>
           )}
         </div>
       </div>
