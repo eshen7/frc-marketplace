@@ -182,10 +182,12 @@ const NewPartForm = ({ open, onClose }) => {
   };
 
   const isFormValid = () => {
-    return partData.name && 
-           partData.category_id && 
-           partData.manufacturer_id && 
-           partData.imageFile;
+    return (
+      partData.name &&
+      partData.category_id &&
+      partData.manufacturer_id &&
+      partData.imageFile
+    );
   };
 
   return (
@@ -213,15 +215,18 @@ const NewPartForm = ({ open, onClose }) => {
           <Autocomplete
             fullWidth
             options={["create", ...manufacturers]}
-            value={manufacturers.find(m => m.id === partData.manufacturer_id) || null}
+            value={
+              manufacturers.find((m) => m.id === partData.manufacturer_id) ||
+              null
+            }
             onChange={(_, newValue) => {
               if (newValue === "create") {
                 setManufacturerDialogOpen(true);
               } else {
-                handleChange("manufacturer_id")({ 
-                  target: { 
-                    value: newValue ? newValue.id : "" 
-                  } 
+                handleChange("manufacturer_id")({
+                  target: {
+                    value: newValue ? newValue.id : "",
+                  },
                 });
               }
             }}
@@ -232,18 +237,16 @@ const NewPartForm = ({ open, onClose }) => {
             renderOption={(props, option) => (
               <MenuItem {...props}>
                 {option === "create" ? (
-                  <span className="text-blue-600 font-medium">➕ ADD NEW MANUFACTURER</span>
+                  <span className="text-blue-600 font-medium">
+                    ➕ ADD NEW MANUFACTURER
+                  </span>
                 ) : (
                   option.name
                 )}
               </MenuItem>
             )}
             renderInput={(params) => (
-              <TextField
-                {...params}
-                label="Manufacturer *"
-                margin="dense"
-              />
+              <TextField {...params} label="Manufacturer *" margin="dense" />
             )}
             isOptionEqualToValue={(option, value) => {
               if (!option || !value) return false;
@@ -260,7 +263,7 @@ const NewPartForm = ({ open, onClose }) => {
           />
           <TextField
             margin="dense"
-            label="Part Link *"
+            label="Part Link"
             fullWidth
             placeholder="https://..."
             value={partData.part_link}
@@ -269,15 +272,17 @@ const NewPartForm = ({ open, onClose }) => {
           <Autocomplete
             fullWidth
             options={["create", ...categories]}
-            value={categories.find(c => c.id === partData.category_id) || null}
+            value={
+              categories.find((c) => c.id === partData.category_id) || null
+            }
             onChange={(_, newValue) => {
               if (newValue === "create") {
                 setCategoryDialogOpen(true);
               } else {
-                handleChange("category_id")({ 
-                  target: { 
-                    value: newValue ? newValue.id : "" 
-                  } 
+                handleChange("category_id")({
+                  target: {
+                    value: newValue ? newValue.id : "",
+                  },
                 });
               }
             }}
@@ -288,18 +293,16 @@ const NewPartForm = ({ open, onClose }) => {
             renderOption={(props, option) => (
               <MenuItem {...props}>
                 {option === "create" ? (
-                  <span className="text-blue-600 font-medium">➕ ADD NEW CATEGORY</span>
+                  <span className="text-blue-600 font-medium">
+                    ➕ ADD NEW CATEGORY
+                  </span>
                 ) : (
                   option.name
                 )}
               </MenuItem>
             )}
             renderInput={(params) => (
-              <TextField
-                {...params}
-                label="Category *"
-                margin="dense"
-              />
+              <TextField {...params} label="Category *" margin="dense" />
             )}
             isOptionEqualToValue={(option, value) => {
               if (!option || !value) return false;

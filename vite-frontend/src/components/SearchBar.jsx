@@ -34,7 +34,10 @@ const SearchBar = () => {
         const processedSearchData = [
           ...searchData.users.map((user) => ({ ...user, type: "team" })),
           ...searchData.parts.map((part) => ({ ...part, type: "part" })),
-          ...searchData.requests.map((request) => ({ ...request, type: "request" })),
+          ...searchData.requests.map((request) => ({
+            ...request,
+            type: "request",
+          })),
         ];
 
         console.log("processed search data", processedSearchData);
@@ -115,7 +118,9 @@ const SearchBar = () => {
               className="w-6 h-6 rounded-full"
             />
             <div className="flex flex-col">
-              <div className="font-medium">Team {item.team_number} | {item.team_name}</div>
+              <div className="font-medium">
+                Team {item.team_number} | {item.team_name}
+              </div>
             </div>
           </div>
         );
@@ -123,7 +128,7 @@ const SearchBar = () => {
         return (
           <div className="flex items-center space-x-2">
             <img
-              src={item.image}
+              src={item.image != undefined ? item.image : "/IMG_6769.jpg"}
               alt="Part Photo"
               className="w-6 h-6 rounded-full"
             />
@@ -162,22 +167,26 @@ const SearchBar = () => {
 
       {showDropdown && searchResults.length > 0 && (
         <div className="absolute z-50 w-full mt-1 bg-white border rounded-lg shadow-lg max-h-96 overflow-y-auto">
-          {Object.entries(groupResultsByType(searchResults)).map(([type, results]) => (
-            <div key={type}>
-              <div className="px-3 py-2 font-semibold text-gray-600 bg-gray-100">
-                {type.charAt(0).toUpperCase() + type.slice(1)}s
-              </div>
-              {results.map((result, index) => (
-                <div
-                  key={`${result.type}-${result.id || result.team_number}-${index}`}
-                  onClick={() => handleResultClick(result)}
-                  className="px-3 py-2 hover:bg-gray-100 cursor-pointer rounded"
-                >
-                  {renderResultItem(result)}
+          {Object.entries(groupResultsByType(searchResults)).map(
+            ([type, results]) => (
+              <div key={type}>
+                <div className="px-3 py-2 font-semibold text-gray-600 bg-gray-100">
+                  {type.charAt(0).toUpperCase() + type.slice(1)}s
                 </div>
-              ))}
-            </div>
-          ))}
+                {results.map((result, index) => (
+                  <div
+                    key={`${result.type}-${
+                      result.id || result.team_number
+                    }-${index}`}
+                    onClick={() => handleResultClick(result)}
+                    className="px-3 py-2 hover:bg-gray-100 cursor-pointer rounded"
+                  >
+                    {renderResultItem(result)}
+                  </div>
+                ))}
+              </div>
+            )
+          )}
         </div>
       )}
     </div>

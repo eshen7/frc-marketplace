@@ -97,7 +97,7 @@ const router = createBrowserRouter(
           element: <OurTeamPage />,
         },
         {
-          path: "parts",
+          path: "/parts",
           element: <AllParts />,
         },
         {

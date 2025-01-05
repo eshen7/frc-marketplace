@@ -21,28 +21,47 @@ import ProfilePhoto from "./ProfilePhoto.jsx";
 
 const NavButton = ({ name, link, navigate }) => {
   return (
-    <button onClick={() => navigate(link)} className="px-4 py-2 text-white hover:underline-offset-1 hover:underline mx-2 whitespace-nowrap">
+    <button
+      onClick={() => navigate(link)}
+      className="px-4 py-2 text-white hover:underline-offset-1 hover:underline mx-2 whitespace-nowrap"
+    >
       {name}
     </button>
   );
 };
 
-const InsideHamburgerButton = ({ name, Logo, link, navigate, func=undefined }) => {
+const InsideHamburgerButton = ({
+  name,
+  Logo,
+  link,
+  navigate,
+  func = undefined,
+}) => {
   return (
-    <button onClick={() => {
-      if (func) {
-        func();
-      }
-      navigate(link);
-    }} className="flex place-items-center">
+    <button
+      onClick={() => {
+        if (func) {
+          func();
+        }
+        navigate(link);
+      }}
+      className="flex place-items-center"
+    >
       <Logo className="mr-5" />
       <div className="">{name}</div>
     </button>
   );
-}
+};
 
 const TopBar = () => {
-  const { user, setUser, loadingUser, setLoadingUser, isAuthenticated, setIsAuthenticated } = useUser();
+  const {
+    user,
+    setUser,
+    loadingUser,
+    setLoadingUser,
+    isAuthenticated,
+    setIsAuthenticated,
+  } = useUser();
   const [isOpen, setIsOpen] = useState(false);
 
   const navigate = useNavigate();
@@ -100,15 +119,29 @@ const TopBar = () => {
 
         {/* Nav Buttons */}
         <div
-          className={`hidden ${isAuthenticated ? "lg:flex lg:flex-row" : "sm:flex sm:flex-row"
-            }`}
+          className={`hidden ${
+            isAuthenticated ? "lg:flex lg:flex-row" : "sm:flex sm:flex-row"
+          }`}
         >
           <NavButton name={"Requests"} link={"/requests"} navigate={navigate} />
           <NavButton name={"Sales"} link={"/sales"} navigate={navigate} />
+          <NavButton
+            name={"Parts Directory"}
+            link={"/parts"}
+            navigate={navigate}
+          />
           {isAuthenticated && (
             <>
-              <NavButton name={"Make a Request"} link={"/request"} navigate={navigate} />
-              <NavButton name={"Post a Sale"} link={"/sale"} navigate={navigate} />
+              <NavButton
+                name={"Make a Request"}
+                link={"/request"}
+                navigate={navigate}
+              />
+              <NavButton
+                name={"Post a Sale"}
+                link={"/sale"}
+                navigate={navigate}
+              />
             </>
           )}
         </div>
@@ -129,12 +162,16 @@ const TopBar = () => {
 
         {/* Right Buttons */}
         <div
-          className={`hidden ${isAuthenticated ? "lg:flex lg:flex-row" : "sm:flex sm:flex-row"
-            } relative`}
+          className={`hidden ${
+            isAuthenticated ? "lg:flex lg:flex-row" : "sm:flex sm:flex-row"
+          } relative`}
         >
           {/* Chat Button if Logged In */}
           {isAuthenticated && (
-            <button onClick={() => navigate("/chat")} className="p-2 rounded-full bg-black hover:bg-gray-900 transition duration-200 mx-3">
+            <button
+              onClick={() => navigate("/chat")}
+              className="p-2 rounded-full bg-black hover:bg-gray-900 transition duration-200 mx-3"
+            >
               <LuMessageCircle className="text-white text-[24px]" />
             </button>
           )}
@@ -144,8 +181,8 @@ const TopBar = () => {
             {/* Logo vs Profile Photo */}
             {isAuthenticated && user ? (
               <div className="p-1 rounded-lg bg-gray-100 hover:bg-gray-300 transition duration-100">
-                <ProfilePhoto 
-                  src={user.profile_photo} 
+                <ProfilePhoto
+                  src={user.profile_photo}
                   teamNumber={user.team_number}
                   alt={"Team Logo"}
                   className="w-[32px] h-[32px] rounded-sm"
@@ -205,21 +242,77 @@ const TopBar = () => {
       {isOpen ? (
         <div className="fixed top-0 right-0 h-full w-full bg-black z-50 transition-transform duration-300 flex flex-row">
           <div className="p-4 pl-10 text-white space-y-6 flex flex-col text-[18px] mt-16 justify-left">
-            <InsideHamburgerButton name={"Home"} Logo={MdHome} link={"/"} navigate={navigate} />
-            <InsideHamburgerButton name={"Requests"} Logo={FaHandHolding} link={"/requests"} navigate={navigate} />
-            <InsideHamburgerButton name={"Sales"} Logo={FaStore} link={"/sales"} navigate={navigate} />
+            <InsideHamburgerButton
+              name={"Home"}
+              Logo={MdHome}
+              link={"/"}
+              navigate={navigate}
+            />
+            <InsideHamburgerButton
+              name={"Requests"}
+              Logo={FaHandHolding}
+              link={"/requests"}
+              navigate={navigate}
+            />
+            <InsideHamburgerButton
+              name={"Sales"}
+              Logo={FaStore}
+              link={"/sales"}
+              navigate={navigate}
+            />
+            <InsideHamburgerButton
+              name={"Parts Directory"}
+              Logo={FaWpforms}
+              link={"/parts"}
+              navigate={navigate}
+            />
             {isAuthenticated ? (
               <>
-                <InsideHamburgerButton name={"Make a Request"} Logo={FaPlus} link={"/request"} navigate={navigate} />
-                <InsideHamburgerButton name={"Post a Sale"} Logo={FaPlus} link={"/sale"} navigate={navigate} />
-                <InsideHamburgerButton name={"Messages"} Logo={LuMessageCircle} link={"/chat"} navigate={navigate} />
-                <InsideHamburgerButton name={"Your Profile"} Logo={CgProfile} link={"/profile/frc/" + user.team_number} navigate={navigate} />
-                <InsideHamburgerButton name={"Log Out"} Logo={FaSignOutAlt} func={handleLogout} navigate={navigate} />
+                <InsideHamburgerButton
+                  name={"Make a Request"}
+                  Logo={FaPlus}
+                  link={"/request"}
+                  navigate={navigate}
+                />
+                <InsideHamburgerButton
+                  name={"Post a Sale"}
+                  Logo={FaPlus}
+                  link={"/sale"}
+                  navigate={navigate}
+                />
+                <InsideHamburgerButton
+                  name={"Messages"}
+                  Logo={LuMessageCircle}
+                  link={"/chat"}
+                  navigate={navigate}
+                />
+                <InsideHamburgerButton
+                  name={"Your Profile"}
+                  Logo={CgProfile}
+                  link={"/profile/frc/" + user.team_number}
+                  navigate={navigate}
+                />
+                <InsideHamburgerButton
+                  name={"Log Out"}
+                  Logo={FaSignOutAlt}
+                  func={handleLogout}
+                  navigate={navigate}
+                />
               </>
             ) : (
               <>
-                <InsideHamburgerButton name={"Sign In"} Logo={FaSignInAlt} link={"/login"} navigate={navigate} />
-                <InsideHamburgerButton name={"Register"} Logo={FaWpforms} link={"/signup"} navigate={navigate} />
+                <InsideHamburgerButton
+                  name={"Sign In"}
+                  Logo={FaSignInAlt}
+                  link={"/login"}
+                  navigate={navigate}
+                />
+                <InsideHamburgerButton
+                  name={"Register"}
+                  Logo={FaWpforms}
+                  link={"/signup"}
+                  navigate={navigate}
+                />
               </>
             )}
           </div>
