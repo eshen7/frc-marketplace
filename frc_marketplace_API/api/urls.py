@@ -29,6 +29,7 @@ from .views import (
     part_sale_views,
     dm_list_view,
     mark_messages_as_read,
+    edit_part,
 )
 
 urlpatterns = [
@@ -45,6 +46,7 @@ urlpatterns = [
     path("parts/id/<str:part_id>/", part_view, name="part_view"),
     path("parts/id/<str:part_id>/requests/", requests_by_part_view, name="part_requests_view"),
     path("parts/id/<str:part_id>/sales/", sales_by_part_view, name="part_sales_view"),
+    path('parts/id/<str:part_id>/edit/', edit_part, name='edit_part'),
     path(
         "requests/user/<str:team_number>/",
         requests_by_user_view,
