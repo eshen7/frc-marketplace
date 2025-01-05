@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 // Material UI imports
 import {
-  Box,
+  Autocomplete,
   Button,
   CircularProgress,
   FormControl,
@@ -95,7 +95,7 @@ const PartRequestForm = () => {
   };
 
   return (
-    <Box sx={{ minHeight: "100vh", display: "flex", flexDirection: "column" }}>
+    <div className="min-h-screen flex flex-col">
       {success && (
         <SuccessBanner
           message="Operation completed successfully!"
@@ -105,147 +105,123 @@ const PartRequestForm = () => {
       {error && <ErrorBanner message={error} onClose={() => setError("")} />}
 
       <TopBar />
+      <div className="w-screen flex-grow flex flex-col place-items-center bg-white relative">
+        {/* Form */}
+        <div className="flex flex-col justify-center place-items-center w-full sm:w-2/3 md:w-[55%] my-[40px] mx-[20px] sm:mx-[30px] bg-white py-10 sm:py-16 px-10">
+          <h1 className="text-5xl text-center mb-[40px] sm:mb-[80px] text-black font-semibold text-shadow-md">
+            Make a Request
+          </h1>
 
-      <Box sx={{ flexGrow: 1, maxWidth: 600, mx: "auto", px: 2, py: 4 }}>
-        <h1 className="text-7xl text-center mt-[80px] mb-[80px] font-paytone text-[#AE0000] font-extrabold text-shadow-md">
-          Make a Request
-        </h1>
-
-        <form onSubmit={handleSubmit}>
-          <FormControl fullWidth margin="normal">
-            <InputLabel id="part-select-label">Part</InputLabel>
-            <Select
-              labelId="part-select-label"
-              value={selectedPart || ""}
-              onChange={(e) => setSelectedPart(e.target.value)}
-              required
-              renderValue={(selected) => {
-                const selectedPartData = parts.find(
-                  (part) => part.id === selected
-                );
-                if (!selectedPartData) return <em>Select a part</em>;
-                return (
-                  <Box
-                    sx={{
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "space-between",
-                    }}
-                  >
-                    <span>
-                      {selectedPartData.name} -{" "}
-                      <em>{selectedPartData.manufacturer.name}</em>
-                    </span>
-                    {selectedPartData.image ? (
-                      <img
-                        src={selectedPartData.image}
-                        alt={selectedPartData.name}
-                        style={{ width: 30, height: 30, marginLeft: 10 }}
-                      />
-                    ) : (
-                      <img
-                        src="/IMG_6769.jpg"
-                        alt="IMG_6769.jpg"
-                        style={{ width: 30, height: 30, marginLeft: 10 }}
-                      />
-                    )}
-                  </Box>
-                );
-              }}
-            >
-              <MenuItem value="">
-                <em>Select a part</em>
-              </MenuItem>
-              {parts.map((part) => (
-                <MenuItem
-                  key={part.id}
-                  value={part.id}
-                  sx={{
-                    display: "flex",
-                    justifyContent: "space-between",
-                    alignItems: "center",
-                  }}
-                >
-                  <span>
-                    {part.name} - <em>{part.manufacturer.name}</em>
-                  </span>
-                  {part.image != null ? (
-                    <img
-                      src={part.image}
-                      alt={part.name}
-                      style={{ width: 30, height: 30, marginLeft: 10 }}
-                    />
-                  ) : (
-                    <img
-                      src="/IMG_6769.jpg"
-                      alt="IMG_6769.jpg"
-                      style={{ width: 30, height: 30, marginLeft: 10 }}
-                    />
-                  )}
-                </MenuItem>
-              ))}
-            </Select>
-          </FormControl>
-          <Button
-            variant="outlined"
-            color="primary"
-            fullWidth
-            sx={{ mt: 1, mb: 2 }}
-            onClick={() => setIsNewPartFormOpen(true)}
-          >
-            Create New Part
-          </Button>
-          <TextField
-            fullWidth
-            name="quantity"
-            margin="normal"
-            label="Quantity*"
-            value={formData.quantity}
-            onChange={handleInputChange}
-          />
-          <div className="grid grid-cols-1 gap-4 mt-4">
-            <LocalizationProvider dateAdapter={AdapterDateFns}>
-              <DatePicker
-                label="Need the part by"
-                value={dateNeeded}
-                onChange={setDateNeeded}
-                slotProps={{ textField: { fullWidth: true, required: true } }}
+          <form onSubmit={handleSubmit} className="w-full">
+            <FormControl fullWidth margin="normal">
+              <Autocomplete
+                id="part-select"
+                options={parts}
+                value={parts.find(part => part.id === selectedPart) || null}
+                onChange={(_, newValue) => {
+                  setSelectedPart(newValue ? newValue.id : '');
+                }}
+                getOptionLabel={(option) => `${option.name} - ${option.manufacturer.name}`}
+                renderOption={(props, option) => (
+                  <MenuItem {...props}>
+                    <div className="flex flex-row w-full items-center justify-between">
+                      <span>
+                        {option.name} - <em>{option.manufacturer.name}</em>
+                      </span>
+                      {option.image ? (
+                        <img
+                          src={option.image}
+                          alt={option.name}
+                          className="w-[30px] h-[30px] ml-[10px]"
+                        />
+                      ) : (
+                        <img
+                          src="/IMG_6769.jpg"
+                          alt="IMG_6769.jpg"
+                          className="w-[30px] h-[30px] ml-[10px]"
+                        />
+                      )}
+                    </div>
+                  </MenuItem>
+                )}
+                renderInput={(params) => (
+                  <TextField
+                    {...params}
+                    label="Part"
+                    required
+                  />
+                )}
+                isOptionEqualToValue={(option, value) => option.id === value.id}
+                noOptionsText="No parts found"
               />
-            </LocalizationProvider>
-          </div>
-          <TextField
-            fullWidth
-            name="additionalInfo"
-            label="Any other additional info"
-            multiline
-            rows={4}
-            value={formData.additionalInfo}
-            onChange={handleInputChange}
-            margin="normal"
-          />
-          <Button
-            type="submit"
-            variant="contained"
-            color="primary"
-            fullWidth
-            sx={{ mt: 2, mb: 4 }}
-            disabled={loading}
-          >
-            {loading ? <CircularProgress size={24} /> : "Submit Request"}
-          </Button>
-        </form>
+            </FormControl>
 
-        <NewPartForm
-          open={isNewPartFormOpen}
-          onClose={(newPart) => {
-            setIsNewPartFormOpen(false);
-            handleNewPartSuccess(newPart);
-          }}
-        />
-      </Box>
+            <button
+              className="w-full mt-1 mb-2 border border-blue-600 text-blue-600 hover:bg-blue-50 py-2 px-4 rounded"
+              onClick={() => setIsNewPartFormOpen(true)}
+            >
+              Create New Part
+            </button>
+
+            <TextField
+              fullWidth
+              name="quantity"
+              margin="normal"
+              label="Quantity*"
+              value={formData.quantity}
+              onChange={handleInputChange}
+            />
+
+            <div className="grid grid-cols-1 gap-4 mt-4">
+              <LocalizationProvider dateAdapter={AdapterDateFns}>
+                <DatePicker
+                  label="Need the part by"
+                  value={dateNeeded}
+                  onChange={setDateNeeded}
+                  disablePast
+                  slotProps={{
+                    textField: {
+                      fullWidth: true,
+                      required: true
+                    }
+                  }}
+                />
+              </LocalizationProvider>
+            </div>
+
+            <TextField
+              fullWidth
+              name="additionalInfo"
+              label="Any other additional info"
+              multiline
+              rows={4}
+              value={formData.additionalInfo}
+              onChange={handleInputChange}
+              margin="normal"
+            />
+
+            <button
+              type="submit"
+              className="w-full mt-2 mb-4 bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded disabled:opacity-50 disabled:cursor-not-allowed"
+              disabled={loading}
+            >
+              {loading ? <CircularProgress size={24} /> : "Submit Request"}
+            </button>
+          </form>
+
+          <NewPartForm
+            open={isNewPartFormOpen}
+            onClose={(newPart) => {
+              setIsNewPartFormOpen(false);
+              if (newPart) handleNewPartSuccess(newPart);
+            }}
+            onSubmit={handleNewPartSuccess}
+          />
+        </div>
+      </div>
 
       <Footer />
-    </Box>
+    </div>
   );
 };
 

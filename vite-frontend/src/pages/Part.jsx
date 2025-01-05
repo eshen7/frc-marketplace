@@ -4,78 +4,121 @@ import axiosInstance from "../utils/axiosInstance";
 import TopBar from "../components/TopBar";
 import Footer from "../components/Footer";
 import ItemCard from "../components/ItemCard";
-import { FaExternalLinkAlt } from "react-icons/fa";
 import { useUser } from "../contexts/UserContext";
+import {
+  Box,
+  Container,
+  Paper,
+  Typography,
+  Card,
+  CardMedia,
+  CardContent,
+  Button,
+  Grid,
+  Link,
+  CircularProgress,
+  Tabs,
+  Tab,
+  Alert,
+} from "@mui/material";
+import LaunchIcon from "@mui/icons-material/Launch";
 
 const PartDetailsComponent = ({ part }) => {
   return (
-    <div className="h-full bg-gray-100 flex flex-col p-4 min-w-[300px]">
-      <div className="flex flex-row justify-center">
-        {/* Part Details Section */}
-        <div className="bg-white shadow-lg rounded-lg w-full max-w-lg p-6 space-y-6">
-          {/* Part Image */}
-          <div className="flex items-center justify-center">
+    <Box sx={{ bgcolor: "grey.100", p: 2, minWidth: 300 }}>
+      <Container
+        maxWidth="lg"
+        sx={{ display: "flex", justifyContent: "center" }}
+      >
+        <Card sx={{ maxWidth: 600, width: "100%", p: 3 }}>
+          <Box sx={{ display: "flex", justifyContent: "center" }}>
             {part.image ? (
-              <img
-                src={part.image}
+              <CardMedia
+                component="img"
+                image={part.image}
                 alt={part.name}
-                className="w-full h-full object-cover rounded-lg shadow-md"
+                sx={{
+                  borderRadius: 1,
+                  boxShadow: 1,
+                  maxHeight: 400,
+                  objectFit: "cover",
+                }}
               />
             ) : (
-              <div className="w-full h-48 bg-gray-200 rounded-lg shadow-md flex items-center justify-center">
-                <span className="text-gray-500">No image available</span>
-              </div>
+              <Box
+                sx={{
+                  width: "100%",
+                  height: 200,
+                  bgcolor: "grey.200",
+                  borderRadius: 1,
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
+              >
+                <Typography color="text.secondary">
+                  No image available
+                </Typography>
+              </Box>
             )}
-          </div>
+          </Box>
 
-          {/* Part Details */}
-          <h1 className="text-3xl font-bold text-center text-gray-800">
+          <Typography
+            variant="h4"
+            component="h1"
+            sx={{ textAlign: "center", mt: 3, fontWeight: "bold" }}
+          >
             {part.name || "Unnamed Part"}
-          </h1>
+          </Typography>
 
-          <div className="bg-gray-200 p-4 rounded-lg">
-            <h2 className="text-xl font-semibold mb-2 text-gray-700">
+          <Paper sx={{ bgcolor: "grey.100", p: 2, mt: 3 }}>
+            <Typography variant="h6" sx={{ mb: 2 }}>
               Part Information
-            </h2>
-            <div className="space-y-2">
-              <p className="flex justify-between">
-                <span className="font-semibold text-gray-600">ID:</span>
-                <span className="text-gray-800">{part.model_id || "N/A"}</span>
-              </p>
-              <p className="flex justify-between">
-                <span className="font-semibold text-gray-600">Category:</span>
-                <span className="text-gray-800">
-                  {part.category.name || "Uncategorized"}
-                </span>
-              </p>
-              <p className="flex justify-between">
-                <span className="font-semibold text-gray-600">
+            </Typography>
+            <Box sx={{ display: "flex", flexDirection: "column", gap: 1 }}>
+              <Box sx={{ display: "flex", justifyContent: "space-between" }}>
+                <Typography variant="subtitle1" color="text.secondary">
+                  ID:
+                </Typography>
+                <Typography>{part.model_id || "N/A"}</Typography>
+              </Box>
+              <Box sx={{ display: "flex", justifyContent: "space-between" }}>
+                <Typography variant="subtitle1" color="text.secondary">
+                  Category:
+                </Typography>
+                <Typography>{part.category.name || "Uncategorized"}</Typography>
+              </Box>
+              <Box sx={{ display: "flex", justifyContent: "space-between" }}>
+                <Typography variant="subtitle1" color="text.secondary">
                   Manufacturer:
-                </span>
-                <span className="text-gray-800">
-                  {part.manufacturer.name || "Unknown"}
-                </span>
-              </p>
-            </div>
-          </div>
+                </Typography>
+                {part.manufacturer.website ?<Link href = {part.manufacturer.website}>{part.manufacturer.name}</Link>:<Typography>{part.manufacturer.name || "Unknown"}</Typography>}
+              </Box>
+              <Box sx={{ display: "flex", justifyContent: "space-between" }}>
+                <Typography variant="subtitle1" color="text.secondary">
+                  Link:
+                </Typography>
+                {part.link ? <Link href={part.link}>{part.link || "N/A"}</Link>: <Typography>N/A</Typography>}
+              </Box>
+            </Box>
+          </Paper>
 
-          {/* External Link */}
           {part.externalLink && (
-            <div className="flex justify-center mt-4">
-              <a
+            <Box sx={{ display: "flex", justifyContent: "center", mt: 2 }}>
+              <Button
+                variant="contained"
+                startIcon={<LaunchIcon />}
                 href={part.externalLink}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center px-4 py-2 bg-blue-500 text-white font-semibold rounded-lg hover:bg-blue-600 transition-colors duration-200"
               >
-                <FaExternalLinkAlt className="mr-2" />
                 View More Details
-              </a>
-            </div>
+              </Button>
+            </Box>
           )}
-        </div>
-      </div>
-    </div>
+        </Card>
+      </Container>
+    </Box>
   );
 };
 
@@ -143,73 +186,78 @@ const PartDetailsPage = () => {
   };
 
   return (
-    <div className="min-h-screen flex flex-col">
+    <Box sx={{ display: "flex", flexDirection: "column", minHeight: "100vh" }}>
       <TopBar />
-      <div className="flex-grow flex flex-col bg-gray-100 px-5">
-        <div>
-          {!error && part ? (
-            <PartDetailsComponent
-              part={part}
-            />
-          ) : loading ? (
-            <div className="flex justify-center items-center h-screen">
-              Loading...
-            </div>
-          ) : (
-            <div className="flex justify-center items-center h-screen text-red-500">
-              Error: {error}
-            </div>
-          )}
-        </div>
-        {/* Part Requests Section */}
-        <div className="flex-grow mx-6 mb-10">
-          <div className="flex flex-row justify-between">
-            <button className={`text-xl font-semibold text-gray-700 mb-4 py-2 px-4 rounded-md hover:bg-gray-300 ${onRequests ? "bg-gray-200" : ""}`} onClick={handleClickRequests}>
-              Part Requests
-            </button>
-            <button className={`text-xl font-semibold text-gray-700 mb-4 py-2 px-4 rounded-md hover:bg-gray-300 ${onRequests ? "" : "bg-gray-200"}`} onClick={handleClickSales}>
-              View Sales
-            </button>
-          </div>
-          {onRequests ? (
-            <div className="flex flex-col">
-              {requests.length > 0 ? (
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 min-w-[300px]">
-                  {requests.map((request) => (
-                    <ItemCard
-                      key={request.id}
-                      item={request}
-                      currentUser={user}
-                      type="request"
-                    />
-                  ))}
-                </div>
-              ) : (
-                <p className="text-gray-500">No requests found for this part.</p>
-              )}
-            </div>
-          ) : (
-            <div className="flex flex-col">
-              {sales.length > 0 ? (
-                <div className="flex flex-col sm:grid sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 min-w-[300px]">
-                  {sales.map((sale) => (
-                    <ItemCard
-                      key={sale.id}
-                      item={sale}
-                      currentUser={user}
-                      type="sale"
-                    />
-                  ))}
-                </div>
-              ) : (
-                <p className="text-gray-500">No sales found for this part.</p>
-              )}
-            </div>
-          )}
-        </div>
-      </div>
+      <Box sx={{ flexGrow: 1, bgcolor: "grey.100", px: 3 }}>
+        {!error && part ? (
+          <PartDetailsComponent part={part} />
+        ) : loading ? (
+          <Box
+            sx={{
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+              height: "100vh",
+            }}
+          >
+            <CircularProgress />
+          </Box>
+        ) : (
+          <Alert severity="error" sx={{ mt: 2 }}>
+            Error: {error}
+          </Alert>
+        )}
+
+        <Container maxWidth="lg" sx={{ mb: 5 }}>
+          <Box sx={{ borderBottom: 1, borderColor: "divider", mt: 4 }}>
+            <Tabs
+              value={onRequests ? 0 : 1}
+              onChange={(_, value) => setOnRequests(value === 0)}
+            >
+              <Tab label="Part Requests" />
+              <Tab label="View Sales" />
+            </Tabs>
+          </Box>
+
+          <Box sx={{ mt: 3 }}>
+            {onRequests ? (
+              <Grid container spacing={2}>
+                {requests.length > 0 ? (
+                  requests.map((request) => (
+                    <Grid item xs={12} sm={6} md={4} lg={3} key={request.id}>
+                      <ItemCard
+                        item={request}
+                        currentUser={user}
+                        type="request"
+                      />
+                    </Grid>
+                  ))
+                ) : (
+                  <Typography color="text.secondary">
+                    No requests found for this part.
+                  </Typography>
+                )}
+              </Grid>
+            ) : (
+              <Grid container spacing={2}>
+                {sales.length > 0 ? (
+                  sales.map((sale) => (
+                    <Grid item xs={12} sm={6} md={4} lg={3} key={sale.id}>
+                      <ItemCard item={sale} currentUser={user} type="sale" />
+                    </Grid>
+                  ))
+                ) : (
+                  <Typography color="text.secondary">
+                    No sales found for this part.
+                  </Typography>
+                )}
+              </Grid>
+            )}
+          </Box>
+        </Container>
+      </Box>
       <Footer />
-    </div>
+    </Box>
   );
 };
 

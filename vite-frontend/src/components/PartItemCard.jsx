@@ -1,6 +1,13 @@
 import React from "react";
 import PropTypes from "prop-types";
-import { Card, CardMedia, CardContent, Typography, Box } from "@mui/material";
+import {
+  Card,
+  CardMedia,
+  CardContent,
+  Typography,
+  Box,
+  Link,
+} from "@mui/material";
 
 const PartItemCard = ({ part }) => {
   return (
@@ -16,13 +23,15 @@ const PartItemCard = ({ part }) => {
         }}
       />
       <CardContent>
-        <Typography variant="h6" gutterBottom>
-          {part.name || "Part Name"}
-        </Typography>
+        <Link href={`/part/${part.id}`} sx={{ textDecoration: "none" }}>
+          <Typography variant="h6" gutterBottom>
+            {part.name || "Part Name"}
+          </Typography>
+        </Link>
 
         <Box sx={{ mb: 1.5 }}>
           <Typography variant="body2" color="text.secondary">
-            {part.category || "No Category"}
+            {part.category.name || "No Category"}
           </Typography>
         </Box>
         <Box sx={{ mb: 1.5 }}>
@@ -52,9 +61,10 @@ const PartItemCard = ({ part }) => {
 
 PartItemCard.propTypes = {
   part: PropTypes.shape({
-    id: PropTypes.number,
+    id: PropTypes.string,
     name: PropTypes.string,
-    category: PropTypes.string,
+    category: PropTypes.object,
+    manufacturer: PropTypes.object,
     weight: PropTypes.number,
     description: PropTypes.string,
     image: PropTypes.string,

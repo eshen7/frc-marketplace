@@ -38,7 +38,7 @@ export default function ViewSale() {
 
   const [editDropdownOpen, setEditDropdownOpen] = useState(false);
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
-  
+
   const [formData, setFormData] = useState({
     quantity: { val: 0, edited: false },
     ask_price: { val: 0, edited: false },
@@ -194,8 +194,8 @@ export default function ViewSale() {
           {sale && !error ? (
             <div className='px-5 sm:px-12 md:px-20'>
               {/* Main Content */}
-              <div className='grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-10'>
-                {/* Name & Description */}
+              <div className='grid grid-cols-1 md:grid-cols-2 gap-10'>
+                {/* Left Column - Scrollable Content */}
                 <div className='flex flex-col'>
                   <div className='flex flex-row'>
                     {/* Sale Creation Date */}
@@ -206,9 +206,9 @@ export default function ViewSale() {
 
                   {/* Part Name */}
                   <div className='flex flex-row justify-between place-items-center relative'>
-                    <h1 className='text-[30px] font-roboto'>
+                    <button onClick={() => navigate(`/part/${sale.part.id}`)} className='text-[30px] font-roboto hover:underline hover:cursor-pointer'>
                       {sale.part.name}
-                    </h1>
+                    </button>
                     {/* Edit Button */}
                     {isSaleOwner && (
                       <>
@@ -257,7 +257,7 @@ export default function ViewSale() {
                     )}
                   </div>
                   <h2 className='text-[20px]'>
-                    <a href={sale.part.manufacturer.website} target='_blank'>
+                    <a href={sale.part.link ? sale.part.link : sale.part.manufacturer.website} target='_blank'>
                       <span className='text-blue-600 hover:underline'>
                         {sale.part.manufacturer.name}
                       </span>
@@ -343,43 +343,98 @@ export default function ViewSale() {
                   </div>
                 </div>
 
-                {/* Image */}
-                <div className="relative" style={{ paddingTop: "100%" }}>
-                  {!imageLoaded && (
-                    <Skeleton
-                      variant="rectangular"
-                      sx={{
-                        position: "absolute",
-                        top: 0,
-                        left: 0,
-                        width: "100%",
-                        height: "100%",
+                {/* Right Column - Sticky Content */}
+                <div className='hidden md:block'>
+                  <div className='sticky top-8'>
+                    {/* Image Container with max height constraint */}
+                    <div className="relative w-full" style={{
+                      height: '100%',
+                      width: '100%'
+                    }}>
+                      {!imageLoaded && (
+                        <Skeleton
+                          variant="rectangular"
+                          sx={{
+                            width: '100%',
+                            height: '100%',
+                            minHeight: '400px'  // Minimum height while loading
+                          }}
+                          animation="wave"
+                        />
+                      )}
+                      <img
+                        src={sale.part.image}
+                        alt={sale.part.name}
+                        onLoad={handleImageLoad}
+                        onError={handleImageError}
+                        className="w-full h-full object-contain"
+                        style={{
+                          display: imageLoaded ? "block" : "none"
+                        }}
+                      />
+                    </div>
+
+                    {/* Profile Section */}
+                    <div className="mt-10">
+                      <ItemProfileSection
+                        user={sale.user}
+                        selfUser={user}
+                        isOwner={isSaleOwner}
+                        navigate={navigate}
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Mobile version of right column */}
+                <div className='md:hidden flex flex-col gap-10'>
+                  {/* Image */}
+                  <div className="relative w-full" style={{
+                    height: '400px'  // Fixed height for mobile
+                  }}>
+                    {!imageLoaded && (
+                      <Skeleton
+                        variant="rectangular"
+                        sx={{
+                          width: '100%',
+                          height: '100%'
+                        }}
+                        animation="wave"
+                      />
+                    )}
+                    <img
+                      src={sale.part.image}
+                      alt={sale.part.name}
+                      onLoad={handleImageLoad}
+                      onError={handleImageError}
+                      className="w-full h-full object-contain"
+                      style={{
+                        display: imageLoaded ? "block" : "none"
                       }}
-                      animation="wave"
                     />
-                  )}
-                  <img
-                    src={sale.part.image}
-                    alt={sale.part.name}
-                    onLoad={handleImageLoad}
-                    onError={handleImageError}
-                    className="absolute top-0 left-0 w-full h-full object-contain"
-                    style={{
-                      display: imageLoaded ? "block" : "none"
-                    }}
+                  </div>
+                  <ItemProfileSection
+                    user={sale.user}
+                    selfUser={user}
+                    isOwner={isSaleOwner}
+                    navigate={navigate}
                   />
                 </div>
 
-                <ItemProfileSection user={sale.user} selfUser={user} isOwner={isSaleOwner} navigate={navigate} />
-              </div>
 
+              </div>
               {/* Other Sales for the Same Part */}
-              {/* Part Sales Section */}
-              <div className="mt-10 relative">
+              <div className="mt-10 md:mt-20 w-full">
                 <h2 className="text-xl font-semibold text-gray-700 mb-4">
                   Sales for the same part
                 </h2>
-                <ItemScrollBar items={partSales} loadingItems={loadingPartSales} user={user} loadingUser={loadingUser} type="sale" />
+                <ItemScrollBar
+                  items={partSales}
+                  loadingItems={loadingPartSales}
+                  user={user}
+                  loadingUser={loadingUser}
+                  type="sale"
+                />
               </div>
             </div>
           ) : !error ? (

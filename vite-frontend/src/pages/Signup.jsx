@@ -19,6 +19,7 @@ const Signup = () => {
 
   const [passwordError, setPasswordError] = useState("");
   const [error, setError] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -80,16 +81,22 @@ const Signup = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setIsLoading(true);
+
     const emptyFields = Object.entries(formData).filter(([key, value]) => value === "");
 
     if (emptyFields.length > 1) {
       setError(`Please fill in all required fields: ${emptyFields
         .map(([key]) => key.replace(/_/g, " "))
         .join(", ")}`);
+      setIsLoading(false);
       return;
     }
 
-    if (passwordError) return;
+    if (passwordError) {
+      setIsLoading(false);
+      return;
+    }
 
     try {
       const response = await axiosInstance.post("/users/", formData);
@@ -112,6 +119,8 @@ const Signup = () => {
       } else {
         setError("Network error. Please check your connection and try again.");
       }
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -157,7 +166,6 @@ const Signup = () => {
           </div>
 
           {/* Right Side */}
-          {/* <div className="flex justify-center bg-white sm:bg-gradient-to-b from-white to-gray-900"> */}
           <div className="flex flex-col bg-white min-h-fit container justify-center w-full overflow-y-auto sm:h-fit sm:w-[640px] mx-auto py-16 rounded-sm">
             <div className="text-black font-semibold flex flex-row justify-center items-center">
               <img
@@ -243,10 +251,17 @@ const Signup = () => {
                 <div className="flex flex-col w-10/12 mx-auto justify-center">
                   <button
                     type="submit"
-                    className="w-full whitespace-nowrap bg-black text-white p-3 rounded-sm hover:bg-gray-900 hover:cursor-pointer disabled:bg-gray-400 disabled:cursor-not-allowed"
-                    disabled={!!passwordError || formData.full_name === "" || formData.email === "" || formData.team_number === "" || formData.address === "" || formData.phone === "" || formData.password === "" || formData.passwordConfirmation === ""}
+                    className="w-full whitespace-nowrap bg-black text-white p-3 rounded-sm hover:bg-gray-900 hover:cursor-pointer disabled:bg-gray-400 disabled:cursor-not-allowed relative"
+                    disabled={!!passwordError || formData.full_name === "" || formData.email === "" || formData.team_number === "" || formData.address === "" || formData.phone === "" || formData.password === "" || formData.passwordConfirmation === "" || isLoading}
                   >
-                    Sign Up
+                    {isLoading ? (
+                      <div className="flex items-center justify-center">
+                        <div className="animate-spin h-5 w-5 border-2 border-white border-t-transparent rounded-full mr-2" />
+                        <span>Signing up...</span>
+                      </div>
+                    ) : (
+                      "Sign Up"
+                    )}
                   </button>
                   <div className="text-center flex flex-row justify-center mt-4">
                     <p className="text-gray-500 mr-1">Already have an account?</p>
@@ -262,7 +277,6 @@ const Signup = () => {
               </div>
             </form>
           </div>
-          {/* </div> */}
         </div>
 
         <Footer />

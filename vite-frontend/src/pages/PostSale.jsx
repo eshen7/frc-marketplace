@@ -1,14 +1,12 @@
 import React, { useState, useEffect } from "react";
 import {
-  Box,
-  Button,
-  CircularProgress,
   FormControl,
   InputLabel,
   MenuItem,
   Select,
   TextField,
-  Typography,
+  CircularProgress,
+  Autocomplete,
 } from "@mui/material";
 import TopBar from "../components/TopBar";
 import Footer from "../components/Footer";
@@ -54,7 +52,6 @@ const PartSaleForm = () => {
 
   const handleSubmit = async (event) => {
     event.preventDefault();
-    console.log("part id", formData.partId);
     if (!formData.partId || !formData.condition) return;
 
     setLoading(true);
@@ -69,26 +66,23 @@ const PartSaleForm = () => {
         additional_info: formData.description,
       };
 
-      console.log("sale data", saleData);
-
       await axiosInstance.post("/sales/", saleData);
       setSuccess(true);
       setFormData(INITIAL_FORM_STATE);
     } catch (error) {
       setError("Failed to submit sale listing. Please try again.");
-      console.error("Error submitting sale listing:", error);
     } finally {
       setLoading(false);
     }
   };
 
-  const handleNewPartSuccess = (newPart) => {
-    fetchParts();
+  const handleNewPartSuccess = async (newPart) => {
+    await fetchParts();
     setFormData((prev) => ({ ...prev, partId: newPart.id }));
   };
 
   return (
-    <Box sx={{ minHeight: "100vh", display: "flex", flexDirection: "column" }}>
+    <div className="min-h-screen flex flex-col">
       {success && (
         <SuccessBanner
           message="Part listed for sale successfully!"
@@ -98,177 +92,146 @@ const PartSaleForm = () => {
       {error && <ErrorBanner message={error} onClose={() => setError("")} />}
 
       <TopBar />
+      <div className="w-screen flex-grow flex flex-col place-items-center bg-white relative">
+        {/* Form */}
+        <div className="flex flex-col justify-center place-items-center w-full sm:w-2/3 md:w-[55%] my-[40px] mx-[20px] sm:mx-[30px] bg-white py-10 sm:py-16 px-10">
+          <h1 className="text-5xl text-center mb-[40px] sm:mb-[80px] text-black font-semibold text-shadow-md">
+            Post a Sale
+          </h1>
 
-      <Box sx={{ flexGrow: 1, maxWidth: 600, mx: "auto", px: 2, py: 4 }}>
-        <Typography
-          variant="h1"
-          component="h1"
-          sx={{
-            fontSize: "4rem",
-            textAlign: "center",
-            mt: "80px",
-            mb: "80px",
-            fontFamily: "Paytone One, sans-serif",
-            color: "#AE0000",
-            fontWeight: 800,
-            textShadow: "2px 2px 4px rgba(0,0,0,0.1)",
-          }}
-        >
-          Post a Sale
-        </Typography>
+          <form onSubmit={handleSubmit} className="w-full">
+            <FormControl fullWidth margin="normal">
+              <Autocomplete
+                id="part-select"
+                options={parts}
+                value={parts.find(part => part.id === formData.partId) || null}
+                onChange={(_, newValue) => {
+                  handleInputChange({
+                    target: {
+                      name: 'partId',
+                      value: newValue ? newValue.id : ''
+                    }
+                  });
+                }}
+                getOptionLabel={(option) => `${option.name} - ${option.manufacturer.name}`}
+                renderOption={(props, option) => (
+                  <MenuItem {...props}>
+                    <div className="flex flex-row w-full items-center justify-between">
+                      <span>
+                        {option.name} - <em>{option.manufacturer.name}</em>
+                      </span>
+                      {option.image ? (
+                        <img
+                          src={option.image}
+                          alt={option.name}
+                          className="w-[30px] h-[30px] ml-[10px]"
+                        />
+                      ) : (
+                        <img
+                          src="/IMG_6769.jpg"
+                          alt="IMG_6769.jpg"
+                          className="w-[30px] h-[30px] ml-[10px]"
+                        />
+                      )}
+                    </div>
+                  </MenuItem>
+                )}
+                renderInput={(params) => (
+                  <TextField
+                    {...params}
+                    label="Part"
+                    required
+                  />
+                )}
+                isOptionEqualToValue={(option, value) => option.id === value.id}
+                noOptionsText="No parts found"
+              />
+            </FormControl>
 
-        <form onSubmit={handleSubmit}>
-          <FormControl fullWidth margin="normal">
-            <InputLabel id="part-select-label">Part</InputLabel>
-            <Select
-              labelId="part-select-label"
-              name="partId"
-              value={formData.partId}
+            <button
+              type="button"
+              className="w-full mt-1 mb-2 border border-blue-600 text-blue-600 hover:bg-blue-50 py-2 px-4 rounded"
+              onClick={() => setIsNewPartFormOpen(true)}
+            >
+              Create New Part
+            </button>
+
+            <TextField
+              fullWidth
+              name="quantity"
+              type="number"
+              margin="normal"
+              label="Quantity"
+              value={formData.quantity}
               onChange={handleInputChange}
               required
-              renderValue={(selected) => {
-                const selectedPartData = parts.find(
-                  (part) => part.id === selected
-                );
-                if (!selectedPartData) return <em>Select a part</em>;
-                return (
-                  <Box
-                    sx={{
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "space-between",
-                    }}
-                  >
-                    <span>
-                      {selectedPartData.name} -{" "}
-                      <em>{selectedPartData.manufacturer.name}</em>
-                    </span>
-                    {selectedPartData.image ? (
-                      <img
-                        src={selectedPartData.image}
-                        alt={selectedPartData.name}
-                        style={{ width: 30, height: 30, marginLeft: 10 }}
-                      />
-                    ) : (
-                      <img
-                        src="/IMG_6769.jpg"
-                        alt="IMG_6769.jpg"
-                        style={{ width: 30, height: 30, marginLeft: 10 }}
-                      />
-                    )}
-                  </Box>
-                );
-              }}
-            >
-              <MenuItem value="">
-                <em>Select a part</em>
-              </MenuItem>
-              {parts.map((part) => (
-                <MenuItem
-                  key={part.id}
-                  value={part.id}
-                  sx={{
-                    display: "flex",
-                    justifyContent: "space-between",
-                    alignItems: "center",
-                  }}
-                >
-                  <span>
-                    {part.name} - <em>{part.manufacturer.name}</em>
-                  </span>
-                  {part.image != null ? (
-                    <img
-                      src={part.image}
-                      alt={part.name}
-                      style={{ width: 30, height: 30, marginLeft: 10 }}
-                    />
-                  ) : (
-                    <img
-                      src="/IMG_6769.jpg"
-                      alt="IMG_6769.jpg"
-                      style={{ width: 30, height: 30, marginLeft: 10 }}
-                    />
-                  )}
-                </MenuItem>
-              ))}
-            </Select>
-          </FormControl>
-          <Button
-            variant="outlined"
-            color="primary"
-            fullWidth
-            sx={{ mt: 1, mb: 2 }}
-            onClick={() => setIsNewPartFormOpen(true)}
-          >
-            Create New Part
-          </Button>
-          <TextField
-            fullWidth
-            name="quantity"
-            type="number"
-            margin="normal"
-            label="Quantity"
-            value={formData.quantity}
-            onChange={handleInputChange}
-            required
-          />
-          <TextField
-            fullWidth
-            name="price"
-            type="number"
-            margin="normal"
-            label="Desired Price Per Unit"
-            value={formData.price}
-            onChange={handleInputChange}
-          />
-          <FormControl fullWidth margin="normal">
-            <InputLabel id="condition-select-label">Condition*</InputLabel>
-            <Select
-              labelId="condition-select-label"
-              name="condition"
-              value={formData.condition}
+            />
+
+            <TextField
+              fullWidth
+              name="price"
+              type="number"
+              margin="normal"
+              label="Desired Price Per Unit"
+              value={formData.price}
               onChange={handleInputChange}
               required
-            >
-              <MenuItem value="new">New</MenuItem>
-              <MenuItem value="like-new">Like New</MenuItem>
-              <MenuItem value="good">Good</MenuItem>
-              <MenuItem value="fair">Fair</MenuItem>
-              <MenuItem value="poor">Poor</MenuItem>
-            </Select>
-          </FormControl>
-          <TextField
-            fullWidth
-            name="description"
-            label="Additional Info"
-            multiline
-            rows={4}
-            value={formData.description}
-            onChange={handleInputChange}
-            margin="normal"
-          />
-          <Button
-            type="submit"
-            variant="contained"
-            color="primary"
-            fullWidth
-            sx={{ mt: 2, mb: 4 }}
-            disabled={loading}
-          >
-            {loading ? <CircularProgress size={24} /> : "List Part for Sale"}
-          </Button>
-        </form>
+            />
 
-        <NewPartForm
-          open={isNewPartFormOpen}
-          onClose={() => setIsNewPartFormOpen(false)}
-          onSuccess={handleNewPartSuccess}
-          loading={loading}
-        />
-      </Box>
+            <FormControl fullWidth margin="normal">
+              <InputLabel id="condition-select-label">Condition *</InputLabel>
+              <Select
+                labelId="condition-select-label"
+                name="condition"
+                value={formData.condition}
+                onChange={handleInputChange}
+                required
+              >
+                <MenuItem value="new">New</MenuItem>
+                <MenuItem value="like-new">Like New</MenuItem>
+                <MenuItem value="good">Good</MenuItem>
+                <MenuItem value="fair">Fair</MenuItem>
+                <MenuItem value="poor">Poor</MenuItem>
+              </Select>
+            </FormControl>
+
+            <TextField
+              fullWidth
+              name="description"
+              label="Additional Info"
+              multiline
+              rows={4}
+              value={formData.description}
+              onChange={handleInputChange}
+              margin="normal"
+            />
+
+            <button
+              type="submit"
+              className="w-full mt-2 mb-4 bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded disabled:opacity-50 disabled:cursor-not-allowed"
+              disabled={loading}
+            >
+              {loading ? (
+                <CircularProgress size={24} className="text-white" />
+              ) : (
+                "List Part for Sale"
+              )}
+            </button>
+          </form>
+
+          <NewPartForm
+            open={isNewPartFormOpen}
+            onClose={(newPart) => {
+              setIsNewPartFormOpen(false);
+              if (newPart) handleNewPartSuccess(newPart);
+            }}
+            onSubmit={handleNewPartSuccess}
+          />
+        </div>
+      </div>
 
       <Footer />
-    </Box>
+    </div>
   );
 };
 

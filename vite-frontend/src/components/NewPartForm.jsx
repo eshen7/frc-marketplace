@@ -17,6 +17,7 @@ import {
   Typography,
   Stack,
   IconButton,
+  Autocomplete,
 } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
 import axiosInstance from "../utils/axiosInstance";
@@ -37,6 +38,7 @@ const NewPartForm = ({ open, onClose }) => {
     partID: "",
     description: "",
     imageFile: null,
+    part_link: "",
   });
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState("");
@@ -132,6 +134,7 @@ const NewPartForm = ({ open, onClose }) => {
       formData.append("model_id", partData.partID);
       formData.append("description", partData.description);
       formData.append("image", partData.imageFile);
+      formData.append("link", partData.part_link);
 
       const response = await axiosInstance.post("parts/", formData, {
         headers: {
@@ -147,6 +150,7 @@ const NewPartForm = ({ open, onClose }) => {
         manufacturer_id: "",
         partID: "",
         imageFile: null,
+        part_link: "",
       });
       setPreview(null);
       onClose(response.data);
@@ -178,11 +182,16 @@ const NewPartForm = ({ open, onClose }) => {
   };
 
   const isFormValid = () => {
-    return partData.name && partData.category_id; // Require both name and category
+    return (
+      partData.name &&
+      partData.category_id &&
+      partData.manufacturer_id &&
+      partData.imageFile
+    );
   };
 
   return (
-    <Box sx={{ minHeight: "100vh", display: "flex", flexDirection: "column" }}>
+    <div className={`${open ? "block" : "hidden"} min-h-screen flex flex-col`}>
       {success && (
         <SuccessBanner
           message="Part created successfully!"
@@ -200,30 +209,51 @@ const NewPartForm = ({ open, onClose }) => {
             label="Part Name"
             fullWidth
             required
-            error={!partData.name}
             value={partData.name}
             onChange={handleChange("name")}
           />
-          <FormControl fullWidth margin="dense">
-            <InputLabel required>Manufacturer</InputLabel>
-            <Select
-              value={partData.manufacturer_id || ""}
-              label="Manufacturer"
-              onChange={handleChange("manufacturer_id")}
-            >
-              <MenuItem value="">
-                <em>Select a manufacturer</em>
+          <Autocomplete
+            fullWidth
+            options={["create", ...manufacturers]}
+            value={
+              manufacturers.find((m) => m.id === partData.manufacturer_id) ||
+              null
+            }
+            onChange={(_, newValue) => {
+              if (newValue === "create") {
+                setManufacturerDialogOpen(true);
+              } else {
+                handleChange("manufacturer_id")({
+                  target: {
+                    value: newValue ? newValue.id : "",
+                  },
+                });
+              }
+            }}
+            getOptionLabel={(option) => {
+              if (option === "create") return "➕ ADD NEW MANUFACTURER";
+              return option.name;
+            }}
+            renderOption={(props, option) => (
+              <MenuItem {...props}>
+                {option === "create" ? (
+                  <span className="text-blue-600 font-medium">
+                    ➕ ADD NEW MANUFACTURER
+                  </span>
+                ) : (
+                  option.name
+                )}
               </MenuItem>
-              {manufacturers.map((manufacturer) => (
-                <MenuItem key={manufacturer.id} value={manufacturer.id}>
-                  {manufacturer.name}
-                </MenuItem>
-              ))}
-              <MenuItem value="create">
-                <em>ADD NEW MANUFACTURER +</em>
-              </MenuItem>
-            </Select>
-          </FormControl>
+            )}
+            renderInput={(params) => (
+              <TextField {...params} label="Manufacturer *" margin="dense" />
+            )}
+            isOptionEqualToValue={(option, value) => {
+              if (!option || !value) return false;
+              if (option === "create") return value === "create";
+              return option.id === value.id;
+            }}
+          />
           <TextField
             margin="dense"
             label="Part ID"
@@ -231,27 +261,55 @@ const NewPartForm = ({ open, onClose }) => {
             value={partData.partID}
             onChange={handleChange("partID")}
           />
-          <FormControl fullWidth margin="dense" required>
-            <InputLabel>Category</InputLabel>
-            <Select
-              value={partData.category_id || ""}
-              label="Category *"
-              onChange={handleChange("category_id")}
-              error={!partData.category_id}
-            >
-              <MenuItem value="">
-                <em>Select a category</em>
+          <TextField
+            margin="dense"
+            label="Part Link"
+            fullWidth
+            placeholder="https://..."
+            value={partData.part_link}
+            onChange={handleChange("part_link")}
+          />
+          <Autocomplete
+            fullWidth
+            options={["create", ...categories]}
+            value={
+              categories.find((c) => c.id === partData.category_id) || null
+            }
+            onChange={(_, newValue) => {
+              if (newValue === "create") {
+                setCategoryDialogOpen(true);
+              } else {
+                handleChange("category_id")({
+                  target: {
+                    value: newValue ? newValue.id : "",
+                  },
+                });
+              }
+            }}
+            getOptionLabel={(option) => {
+              if (option === "create") return "➕ ADD NEW CATEGORY";
+              return option.name;
+            }}
+            renderOption={(props, option) => (
+              <MenuItem {...props}>
+                {option === "create" ? (
+                  <span className="text-blue-600 font-medium">
+                    ➕ ADD NEW CATEGORY
+                  </span>
+                ) : (
+                  option.name
+                )}
               </MenuItem>
-              {categories.map((category) => (
-                <MenuItem key={category.id} value={category.id}>
-                  {category.name}
-                </MenuItem>
-              ))}
-              <MenuItem value="create">
-                <em>ADD NEW CATEGORY +</em>
-              </MenuItem>
-            </Select>
-          </FormControl>
+            )}
+            renderInput={(params) => (
+              <TextField {...params} label="Category *" margin="dense" />
+            )}
+            isOptionEqualToValue={(option, value) => {
+              if (!option || !value) return false;
+              if (option === "create") return value === "create";
+              return option.id === value.id;
+            }}
+          />
           {/* top margin of 1 */}
           <Box sx={{ mt: 1 }}>
             <div
@@ -328,7 +386,7 @@ const NewPartForm = ({ open, onClose }) => {
         onSuccess={handleCategorySuccess}
         loading={loading}
       />
-    </Box>
+    </div>
   );
 };
 
