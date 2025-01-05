@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
-import { FaSearch } from "react-icons/fa";
+import { SearchRounded } from "@mui/icons-material";
+import { TextField, Paper, List, ListItem, ListSubheader, Box, Avatar, Typography } from "@mui/material";
 import Fuse from "fuse.js";
 import axiosInstance from "../utils/axiosInstance";
 import { useNavigate } from "react-router-dom";
@@ -110,35 +111,35 @@ const SearchBar = () => {
     switch (item.type) {
       case "team":
         return (
-          <div className="flex items-center space-x-2">
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
             <ProfilePhoto
               src={item.profile_photo}
               teamNumber={item.team_number}
               alt={"Team Logo"}
-              className="w-6 h-6 rounded-full"
+              sx={{ width: 24, height: 24, borderRadius: '50%' }}
             />
-            <div className="flex flex-col">
-              <div className="font-medium">
+            <Box>
+              <Typography variant="body1">
                 Team {item.team_number} | {item.team_name}
-              </div>
-            </div>
-          </div>
+              </Typography>
+            </Box>
+          </Box>
         );
       case "part":
         return (
-          <div className="flex items-center space-x-2">
-            <img
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <Avatar
               src={item.image != undefined ? item.image : "/IMG_6769.jpg"}
               alt="Part Photo"
-              className="w-6 h-6 rounded-full"
+              sx={{ width: 24, height: 24 }}
             />
-            <div className="flex flex-col">
-              <div className="font-medium">{item.name}</div>
-            </div>
-          </div>
+            <Box>
+              <Typography variant="body1">{item.name}</Typography>
+            </Box>
+          </Box>
         );
       default:
-        return <div>Unknown Result Type</div>;
+        return <Typography>Unknown Result Type</Typography>;
     }
   };
 
@@ -153,43 +154,61 @@ const SearchBar = () => {
   };
 
   return (
-    <div className="relative" ref={searchRef}>
-      <div className="relative">
-        <input
-          type="text"
-          value={searchTerm}
-          onChange={(e) => handleSearch(e.target.value)}
-          placeholder="Search everything..."
-          className="w-full px-4 py-2 text-gray-700 bg-white border rounded-lg focus:outline-none focus:border-red-500"
-        />
-        <FaSearch className="absolute right-3 top-3 text-gray-400" />
-      </div>
+    <Box ref={searchRef} sx={{ position: 'relative' }}>
+      <TextField
+        fullWidth
+        value={searchTerm}
+        onChange={(e) => handleSearch(e.target.value)}
+        placeholder="Search everything..."
+        variant="outlined"
+        size="small"
+        InputProps={{
+          endAdornment: <SearchRounded sx={{ color: 'text.secondary' }} />
+        }}
+        sx={{ bgcolor: 'white',borderRadius:2 }}
+      />
 
       {showDropdown && searchResults.length > 0 && (
-        <div className="absolute z-50 w-full mt-1 bg-white border rounded-lg shadow-lg max-h-96 overflow-y-auto">
-          {Object.entries(groupResultsByType(searchResults)).map(
-            ([type, results]) => (
-              <div key={type}>
-                <div className="px-3 py-2 font-semibold text-gray-600 bg-gray-100">
-                  {type.charAt(0).toUpperCase() + type.slice(1)}s
-                </div>
-                {results.map((result, index) => (
-                  <div
-                    key={`${result.type}-${
-                      result.id || result.team_number
-                    }-${index}`}
-                    onClick={() => handleResultClick(result)}
-                    className="px-3 py-2 hover:bg-gray-100 cursor-pointer rounded"
-                  >
-                    {renderResultItem(result)}
-                  </div>
-                ))}
-              </div>
-            )
-          )}
-        </div>
+        <Paper
+          elevation={3}
+          sx={{
+            position: 'absolute',
+            width: '100%',
+            mt: 1,
+            maxHeight: '24rem',
+            overflow: 'auto',
+            zIndex: 1000
+          }}
+        >
+          {Object.entries(groupResultsByType(searchResults)).map(([type, results]) => (
+            <List key={type} sx={{ p: 0 }}>
+              <ListSubheader
+                sx={{
+                  bgcolor: 'grey.100',
+                  lineHeight: '2rem'
+                }}
+              >
+                {type.charAt(0).toUpperCase() + type.slice(1)}s
+              </ListSubheader>
+              {results.map((result, index) => (
+                <ListItem
+                  key={`${result.type}-${result.id || result.team_number}-${index}`}
+                  onClick={() => handleResultClick(result)}
+                  sx={{
+                    cursor: 'pointer',
+                    '&:hover': {
+                      bgcolor: 'grey.100'
+                    }
+                  }}
+                >
+                  {renderResultItem(result)}
+                </ListItem>
+              ))}
+            </List>
+          ))}
+        </Paper>
       )}
-    </div>
+    </Box>
   );
 };
 

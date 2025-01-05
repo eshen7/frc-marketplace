@@ -92,13 +92,13 @@ const PartDetailsComponent = ({ part }) => {
                 <Typography variant="subtitle1" color="text.secondary">
                   Manufacturer:
                 </Typography>
-                <Typography>{part.manufacturer.name || "Unknown"}</Typography>
+                {part.manufacturer.website ?<Link href = {part.manufacturer.website}>{part.manufacturer.name}</Link>:<Typography>{part.manufacturer.name || "Unknown"}</Typography>}
               </Box>
               <Box sx={{ display: "flex", justifyContent: "space-between" }}>
                 <Typography variant="subtitle1" color="text.secondary">
                   Link:
                 </Typography>
-                <Link href={part.link}>{part.link || "N/A"}</Link>
+                {part.link ? <Link href={part.link}>{part.link || "N/A"}</Link>: <Typography>N/A</Typography>}
               </Box>
             </Box>
           </Paper>
