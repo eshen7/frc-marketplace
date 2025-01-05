@@ -197,7 +197,7 @@ const TopBar = () => {
 
           {/* Profile Dropdown */}
           {profileDropdownIsOpen && (
-            <div className="absolute top-[48px] right-[0px] bg-gray-100 whitespace-nowrap z-50 rounded-lg px-1 border border-gray-300 shadow-sm">
+            <div className="fixed top-[60px] right-[16px] bg-gray-100 whitespace-nowrap z-[100] rounded-lg px-1 border border-gray-300 shadow-lg">
               {isAuthenticated && user ? (
                 <>
                   <DropdownButton
