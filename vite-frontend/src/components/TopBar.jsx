@@ -105,7 +105,7 @@ const TopBar = () => {
   };
 
   return (
-    <div className="top-bar bg-black w-screen border-b border-white max-w-none mx-auto px-2 sm:px-4 lg:px-6 flex flex-row place-items-center justify-between py-3">
+    <div className="top-bar bg-black w-full border-b border-white max-w-[100vw] mx-auto px-2 sm:px-4 lg:px-6 flex flex-row place-items-center justify-between py-3 overflow-x-hidden">
       {/* Left Buttons */}
       <div className="flex flex-row">
         {/* Logo */}
