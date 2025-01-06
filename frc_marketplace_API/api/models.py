@@ -6,9 +6,31 @@ from django.db import models
 from phone_field import PhoneField
 from address.models import AddressField, Address, Locality
 import logging
+import os
+from django.core.exceptions import ValidationError
 
 # Default address for superusers
 DEFAULT_ADDRESS = {"raw": "1001 Avenida De Las Americas, Houston, TX 77010"}
+
+
+def validate_image_file(value):
+    # 5MB limit
+    max_size = 5 * 1024 * 1024
+    if value.size > max_size:
+        raise ValidationError("File size must be no more than 5MB.")
+
+    # Check file extension
+    ext = os.path.splitext(value.name)[1].lower()
+    valid_extensions = [".jpg", ".jpeg", ".png", ".gif", ".webp"]
+    if ext not in valid_extensions:
+        raise ValidationError(
+            "Unsupported file extension. Use jpg, jpeg, png, webp, or gif."
+        )
+
+
+def part_image_path(instance, filename):
+    """Generate file path for part image."""
+    return f"parts/{instance.manufacturer.name}/{instance.category.name}/{filename}"
 
 
 class UserManager(BaseUserManager):
@@ -23,6 +45,9 @@ class UserManager(BaseUserManager):
         user = self.model(email=email, **extra_fields)
         user.set_password(password)
 
+        if "team_number" in extra_fields and extra_fields["team_number"] is not None:
+            user.profile_photo = f"https://www.thebluealliance.com/avatar/2025/frc{extra_fields['team_number']}.png"
+
         user.save(using=self._db)
         return user
 
@@ -31,11 +56,6 @@ class UserManager(BaseUserManager):
 
         extra_fields.setdefault("is_staff", True)
         extra_fields.setdefault("is_superuser", True)
-
-        # Set the default address (superuser only)
-        extra_fields.setdefault(
-            "address", Address.objects.get_or_create(DEFAULT_ADDRESS)
-        )
 
         return self.create_user(email, password, **extra_fields)
 
@@ -47,12 +67,13 @@ class User(AbstractBaseUser, PermissionsMixin):
     email = models.EmailField(unique=True)
     team_name = models.CharField(max_length=255, null=True, blank=True)
     team_number = models.IntegerField(unique=True, null=True, blank=True)
+    profile_photo = models.URLField(unique=True, null=True, blank=True)
     phone = PhoneField(unique=True, null=True, blank=True)
     address = AddressField(on_delete=models.SET_NULL, null=True, blank=True)
     password = models.CharField(max_length=128)  # Store hashed password
 
-    UUID = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    is_active = models.BooleanField(default=True)
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    is_active = models.BooleanField(default=False)  # Manual user auth
     is_staff = models.BooleanField(default=False)  # Default user is not staff
     is_superuser = models.BooleanField(default=False)  # Default user is not superuser
     date_joined = models.DateTimeField(auto_now_add=True)
@@ -73,21 +94,37 @@ class User(AbstractBaseUser, PermissionsMixin):
 class Part(models.Model):
     """Part Model."""
 
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     name = models.CharField(max_length=255, null=False, blank=False)
     model_id = models.CharField(max_length=255, null=True, blank=True)
     description = models.CharField(null=True, blank=True)
-    picture = models.ImageField(upload_to="parts/", null=True, blank=True)
     category = models.ForeignKey(
         "PartCategory", on_delete=models.PROTECT, related_name="parts", null=True
     )
     manufacturer = models.ForeignKey(
         "PartManufacturer", on_delete=models.PROTECT, related_name="parts", null=True
     )
+    image = models.ImageField(
+        upload_to=part_image_path,
+        null=True,
+        blank=True,
+        validators=[validate_image_file],
+    )
+    link = models.URLField(null=True, blank=True)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=["name", "manufacturer"],
+                name="unique_part",
+            )
+        ]
 
 
 class PartManufacturer(models.Model):
     """Part Manufacturer Model."""
 
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     name = models.CharField(max_length=255, unique=True)
     website = models.URLField(null=True, blank=True)
 
@@ -95,12 +132,14 @@ class PartManufacturer(models.Model):
 class PartCategory(models.Model):
     """Part Category Model."""
 
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     name = models.CharField(max_length=255, unique=True)
 
 
 class PartRequest(models.Model):
     """Part Request Model."""
 
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     part = models.ForeignKey(Part, on_delete=models.PROTECT, related_name="requests")
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="requests")
     quantity = models.IntegerField(default=1)
@@ -108,20 +147,35 @@ class PartRequest(models.Model):
     needed_date = models.DateField(null=True, blank=True)
     needed_for = models.CharField(max_length=255, null=True, blank=True)
     additional_info = models.TextField(null=True, blank=True)
+    bid_price = models.DecimalField(
+        max_digits=10, decimal_places=2, null=True, blank=True
+    )  # -1 if they are willing to trade, 0 for donation
+    # is_open = models.BooleanField(default=True) ADD IN V2
 
+class PartSale(models.Model):
+    """Part Sale Model."""
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    part = models.ForeignKey(Part, on_delete=models.PROTECT, related_name="sales")
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="sales")
+    quantity = models.IntegerField(default=1)
+    sale_creation_date = models.DateField(auto_now_add=True)
+    ask_price = models.DecimalField(
+        max_digits=10, decimal_places=2
+    )  # -1 if trade, 0 for FREE
+    additional_info = models.TextField(null=True, blank=True)
+    condition = models.CharField(max_length=255, null=True, blank=True)
+    # is_listed = models.BooleanField(default=True) ADD IN V2
 
 class Message(models.Model):
     """Message Model."""
 
-    id = models.UUIDField(primary_key=True, unique=True)
-    sender = models.ForeignKey(
-        User, related_name="sent_messages", on_delete=models.CASCADE
-    )
-    receiver = models.ForeignKey(
-        User, related_name="received_messages", on_delete=models.CASCADE
-    )
+    id = models.UUIDField(primary_key=True, unique=True,default=uuid.uuid4, editable=False)
+    sender = models.ForeignKey(User, related_name="sent_messages", on_delete=models.CASCADE)
+    receiver = models.ForeignKey(User, related_name="received_messages", on_delete=models.CASCADE)
     message = models.TextField()
     timestamp = models.DateTimeField(auto_now_add=True)
+    is_read = models.BooleanField(default=False)
 
     def __str__(self):
         return f"{self.sender} to {self.receiver}: {self.message}"

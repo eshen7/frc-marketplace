@@ -1,6 +1,6 @@
-/** @type {import('tailwindcss').Config} */
-import textShadow from 'tailwindcss-textshadow'
+import textShadow from 'tailwindcss-textshadow';
 
+/** @type {import('tailwindcss').Config} */
 export default {
   content: [
     "./index.html",

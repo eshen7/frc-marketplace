@@ -27,12 +27,12 @@ const axiosInstance = axios.create({
 axiosInstance.interceptors.request.use(
   (config) => {
     const csrfToken = getCookie("csrftoken");
-    const userUUID = getCookie("user_uuid");
+    const userID = getCookie("user_id");
     if (csrfToken) {
       config.headers["X-CSRFToken"] = csrfToken;
     }
-    if (userUUID) {
-      config.headers["X-User-UUID"] = userUUID;
+    if (userID) {
+      config.headers["X-User-ID"] = userID;
     }
     return config;
   },

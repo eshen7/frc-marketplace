@@ -1,8 +1,11 @@
 import React, { useState, useEffect, useRef } from "react";
-import { FaSearch } from "react-icons/fa";
+import { SearchRounded } from "@mui/icons-material";
+import { TextField, Paper, List, ListItem, ListSubheader, Box, Avatar, Typography } from "@mui/material";
 import Fuse from "fuse.js";
 import axiosInstance from "../utils/axiosInstance";
 import { useNavigate } from "react-router-dom";
+import ProfilePhoto from "./ProfilePhoto";
+import { useData } from '../contexts/DataContext';
 
 const SearchBar = () => {
   const [searchTerm, setSearchTerm] = useState("");
@@ -13,32 +16,36 @@ const SearchBar = () => {
   const fuseRef = useRef(null);
   const navigate = useNavigate();
 
-  // Configure Fuse options for fuzzy search
+  const { users, parts, requests, sales, loadingStates } = useData();
+
   const fuseOptions = {
     threshold: 0.3,
     keys: [
+      { name: "team_name", weight: 2 },
       { name: "team_number", weight: 2 },
-      { name: "part_name", weight: 2 },
+      { name: "name", weight: 2 },
     ],
     includeScore: true,
     shouldSort: true,
   };
 
   useEffect(() => {
-    const fetchSearchData = async () => {
-      try {
-        const response = await axiosInstance.get("/search/all/");
-        const searchData = response.data;
+    const processSearchData = () => {
+      const processedSearchData = [
+        ...users.map((user) => ({ ...user, type: "team" })),
+        ...parts.map((part) => ({ ...part, type: "part" })),
+        ...requests.map((request) => ({ ...request, type: "request" })),
+        ...sales.map((sale) => ({ ...sale, type: "sale" })),
+      ];
 
-        // Initialize Fuse with all searchable data
-        fuseRef.current = new Fuse(searchData, fuseOptions);
-      } catch (error) {
-        console.error("Error fetching search data:", error);
-      }
+      //console.log("processed search data", processedSearchData);
+      fuseRef.current = new Fuse(processedSearchData, fuseOptions);
     };
 
-    fetchSearchData();
-  }, []);
+    if (!Object.values(loadingStates).some(state => state)) {
+      processSearchData();
+    }
+  }, [users, parts, requests, sales, loadingStates]);
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -62,11 +69,11 @@ const SearchBar = () => {
     if (fuseRef.current) {
       const results = fuseRef.current
         .search(value)
-        .slice(0, 8) // Limit to top 8 results
+        .slice(0, 8)
         .map((result) => ({
           ...result.item,
           score: result.score,
-          type: determineResultType(result.item),
+          type: result.item.type,
         }));
 
       setSearchResults(results);
@@ -76,7 +83,7 @@ const SearchBar = () => {
 
   const determineResultType = (item) => {
     if (item.team_number) return "team";
-    if (item.part_name) return "request";
+    if (item.part.name) return "request";
     return "unknown";
   };
 
@@ -85,8 +92,8 @@ const SearchBar = () => {
       case "team":
         navigate(`/profile/frc/${item.team_number}`);
         break;
-      case "request":
-        navigate(`/requests/${item.id}`);
+      case "part":
+        navigate(`/part/${item.id}`);
         break;
       default:
         console.warn("Unknown result type:", item);
@@ -99,52 +106,104 @@ const SearchBar = () => {
     switch (item.type) {
       case "team":
         return (
-          <div className="flex flex-col">
-            <div className="font-medium">Team {item.team_number}</div>
-            <div className="text-sm text-gray-500">{item.location}</div>
-          </div>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <ProfilePhoto
+              src={item.profile_photo}
+              teamNumber={item.team_number}
+              alt={"Team Logo"}
+              sx={{ width: 24, height: 24, borderRadius: '50%' }}
+            />
+            <Box>
+              <Typography variant="body1">
+                Team {item.team_number} | {item.team_name}
+              </Typography>
+            </Box>
+          </Box>
         );
-      case "request":
+      case "part":
         return (
-          <div className="flex flex-col">
-            <div className="font-medium">{item.part_name}</div>
-            <div className="text-sm text-gray-500">
-              Team {item.user?.team_number}
-            </div>
-          </div>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <Avatar
+              src={item.image != undefined ? item.image : "/IMG_6769.jpg"}
+              alt="Part Photo"
+              sx={{ width: 24, height: 24 }}
+            />
+            <Box>
+              <Typography variant="body1">{item.name}</Typography>
+            </Box>
+          </Box>
         );
       default:
-        return <div>Unknown Result Type</div>;
+        return <Typography>Unknown Result Type</Typography>;
     }
   };
 
+  const groupResultsByType = (results) => {
+    return results.reduce((acc, result) => {
+      if (!acc[result.type]) {
+        acc[result.type] = [];
+      }
+      acc[result.type].push(result);
+      return acc;
+    }, {});
+  };
+
   return (
-    <div className="relative w-64" ref={searchRef}>
-      <div className="relative">
-        <input
-          type="text"
-          value={searchTerm}
-          onChange={(e) => handleSearch(e.target.value)}
-          placeholder="Search everything..."
-          className="w-full px-4 py-2 text-gray-700 bg-white border rounded-lg focus:outline-none focus:border-red-500"
-        />
-        <FaSearch className="absolute right-3 top-3 text-gray-400" />
-      </div>
+    <Box ref={searchRef} sx={{ position: 'relative' }}>
+      <TextField
+        fullWidth
+        value={searchTerm}
+        onChange={(e) => handleSearch(e.target.value)}
+        placeholder="Search everything..."
+        variant="outlined"
+        size="small"
+        InputProps={{
+          endAdornment: <SearchRounded sx={{ color: 'text.secondary' }} />
+        }}
+        sx={{ bgcolor: 'white',borderRadius:2 }}
+      />
 
       {showDropdown && searchResults.length > 0 && (
-        <div className="absolute z-50 w-full mt-1 bg-white border rounded-lg shadow-lg max-h-96 overflow-y-auto">
-          {searchResults.map((result, index) => (
-            <div
-              key={`${result.type}-${result.id || result.team_number}-${index}`}
-              onClick={() => handleResultClick(result)}
-              className="px-3 py-2 hover:bg-gray-100 cursor-pointer rounded"
-            >
-              {renderResultItem(result)}
-            </div>
+        <Paper
+          elevation={3}
+          sx={{
+            position: 'absolute',
+            width: '100%',
+            mt: 1,
+            maxHeight: '24rem',
+            overflow: 'auto',
+            zIndex: 1000
+          }}
+        >
+          {Object.entries(groupResultsByType(searchResults)).map(([type, results]) => (
+            <List key={type} sx={{ p: 0 }}>
+              <ListSubheader
+                sx={{
+                  bgcolor: 'grey.100',
+                  lineHeight: '2rem'
+                }}
+              >
+                {type.charAt(0).toUpperCase() + type.slice(1)}s
+              </ListSubheader>
+              {results.map((result, index) => (
+                <ListItem
+                  key={`${result.type}-${result.id || result.team_number}-${index}`}
+                  onClick={() => handleResultClick(result)}
+                  sx={{
+                    cursor: 'pointer',
+                    '&:hover': {
+                      bgcolor: 'grey.100'
+                    }
+                  }}
+                >
+                  {renderResultItem(result)}
+                </ListItem>
+              ))}
+            </List>
           ))}
-        </div>
+        </Paper>
       )}
-    </div>
+    </Box>
   );
 };
 

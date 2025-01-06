@@ -1,12 +1,21 @@
 # serializers.py
 from django.forms import ValidationError
 from rest_framework import serializers
-from .models import User, Part, PartRequest, Message, PartManufacturer, PartCategory
+from .models import (
+    PartSale,
+    User,
+    Part,
+    PartRequest,
+    Message,
+    PartManufacturer,
+    PartCategory,
+)
 import googlemaps
 from address.models import State, Country, Locality, Address
 from decouple import config
 from utils.geolocation import get_coordinates
 from utils.blueAlliance import getTeamName
+from django.core.files.images import get_image_dimensions
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -15,20 +24,21 @@ class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = [
+            "id",
             "email",
             "password",
             "full_name",
             "address",
-            "UUID",
             "date_joined",
             "team_name",
             "team_number",
+            "profile_photo",
             "phone",
             "is_active",
             "is_staff",
             "is_superuser",
         ]
-        read_only_fields = ["UUID", "date_joined"]
+        read_only_fields = ["id", "date_joined"]
 
     def create_address_from_components(self, components, raw_address: str) -> Address:
         """Create storable Address object from Google Maps components"""
@@ -119,12 +129,30 @@ class UserSerializer(serializers.ModelSerializer):
             }
 
         representation.pop("password", None)
-        representation.pop("is_active", None)
         representation.pop("is_staff", None)
         representation.pop("is_superuser", None)
-        representation.pop("date_joined", None)
-        representation.pop("UUID", None)
-        # representation.pop("phone", None)
+        
+        return representation
+
+
+class PublicUserSerializer(serializers.ModelSerializer):
+    """Public serializer for the User model."""
+
+    class Meta:
+        model = User
+        fields = ["team_name", "team_number", "profile_photo", "address"]
+
+    def to_representation(self, instance):
+        """Output representation"""
+        representation = super().to_representation(instance)
+
+        if instance.address:
+            representation["formatted_address"] = {
+                "city": instance.address.locality.name if instance.address.locality != None else "Unknown",
+                "state": instance.address.locality.state.name if instance.address.locality != None else "Unknown",
+                "latitude": instance.address.latitude or 0,
+                "longitude": instance.address.longitude or 0,
+            }
 
         return representation
 
@@ -138,6 +166,9 @@ class PartSerializer(serializers.ModelSerializer):
     category_id = serializers.PrimaryKeyRelatedField(
         queryset=PartCategory.objects.all(), source="category"
     )
+    model_id = serializers.CharField(
+        allow_blank=True, allow_null=True, required=False, default=None
+    )
 
     class Meta:
         model = Part
@@ -147,22 +178,37 @@ class PartSerializer(serializers.ModelSerializer):
             "manufacturer_id",
             "category_id",
             "model_id",
+            "description",
+            "image",
+            "link",
         ]
+
+    def validate_image(self, value):
+        if value:
+            # Check image dimensions
+            width, height = get_image_dimensions(value)
+            if width > 4096 or height > 4096:
+                raise serializers.ValidationError(
+                    "Image dimensions must be no greater than 4096x4096"
+                )
+        return value
 
     def create(self, validated_data):
         """Create a new Part instance."""
         manufacturer = validated_data.pop("manufacturer")
         category = validated_data.pop("category")
+        image = validated_data.pop("image", None)
         part = Part.objects.create(
-            manufacturer=manufacturer, category=category, **validated_data
+            manufacturer=manufacturer, category=category, image=image, **validated_data
         )
         return part
 
     def to_representation(self, instance):
         """Customize the serialized output."""
         data = super().to_representation(instance)
-        data["manufacturer_name"] = instance.manufacturer.name
-        data["category"] = instance.category.name
+        data["manufacturer"] = PartManufacturerSerializer(instance.manufacturer).data
+        data["category"] = PartCategorySerializer(instance.category).data
+        data["image"] = instance.image.url if instance.image else None
         return data
 
 
@@ -214,8 +260,43 @@ class PartRequestSerializer(serializers.ModelSerializer):
         data = super().to_representation(instance)
 
         # Optionally include `user` or other computed fields here
-        data["part_name"] = instance.part.name  # Optionally include the part name
-        data["user"] = UserSerializer(instance.user).data  # Include user details
+        data["part"] = PartSerializer(instance.part).data  # Include part details
+        data["user"] = PublicUserSerializer(instance.user).data  # Include user details
+        return data
+
+
+class PartSaleSerializer(serializers.ModelSerializer):
+    """Serializer for the PartSale model."""
+
+    part_id = serializers.PrimaryKeyRelatedField(
+        queryset=Part.objects.all(), source="part", write_only=True
+    )
+
+    class Meta:
+        model = PartSale
+        fields = [
+            "id",  # self reference
+            "part_id",  # part reference
+            "ask_price",
+            "quantity",
+            "sale_creation_date",
+            "additional_info",
+            "condition",
+        ]
+        read_only_fields = ["user", "sale_creation_date"]
+
+    def create(self, validated_data):
+        """Add the selling user to the validated data."""
+        user = self.context["sale"].user
+        validated_data["user"] = user
+        return super().create(validated_data)
+
+    def to_representation(self, instance):
+        """Customize the serialized output."""
+        data = super().to_representation(instance)
+
+        data["part"] = PartSerializer(instance.part).data
+        data["user"] = PublicUserSerializer(instance.user).data
         return data
 
 
@@ -234,11 +315,11 @@ class MessageSerializer(serializers.ModelSerializer):
         return obj.receiver.team_number
 
     def create(self, validated_data):
-        # For POST requests, use UUIDs for sender and receiver
-        sender_uuid = self.context["request"].user.UUID
-        receiver_uuid = validated_data.pop("receiver_uuid")
-        receiver = User.objects.get(UUID=receiver_uuid)
+        # For POST requests, use ids for sender and receiver
+        sender_id = self.context["request"].user.id
+        receiver_id = validated_data.pop("receiver_id")
+        receiver = User.objects.get(id=receiver_id)
 
         return Message.objects.create(
-            sender_id=sender_uuid, receiver=receiver, **validated_data
+            sender_id=sender_id, receiver=receiver, **validated_data
         )

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 // Material UI imports
 import {
-  Box,
+  Autocomplete,
   Button,
   CircularProgress,
   FormControl,
@@ -22,6 +22,8 @@ import ErrorBanner from "../components/ErrorBanner";
 import NewPartForm from "../components/NewPartForm";
 // Utils
 import axiosInstance from "../utils/axiosInstance";
+import { useData } from '../contexts/DataContext';
+import { useNavigate } from "react-router-dom";
 
 const INITIAL_FORM_STATE = {
   quantity: 1,
@@ -30,7 +32,8 @@ const INITIAL_FORM_STATE = {
 };
 
 const PartRequestForm = () => {
-  const [parts, setParts] = useState([]);
+  const navigate = useNavigate();
+  const { parts, loadingStates, refreshSingle } = useData();
   const [selectedPart, setSelectedPart] = useState("");
   const [dateNeeded, setDateNeeded] = useState(null);
   const [formData, setFormData] = useState(INITIAL_FORM_STATE);
@@ -38,20 +41,6 @@ const PartRequestForm = () => {
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState("");
   const [isNewPartFormOpen, setIsNewPartFormOpen] = useState(false);
-
-  useEffect(() => {
-    fetchParts();
-  }, []);
-
-  const fetchParts = async () => {
-    try {
-      const { data } = await axiosInstance.get("/parts/");
-      setParts(data);
-    } catch (error) {
-      setError("Failed to fetch parts list");
-      console.error("Error fetching parts:", error);
-    }
-  };
 
   const handleInputChange = (event) => {
     const { name, value } = event.target;
@@ -66,6 +55,7 @@ const PartRequestForm = () => {
     setError("");
 
     try {
+      setLoading(true);
       const requestData = {
         part_id: selectedPart,
         quantity: formData.quantity,
@@ -79,118 +69,148 @@ const PartRequestForm = () => {
       setSelectedPart("");
       setFormData(INITIAL_FORM_STATE);
       setDateNeeded(null);
+      refreshSingle('requests');
+      setTimeout(() => navigate('/requests'), 3000);
     } catch (error) {
       setError("Failed to submit request. Please try again.");
-      console.error("Error submitting request:", error);
     } finally {
       setLoading(false);
     }
   };
 
-  const handleNewPartSuccess = (newPart) => {
-    fetchParts();  // Refresh parts list
-    setSelectedPart(newPart.id);  // Auto-select new part
+  const handleNewPartSuccess = async (newPart) => {
+    setSelectedPart(newPart.id);
   };
 
   return (
-    <Box sx={{ minHeight: "100vh", display: "flex", flexDirection: "column" }}>
+    <div className="min-h-screen flex flex-col">
       {success && (
         <SuccessBanner
-          message="Operation completed successfully!"
+          message="Request submitted successfully. Navigating to requests page..."
           onClose={() => setSuccess(false)}
         />
       )}
       {error && <ErrorBanner message={error} onClose={() => setError("")} />}
 
       <TopBar />
+      <div className="w-screen flex-grow flex flex-col place-items-center bg-white relative">
+        {/* Form */}
+        <div className="flex flex-col justify-center place-items-center w-full sm:w-2/3 md:w-[55%] my-[40px] mx-[20px] sm:mx-[30px] bg-white py-10 sm:py-16 px-10">
+          <h1 className="text-5xl text-center mb-[40px] sm:mb-[80px] text-black font-semibold text-shadow-md">
+            Make a Request
+          </h1>
 
-      <Box sx={{ flexGrow: 1, maxWidth: 600, mx: "auto", px: 2, py: 4 }}>
-        <h1 className="text-7xl text-center mt-[80px] mb-[80px] font-paytone text-[#AE0000] font-extrabold text-shadow-md">
-          Make a Request
-        </h1>
+          <form onSubmit={handleSubmit} className="w-full">
+            <Autocomplete
+              id="part-select"
+              options={parts}
+              value={parts.find(part => part.id === selectedPart) || null}
+              onChange={(_, newValue) => {
+                setSelectedPart(newValue ? newValue.id : '');
+              }}
+              getOptionLabel={(option) => `${option.name} - ${option.manufacturer.name}`}
+              renderOption={(props, option) => {
+                const { key, ...otherProps } = props;
+                return (
+                  <MenuItem key={key} {...otherProps}>
+                    <div className="flex flex-row w-full items-center justify-between">
+                      <span>
+                        {option.name} - <em>{option.manufacturer.name}</em>
+                      </span>
+                      {option.image ? (
+                        <img
+                          src={option.image}
+                          alt={option.name}
+                          className="w-[30px] h-[30px] ml-[10px]"
+                        />
+                      ) : (
+                        <img
+                          src="/IMG_6769.jpg"
+                          alt="IMG_6769.jpg"
+                          className="w-[30px] h-[30px] ml-[10px]"
+                        />
+                      )}
+                    </div>
+                  </MenuItem>
+                );
+              }}
+              renderInput={(params) => (
+                <TextField
+                  {...params}
+                  label="Part"
+                  required
+                />
+              )}
+              isOptionEqualToValue={(option, value) => option.id === value.id}
+              noOptionsText="No parts found"
+            />
 
-        <form onSubmit={handleSubmit}>
-          <FormControl fullWidth margin="normal">
-            <InputLabel id="part-select-label">Part</InputLabel>
-            <Select
-              labelId="part-select-label"
-              value={selectedPart || ""}  // Add fallback to empty string
-              onChange={(e) => setSelectedPart(e.target.value)}
-              required
+            <button
+              className="w-full mt-1 mb-2 border border-blue-600 text-blue-600 hover:bg-blue-50 py-2 px-4 rounded"
+              onClick={() => setIsNewPartFormOpen(true)}
             >
-              {parts.map((part) => (
-                <MenuItem key={part.id} value={part.id}>
-                  {part.name}
-                </MenuItem>
-              ))}
-            </Select>
-          </FormControl>
-          <Button
-            variant="outlined"
-            color="primary"
-            fullWidth
-            sx={{ mt: 1, mb: 2 }}
-            onClick={() => setIsNewPartFormOpen(true)}
-          >
-            Create New Part
-          </Button>
-          <TextField
-            fullWidth
-            name="quantity"
-            margin="normal"
-            label="Quantity*"
-            value={formData.quantity}
-            onChange={handleInputChange}
-          />
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
-            <LocalizationProvider dateAdapter={AdapterDateFns}>
-              <DatePicker
-                label="Need the part by"
-                value={dateNeeded}
-                onChange={setDateNeeded}
-                slotProps={{ textField: { fullWidth: true } }}
-              />
-            </LocalizationProvider>
+              Create New Part
+            </button>
+
             <TextField
               fullWidth
-              name="neededFor"
-              label="Need it for what"
-              value={formData.neededFor}
+              name="quantity"
+              margin="normal"
+              label="Quantity*"
+              value={formData.quantity}
               onChange={handleInputChange}
             />
-          </div>
-          <TextField
-            fullWidth
-            name="additionalInfo"
-            label="Any other additional info"
-            multiline
-            rows={4}
-            value={formData.additionalInfo}
-            onChange={handleInputChange}
-            margin="normal"
-          />
-          <Button
-            type="submit"
-            variant="contained"
-            color="primary"
-            fullWidth
-            sx={{ mt: 2, mb: 4 }}
-            disabled={loading}
-          >
-            {loading ? <CircularProgress size={24} /> : "Submit Request"}
-          </Button>
-        </form>
 
-        <NewPartForm
-          open={isNewPartFormOpen}
-          onClose={() => setIsNewPartFormOpen(false)}
-          onSuccess={handleNewPartSuccess}  // Add success handler
-          loading={loading}
-        />
-      </Box>
+            <div className="grid grid-cols-1 gap-4 mt-4">
+              <LocalizationProvider dateAdapter={AdapterDateFns}>
+                <DatePicker
+                  label="Need the part by"
+                  value={dateNeeded}
+                  onChange={setDateNeeded}
+                  disablePast
+                  slotProps={{
+                    textField: {
+                      fullWidth: true,
+                      required: true
+                    }
+                  }}
+                />
+              </LocalizationProvider>
+            </div>
+
+            <TextField
+              fullWidth
+              name="additionalInfo"
+              label="Any other additional info"
+              multiline
+              rows={4}
+              value={formData.additionalInfo}
+              onChange={handleInputChange}
+              margin="normal"
+            />
+
+            <button
+              type="submit"
+              className="w-full mt-2 mb-4 bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded disabled:opacity-50 disabled:cursor-not-allowed"
+              disabled={loading}
+            >
+              {loading ? <CircularProgress size={24} /> : "Submit Request"}
+            </button>
+          </form>
+
+          <NewPartForm
+            open={isNewPartFormOpen}
+            onClose={(newPart) => {
+              setIsNewPartFormOpen(false);
+              if (newPart) handleNewPartSuccess(newPart);
+            }}
+            onSubmit={handleNewPartSuccess}
+          />
+        </div>
+      </div>
 
       <Footer />
-    </Box>
+    </div>
   );
 };
 

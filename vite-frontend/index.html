@@ -2,15 +2,41 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" href="/favicon-16x16.png" />
+    <link rel="icon" type="image/svg+xml" href="/millenniumMarket.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
     <script
       loading="async"
-      src="https://maps.googleapis.com/maps/api/js?key=<%- googleApiKey %>&libraries=places"
+      src="https://maps.googleapis.com/maps/api/js?key=%VITE_GOOGLE_API_KEY%&libraries=places"
     ></script>
 
-    <title>FRC Marketplace</title>
+    <style>
+      html,
+      body {
+        max-width: 100%;
+        overflow-x: hidden;
+      }
+      #root {
+        max-width: 100vw;
+        overflow-x: hidden;
+      }
+    </style>
+
+    <title>Millennium Market</title>
+
+    <!-- Open Graph Meta Tags UNFINISHED -->
+    <meta property="og:title" content="Millennium Market" />
+    <meta
+      property="og:description"
+      content="A short description of your website."
+    />
+    <meta property="og:url" content="https://millennium" />
+    <meta
+      property="og:image"
+      content="https://yourwebsite.com/path-to-image.jpg"
+    />
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Your Website Name" />
   </head>
   <body>
     <div id="root"></div>

@@ -1,13 +1,20 @@
 import React from "react";
-import { Routes, Route, Outlet } from "react-router-dom";
+import { Outlet } from "react-router-dom";
 import "./App.css";
+import { UserProvider } from "./contexts/UserContext";
+import { WebSocketProvider } from './contexts/WebSocketContext';
+import { DataProvider } from './contexts/DataContext';
 
 const App = () => {
   console.log("App component rendered");
   return (
-    <>
-      <Outlet />
-    </>
+    <UserProvider>
+      <DataProvider>
+        <WebSocketProvider>
+          <Outlet />
+        </WebSocketProvider>
+      </DataProvider>
+    </UserProvider>
   );
 };
 

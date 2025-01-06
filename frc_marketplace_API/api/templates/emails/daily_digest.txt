@@ -1,0 +1,18 @@
+Daily Part Requests Digest for Team {{ team_number }}
+
+Hello {{ team_name }},
+
+Here are the new part requests within 50 miles of your location from the last 24 hours:
+
+{% for item in requests %}
+* {{ item.request.part.name }}
+  - Requested by: Team {{ item.request.user.team_number }} ({{ item.distance }} miles away)
+  - Quantity needed: {{ item.request.quantity }}
+  - Needed by: {{ item.request.needed_date }}
+  - Additional info: {{ item.request.additional_info }}
+  - View at: {{ frontend_url }}/requests/{{ item.request.id }}
+
+{% endfor %}
+
+Best regards,
+FRC Marketplace Team 

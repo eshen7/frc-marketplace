@@ -5,11 +5,22 @@ from django.contrib.auth import authenticate, login, logout
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
 from rest_framework import status
+from django.db.utils import IntegrityError
 from django.views.decorators.csrf import csrf_exempt
-from .models import User, Part, PartRequest, Message, PartCategory, PartManufacturer
+from .models import (
+    PartSale,
+    User,
+    Part,
+    PartRequest,
+    Message,
+    PartCategory,
+    PartManufacturer,
+)
 from .serializers import (
     MessageSerializer,
+    PartSaleSerializer,
     UserSerializer,
+    PublicUserSerializer,
     PartSerializer,
     PartRequestSerializer,
     PartCategorySerializer,
@@ -17,11 +28,13 @@ from .serializers import (
 )
 from rest_framework.permissions import IsAuthenticated
 from django.db import models
-from django.core.paginator import Paginator
-from django.core.mail import send_mail
+from django.core.paginator import Paginator, EmptyPage
 from django.conf import settings
 from django.shortcuts import get_object_or_404
-from .tasks import send_email_task
+from .tasks import send_email_task, send_dm_notification, send_daily_requests_digest
+from django.contrib.auth.tokens import default_token_generator
+from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
+from django.utils.encoding import force_bytes, force_str  # use force_str instead of force_text in newer Django versions
 
 
 @api_view(["GET"])
@@ -32,13 +45,17 @@ def search_all_view(request):
         users = User.objects.all()
         parts = Part.objects.all()
         requests = PartRequest.objects.all()
-        user_serializer = UserSerializer(users, many=True)
+        sales = PartSale.objects.all()
+        
+        user_serializer = PublicUserSerializer(users, many=True)
         part_serializer = PartSerializer(parts, many=True)
         request_serializer = PartRequestSerializer(requests, many=True)
+        sale_serializer = PartSaleSerializer(sales, many=True)
 
         total_data["users"] = user_serializer.data
         total_data["parts"] = part_serializer.data
         total_data["requests"] = request_serializer.data
+        total_data["sales"] = sale_serializer.data
         return Response(total_data, status=status.HTTP_200_OK)
     return JsonResponse({"error": "Only GET requests are allowed"}, status=405)
 
@@ -49,7 +66,7 @@ def user_views(request):
     """views for GETTING and CREATING users"""
     if request.method == "GET":
         users = User.objects.all()
-        serializer = UserSerializer(users, many=True)
+        serializer = PublicUserSerializer(users, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
     if request.method == "POST":
@@ -73,10 +90,10 @@ def user_views(request):
 
 @api_view(["GET"])
 def user_by_team_number_view(request, team_number):
-    """Fetch a specific user's details by UUID."""
+    """Fetch a specific user's details by id."""
     try:
         user = User.objects.get(team_number=team_number)
-        serializer = UserSerializer(user)
+        serializer = PublicUserSerializer(user)
         return Response(serializer.data, status=status.HTTP_200_OK)
     except User.DoesNotExist:
         return Response(
@@ -98,7 +115,9 @@ def get_logged_in_user_view(request):
         if request.method == "GET":
             # Serialize the user's data
             serializer = UserSerializer(user)
-            return Response(serializer.data, status=status.HTTP_200_OK)
+            if isinstance(user, User):
+                return Response(serializer.data, status=status.HTTP_200_OK)
+            return Response("User not found", status=status.HTTP_404_NOT_FOUND)
         if request.method == "PUT":
             serializer = UserSerializer(user, data=request.data, partial=True)
             if serializer.is_valid():
@@ -173,11 +192,19 @@ def login_view(request):
         data = request.data
         email = data.get("email")
         password = data.get("password")
+        is_active = False
+        try:
+            user = User.objects.get(email=email)
+            is_active = user.is_active
+        except User.DoesNotExist:
+            return JsonResponse(
+                {"error": "User with that email not found"}, status=404
+            )
+        authenticated = authenticate(request, email=email, password=password)
 
-        user = authenticate(request, email=email, password=password)
-        if user:
-            login(request, user)
-            uuid_to_set = str(user.UUID)
+        if authenticated and is_active:
+            login(request, authenticated)
+            id_to_set = str(user.id)
             response = JsonResponse(
                 {
                     "message": "Login successful",
@@ -186,13 +213,18 @@ def login_view(request):
                 status=200,
             )
             response.set_cookie(
-                "user_uuid",
-                uuid_to_set,
+                "user_id",
+                id_to_set,
                 httponly=False,
                 samesite="Lax",
                 path="/",
             )
             return response
+        elif not is_active:
+            return JsonResponse(
+            {"error": "Account is not active. Please wait until your account has been approved!"},
+                status=403,
+            )
         else:
             return JsonResponse({"error": "Invalid credentials"}, status=400)
     return JsonResponse({"error": "Only POST requests are allowed"}, status=405)
@@ -246,8 +278,20 @@ def part_views(request):
     if request.method == "POST":
         serializer = PartSerializer(data=request.data)
         if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
+            try:
+                serializer.save()
+                return Response(serializer.data, status=status.HTTP_201_CREATED)
+            except Exception as e:
+                return Response(
+                    {"error": str(e)},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+        else:
+            if "unique" in str(serializer.errors):
+                return Response(
+                    {"error": "Integrity Error: Part already exists."},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
@@ -261,12 +305,12 @@ def part_request_views(request):
         return Response(serializer.data, status=status.HTTP_200_OK)
 
     if request.method == "POST":
-        user_uuid = request.headers.get("X-User-UUID")
+        user_id = request.headers.get("X-User-ID")
         try:
-            user = User.objects.get(UUID=user_uuid)
+            user = User.objects.get(id=user_id)
         except User.DoesNotExist:
             return Response(
-                {"message": f"User with UUID {user_uuid} not found"},
+                {"message": f"User with id {user_id} not found"},
                 status=status.HTTP_404_NOT_FOUND,
             )
         except Exception as e:
@@ -287,7 +331,7 @@ def part_request_views(request):
 
 @api_view(["GET"])
 def request_view(request, request_id):
-    """Fetch a specific request's details by UUID."""
+    """Fetch a specific request's details by id."""
     try:
         part_request = PartRequest.objects.get(id=request_id)
         serializer = PartRequestSerializer(part_request)
@@ -295,6 +339,134 @@ def request_view(request, request_id):
     except PartRequest.DoesNotExist:
         return Response(
             {"error": "Part Request not found"}, status=status.HTTP_404_NOT_FOUND
+        )
+
+@permission_classes([IsAuthenticated])
+@api_view(["PUT"])
+def request_edit_view(request, request_id):
+    """Edit a specific request's details by id."""
+    try:
+        data = request.data
+        quantity = data.get("quantity").get("val")
+        needed_date = data.get("needed_date").get("val")
+        additional_info = data.get("additional_info").get("val")
+
+        part_request = PartRequest.objects.get(id=request_id)
+        part_request.quantity = quantity
+        part_request.needed_date = needed_date
+        part_request.additional_info = additional_info
+        part_request.save()
+        serializer = PartRequestSerializer(part_request)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+    except PartRequest.DoesNotExist:
+        return Response(
+            {"error": "Part Request not found"}, status=status.HTTP_404_NOT_FOUND
+        )
+
+@permission_classes([IsAuthenticated])
+@api_view(["DELETE"])
+def delete_request_view(request, request_id):
+    """
+    Allow the authenticated user to delete a request.
+    """
+    try:
+        user = request.user
+        part_request = PartRequest.objects.get(id=request_id)
+        if part_request.user.team_number != user.team_number:
+            return Response({"error": "You are not authorized to delete this request."}, status=403)
+        part_request.delete()
+        return Response({"message": "Request deleted successfully."}, status=200)
+    except Exception as e:
+        return Response({"error": str(e)}, status=500)
+
+@api_view(["GET"])
+def sale_view(request, sale_id):
+    """Fetch a specific sale's details by id."""
+    try:
+        part_sale = PartSale.objects.get(id=sale_id)
+        serializer = PartSaleSerializer(part_sale)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+    except PartSale.DoesNotExist:
+        return Response(
+            {"error": "Part Sale not found"}, status=status.HTTP_404_NOT_FOUND
+        )
+
+@permission_classes([IsAuthenticated])
+@api_view(["PUT"])
+def sale_edit_view(request, sale_id):
+    """Edit a specific sale's details by id."""
+    try:
+        data = request.data
+        quantity = data.get("quantity").get("val")
+        ask_price = data.get("ask_price").get("val")
+        condition = data.get("condition").get("val")
+        additional_info = data.get("additional_info").get("val")
+
+        part_sale = PartSale.objects.get(id=sale_id)
+        part_sale.quantity = quantity
+        part_sale.ask_price = ask_price
+        part_sale.condition = condition
+        part_sale.additional_info = additional_info
+        part_sale.save()
+        serializer = PartSaleSerializer(part_sale)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+    except PartSale.DoesNotExist:
+        return Response(
+            {"error": "Part Sale not found"}, status=status.HTTP_404_NOT_FOUND
+        )
+
+@permission_classes([IsAuthenticated])
+@api_view(["DELETE"])
+def delete_sale_view(request, sale_id):
+    """
+    Allow the authenticated user to delete a sale.
+    """
+    try:
+        user = request.user
+        part_sale = PartSale.objects.get(id=sale_id)
+        if part_sale.user.team_number != user.team_number:
+            return Response({"error": "You are not authorized to delete this sale."}, status=403)
+        part_sale.delete()
+        return Response({"message": "Sale deleted successfully."}, status=200)
+    except Exception as e:
+        return Response({"error": str(e)}, status=500)
+
+
+@api_view(["GET"])
+def part_view(part, part_id):
+    """Fetch a specific part's details by id."""
+    try:
+        part = Part.objects.get(id=part_id)
+        serializer = PartSerializer(part)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+    except Part.DoesNotExist:
+        return Response({"error": "Part not found"}, status=status.HTTP_404_NOT_FOUND)
+
+
+@api_view(["GET"])
+def requests_by_part_view(part, part_id):
+    """Fetch all of specific part's requests."""
+    try:
+        part = Part.objects.get(id=part_id)
+        requests_for_part = PartRequest.objects.filter(part=part)
+        serializer = PartRequestSerializer(requests_for_part, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+    except Part.DoesNotExist:
+        return Response(
+            {"error": "Part requests not found"}, status=status.HTTP_404_NOT_FOUND
+        )
+
+@api_view(["GET"])
+def sales_by_part_view(part, part_id):
+    """Fetch all of specific part's sales."""
+    try:
+        part = Part.objects.get(id=part_id)
+        sales_for_part = PartSale.objects.filter(part=part)
+        serializer = PartSaleSerializer(sales_for_part, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+    except Part.DoesNotExist:
+        return Response(
+            {"error": "Part sales not found"}, status=status.HTTP_404_NOT_FOUND
         )
 
 
@@ -313,6 +485,50 @@ def requests_by_user_view(request, team_number):
     serializer = PartRequestSerializer(part_request, many=True)
     return Response(serializer.data, status=status.HTTP_200_OK)
 
+@api_view(["GET"])
+def sales_by_user_view(request, team_number):
+    """Fetch all sales by a user."""
+    try:
+        # Fetch the user by team_number
+        user = User.objects.get(team_number=team_number)
+    except User.DoesNotExist:
+        return Response(
+            {"error": f"User with team number {team_number} not found."},
+            status=status.HTTP_404_NOT_FOUND,
+        )
+    part_sale = PartSale.objects.filter(user_id=user)
+    serializer = PartSaleSerializer(part_sale, many=True)
+    return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+@api_view(["GET", "POST"])
+def part_sale_views(request):
+    """Method for GETTING and CREATING Part Sales."""
+    if request.method == "GET":
+        part_sales = PartSale.objects.all()
+        serializer = PartSaleSerializer(part_sales, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+    if request.method == "POST":
+        user_id = request.headers.get("X-User-ID")
+        try:
+            user = User.objects.get(id=user_id)
+        except User.DoesNotExist:
+            return Response(
+                {"message": f"User with id {user_id} not found"},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+        except Exception as e:
+            return Response(
+                {"message": "An error occurred", "error": str(e)},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            )
+        serializer = PartSaleSerializer(data=request.data, context={"sale": request})
+        if serializer.is_valid():
+            serializer.save(user=user)
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    return JsonResponse({"error": "Only GET and POST requests are allowed"}, status=405)
+
 
 @permission_classes([IsAuthenticated])
 @api_view(["GET"])
@@ -321,11 +537,9 @@ def messages_by_user_get_view(request, team_number):
     View for handling direct messages (DMs):
     - GET: Retrieve messages between the logged-in user and a specific user.
     """
+    limit = int(request.query_params.get("limit", 25))
+    offset = int(request.query_params.get("offset", 0))
 
-    limit = int(request.query_params.get("limit", 25))  # Default to 25
-    offset = int(request.query_params.get("offset", 0))  # Default to 0
-
-    # Fetch messages between the logged-in user and another user
     try:
         receiver = User.objects.get(team_number=team_number)
     except User.DoesNotExist:
@@ -335,16 +549,23 @@ def messages_by_user_get_view(request, team_number):
         )
 
     sender = request.user
-
-    # Retrieve messages sent between the logged-in user and the other user
     messages = Message.objects.filter(
         (models.Q(sender=sender) & models.Q(receiver=receiver))
         | (models.Q(sender=receiver) & models.Q(receiver=sender))
     ).order_by("-timestamp")
+
     paginator = Paginator(messages, limit)
-    paginated_messages = (
-        paginator.page(1) if offset == 0 else paginator.page(offset // limit + 1)
-    )
+    
+    try:
+        page_number = offset // limit + 1
+        paginated_messages = paginator.page(page_number)
+    except EmptyPage:
+        return Response([], status=status.HTTP_200_OK)
+    except Exception as e:
+        return Response(
+            {"error": f"Pagination error: {str(e)}"},
+            status=status.HTTP_400_BAD_REQUEST
+        )
 
     serializer = MessageSerializer(paginated_messages, many=True)
     return Response(serializer.data, status=status.HTTP_200_OK)
@@ -375,6 +596,117 @@ def message_by_id_get_view(request, message_id):
         return Response(
             {"error": f"User not validated"}, status=status.HTTP_401_UNAUTHORIZED
         )
+
+
+@permission_classes([IsAuthenticated])
+@api_view(["GET"])
+def dm_list_view(request):
+    """
+    Get the list of unique users the current user has messaged with, ordered by most recent message.
+    """
+    try:
+        user = request.user.id
+
+        # Fetch conversations (users who have sent or received messages with the current user)
+        conversations = (
+            Message.objects.filter(models.Q(sender=user) | models.Q(receiver=user))
+            .values("sender", "receiver")
+            .annotate(most_recent=models.Max("timestamp"))
+        )
+
+        # Collect unique user IDs
+        user_ids = set()
+        for convo in conversations:
+            user_ids.add(convo["sender"])
+            user_ids.add(convo["receiver"])
+        user_ids.discard(user)  # Exclude the current user
+
+        # Prepare data for response
+        user_data = []
+        for uid in user_ids:
+            # Fetch the most recent message for this conversation
+            recent_message = (
+                Message.objects.filter(
+                    (
+                        models.Q(sender=user, receiver_id=uid)
+                        | models.Q(sender_id=uid, receiver=user)
+                    )
+                )
+                .order_by("-timestamp")
+                .first()
+            )
+
+            # Include relevant user and message data
+            user_data.append(
+                {
+                    "team_number": (
+                        recent_message.sender.team_number
+                        if recent_message.sender.id == uid
+                        else recent_message.receiver.team_number
+                    ),
+                    "team_name": (
+                        recent_message.sender.team_name
+                        if recent_message.sender.id == uid
+                        else recent_message.receiver.team_name
+                    ),
+                    "full_name": (
+                        recent_message.sender.full_name
+                        if recent_message.sender.id == uid
+                        else recent_message.receiver.full_name
+                    ),
+                    "most_recent_message": recent_message.message,
+                    "receiver": recent_message.receiver.team_number,
+                    "timestamp": recent_message.timestamp,
+                    "profile_photo": (
+                        recent_message.sender.profile_photo
+                        if recent_message.sender.id == uid
+                        else recent_message.receiver.profile_photo
+                    ),
+                    "is_read": (
+                        recent_message.is_read
+                        if recent_message.sender != user
+                        else True
+                    ),
+                }
+            )
+
+        return Response(user_data, status=200)
+
+    except Exception as e:
+        return Response({"error": str(e)}, status=500)
+
+
+@api_view(["POST"])
+@permission_classes([IsAuthenticated])
+def mark_messages_as_read(request):
+    """
+    Marks all messages from the given team_number to the current user as read.
+    Expects a JSON body like: { "team_number": 3647 }
+    """
+    try:
+        user = request.user
+        team_number = request.data.get("team_number")
+
+        if not team_number:
+            return Response({"error": "team_number is required."}, status=400)
+
+        # Find the sender with that team_number
+        try:
+            other_user = User.objects.get(team_number=team_number)
+        except User.DoesNotExist:
+            return Response(
+                {"error": "User with that team_number not found."}, status=404
+            )
+
+        # Mark all unread messages FROM other_user TO current user as read
+        Message.objects.filter(sender=other_user, receiver=user, is_read=False).update(
+            is_read=True
+        )
+
+        return Response({"detail": "Messages marked as read."}, status=200)
+
+    except Exception as e:
+        return Response({"error": str(e)}, status=500)
 
 
 @permission_classes([IsAuthenticated])
@@ -416,11 +748,10 @@ def message_post_view(request):
 
         # Use Celery to send the email asynchronously
         if receiver.email:
-            send_email_task.delay(
-                subject=f"New Message from {sender.team_number}",
-                message=f"Hello {receiver.full_name},\n\nYou have received a new message from {sender.full_name} on team {sender.team_number}:\n\n{message.message}\n\n- FRC Marketplace Team",
-                from_email=settings.DEFAULT_FROM_EMAIL,
-                recipient_list=[receiver.email],
+            send_dm_notification.delay(
+                sender_id=sender.id,
+                recipient_id=receiver.id,
+                message_content=message.message
             )
 
         serializer = MessageSerializer(message)
@@ -431,3 +762,86 @@ def message_post_view(request):
         )
     except Exception as e:
         return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+@api_view(['PUT'])
+@permission_classes([IsAuthenticated])
+def edit_part(request, part_id):
+    """
+    Edit a part's description and link
+    """
+    try:
+        part = Part.objects.get(id=part_id)
+        
+        # Update only the editable fields
+        if 'description' in request.data:
+            part.description = request.data['description']
+        if 'link' in request.data:
+            part.link = request.data['link']
+            
+        part.save()
+        
+        serializer = PartSerializer(part)
+        return Response(serializer.data)
+    except Part.DoesNotExist:
+        return Response(
+            {"error": "Part not found"}, 
+            status=status.HTTP_404_NOT_FOUND
+        )
+    except Exception as e:
+        return Response(
+            {"error": str(e)}, 
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR
+        )
+
+@api_view(['POST'])
+def password_reset_request(request):
+    email = request.data.get('email')
+    try:
+        user = User.objects.get(email=email)
+        token = default_token_generator.make_token(user)
+        # Include both the uidb64 and token in the reset URL
+        uidb64 = urlsafe_base64_encode(force_bytes(user.pk))
+        reset_url = f"{settings.FRONTEND_URL}/reset-password/{uidb64}/{token}"
+        
+        send_email_task.delay(
+            subject='Password Reset Request',
+            message=f'Click the following link to reset your password: {reset_url}',
+            from_email=settings.DEFAULT_FROM_EMAIL,
+            recipient_list=[email]
+        )
+        return Response({'message': 'Password reset email sent'})
+    except User.DoesNotExist:
+        # Still return success to prevent email enumeration
+        return Response({'message': 'Password reset email sent'})
+
+@api_view(['POST'])
+def password_reset_confirm(request):
+    uidb64 = request.data.get('uidb64')
+    token = request.data.get('token')
+    new_password = request.data.get('new_password')
+    
+    if not all([uidb64, token, new_password]):
+        return Response({'message': 'Missing required fields'}, status=400)
+    
+    try:
+        # Decode the user id
+        uid = force_str(urlsafe_base64_decode(uidb64))
+        user = User.objects.get(pk=uid)
+        
+        # Validate token
+        if default_token_generator.check_token(user, token):
+            user.set_password(new_password)
+            user.save()
+            return Response({'message': 'Password reset successful'})
+        return Response({'message': 'Invalid or expired token'}, status=400)
+    except (TypeError, ValueError, OverflowError, User.DoesNotExist):
+        return Response({'message': 'Invalid reset link'}, status=400)
+
+@api_view(['GET'])
+def daily_digest_view(request):
+    """
+    View for handling daily part requests digest.
+    """
+    send_daily_requests_digest.delay()
+    return Response({'message': 'Daily digest email sent'})

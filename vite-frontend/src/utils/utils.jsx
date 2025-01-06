@@ -21,6 +21,7 @@ export function haversine(lat1, lon1, lat2, lon2) {
 
 export function getDaysUntil(dueDate) {
     const now = new Date();
+    dueDate = new Date(dueDate);
     const diffTime = dueDate.getTime() - now.getTime();
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
     return diffDays;
@@ -40,3 +41,31 @@ export function formatTimestamp(isoTimestamp) {
         day: 'numeric',
     });
 }
+
+export function timeSince(timestamp) {
+    // Convert string timestamps to Date if needed
+    const date = typeof timestamp === "string" ? new Date(timestamp) : timestamp;
+    const now = new Date();
+    const diffInSeconds = Math.floor((now - date) / 1000);
+  
+    // Less than 60 seconds => use seconds
+    if (diffInSeconds < 60) {
+      return `${diffInSeconds} second${diffInSeconds === 1 ? "" : "s"}`;
+    }
+  
+    // Less than 60 minutes => use minutes
+    const diffInMinutes = Math.floor(diffInSeconds / 60);
+    if (diffInMinutes < 60) {
+      return `${diffInMinutes} minute${diffInMinutes === 1 ? "" : "s"}`;
+    }
+  
+    // Less than 24 hours => use hours
+    const diffInHours = Math.floor(diffInMinutes / 60);
+    if (diffInHours < 24) {
+      return `${diffInHours} hour${diffInHours === 1 ? "" : "s"}`;
+    }
+  
+    // Otherwise => use days
+    const diffInDays = Math.floor(diffInHours / 24);
+    return `${diffInDays} day${diffInDays === 1 ? "" : "s"}`;
+  }

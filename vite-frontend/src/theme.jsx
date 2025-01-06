@@ -3,16 +3,48 @@ import { createTheme } from '@mui/material/styles';
 const theme = createTheme({
   palette: {
     primary: {
-      light: '#be3634',
-      main: '#b02e32',
-      dark: '#821c1e',
+      light: '#3b82f6',
+      main: '#2563eb',
+      dark: '#1d4ed8',
       contrastText: '#fff',
     },
     secondary: {
-      light: '#f5f5f5',
-      main: '#e9e9e9',
-      dark: '#d9d9d9',
-      contrastText: '#000',
+      light: '#4b5563',
+      main: '#1f2937',
+      dark: '#111827',
+      contrastText: '#fff',
+    },
+    background: {
+      default: '#f9fafb',
+      paper: '#ffffff',
+    },
+    text: {
+      primary: '#111827',
+      secondary: '#4b5563',
+    },
+  },
+  components: {
+    MuiButton: {
+      styleOverrides: {
+        root: {
+          textTransform: 'none',
+          borderRadius: '0.375rem',
+        },
+      },
+    },
+    MuiTextField: {
+      styleOverrides: {
+        root: {
+          '& .MuiOutlinedInput-root': {
+            '&.Mui-focused fieldset': {
+              borderColor: '#2563eb',
+            },
+          },
+          '& .MuiInputLabel-root.Mui-focused': {
+            color: '#2563eb',
+          },
+        },
+      },
     },
   },
 });
