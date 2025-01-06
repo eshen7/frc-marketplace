@@ -121,7 +121,7 @@ const AllParts = () => {
               filteredParts.length > 0 ? (
                 <>
                   {filteredParts.slice(0, displayLimit).map((part) => (
-                    <PartItemCard key={part.id} part={part} />
+                    <PartItemCard key={part.id} part={part} navigate={navigate}/>
                   ))}
                   {filteredParts.length > displayLimit && (
                     <div 
