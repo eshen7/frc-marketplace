@@ -57,6 +57,10 @@ class UserManager(BaseUserManager):
         extra_fields.setdefault("is_staff", True)
         extra_fields.setdefault("is_superuser", True)
 
+        # Set default random phone number for superusers
+        import random
+        extra_fields.setdefault("phone", f"+1{random.randint(1000000000, 9999999999)}")
+
         return self.create_user(email, password, **extra_fields)
 
 
