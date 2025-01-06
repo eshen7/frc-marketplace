@@ -29,6 +29,8 @@ SECRET_KEY = "django-insecure-vaj&&)r(b638*t&z5l+0cuz*)dkh)3sslmwrzr!br&m^uel$mf
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
+FRONTEND_URL = "http://127.0.0.1:5173"
+
 ALLOWED_HOSTS = ['localhost', '127.0.0.1']
 
 # Application definition
@@ -292,3 +294,6 @@ LOGGING = {
         },
     },
 }
+
+# Password reset token timeout in seconds
+PASSWORD_RESET_TIMEOUT = 60 * 30  # 30 minutes

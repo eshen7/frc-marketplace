@@ -29,10 +29,12 @@ from .serializers import (
 from rest_framework.permissions import IsAuthenticated
 from django.db import models
 from django.core.paginator import Paginator, EmptyPage
-from django.core.mail import send_mail
 from django.conf import settings
 from django.shortcuts import get_object_or_404
 from .tasks import send_email_task
+from django.contrib.auth.tokens import default_token_generator
+from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
+from django.utils.encoding import force_bytes, force_str  # use force_str instead of force_text in newer Django versions
 
 
 @api_view(["GET"])
@@ -792,3 +794,47 @@ def edit_part(request, part_id):
             {"error": str(e)}, 
             status=status.HTTP_500_INTERNAL_SERVER_ERROR
         )
+
+@api_view(['POST'])
+def password_reset_request(request):
+    email = request.data.get('email')
+    try:
+        user = User.objects.get(email=email)
+        token = default_token_generator.make_token(user)
+        # Include both the uidb64 and token in the reset URL
+        uidb64 = urlsafe_base64_encode(force_bytes(user.pk))
+        reset_url = f"{settings.FRONTEND_URL}/reset-password/{uidb64}/{token}"
+        
+        send_email_task.delay(
+            subject='Password Reset Request',
+            message=f'Click the following link to reset your password: {reset_url}',
+            from_email=settings.DEFAULT_FROM_EMAIL,
+            recipient_list=[email]
+        )
+        return Response({'message': 'Password reset email sent'})
+    except User.DoesNotExist:
+        # Still return success to prevent email enumeration
+        return Response({'message': 'Password reset email sent'})
+
+@api_view(['POST'])
+def password_reset_confirm(request):
+    uidb64 = request.data.get('uidb64')
+    token = request.data.get('token')
+    new_password = request.data.get('new_password')
+    
+    if not all([uidb64, token, new_password]):
+        return Response({'message': 'Missing required fields'}, status=400)
+    
+    try:
+        # Decode the user id
+        uid = force_str(urlsafe_base64_decode(uidb64))
+        user = User.objects.get(pk=uid)
+        
+        # Validate token
+        if default_token_generator.check_token(user, token):
+            user.set_password(new_password)
+            user.save()
+            return Response({'message': 'Password reset successful'})
+        return Response({'message': 'Invalid or expired token'}, status=400)
+    except (TypeError, ValueError, OverflowError, User.DoesNotExist):
+        return Response({'message': 'Invalid reset link'}, status=400)

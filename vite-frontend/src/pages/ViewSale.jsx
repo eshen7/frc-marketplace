@@ -14,11 +14,14 @@ import ItemScrollBar from '../components/ItemScrollBar.jsx'
 import DropdownButton from '../components/DropdownButton.jsx'
 import ItemProfileSection from '../components/ItemProfileSection.jsx'
 import { useUser } from '../contexts/UserContext.jsx'
+import { useData } from '../contexts/DataContext.jsx'
 
 export default function ViewSale() {
   const { sale_id } = useParams();
 
   const navigate = useNavigate();
+
+  const { refreshSingle } = useData();
 
   const { user, loadingUser, isAuthenticated } = useUser();
 
@@ -129,8 +132,9 @@ export default function ViewSale() {
   const handleDeleteConfirm = async () => {
     try {
       await axiosInstance.delete(`/sales/id/${sale_id}/delete/`);
-      setSaleChange("Sale deleted successfully.");
-      navigate("/");
+      setSaleChange("Sale deleted successfully. Navigating to sales page...");
+      refreshSingle("sales");
+      setTimeout(() => navigate('/sales'), 3000);
     } catch (error) {
       console.error("Error deleting sale:", error);
       setSaleChange("Error deleting sale, please try again.");
@@ -149,7 +153,7 @@ export default function ViewSale() {
 
   return (
     <div className='flex flex-col min-h-screen'>
-      {saleChange == "Sale Updated Successfully." ? (
+      {saleChange == "Sale deleted successfully. Navigating to sales page..." ? (
         <SuccessBanner
           message={saleChange}
           onClose={closeSaleChangeBanner}

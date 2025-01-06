@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState, useCallback, useRef } from 'react'
 import { useNavigate, useParams } from "react-router-dom";
 import axiosInstance from "../utils/axiosInstance";
 import TopBar from '../components/TopBar';
@@ -21,6 +21,62 @@ const PublicProfileComponent = ({ user }) => {
   const { user: currentUser, loadingUser, isAuthenticated } = useUser();
 
   const [onRequests, setOnRequests] = useState(true);
+
+  const [salesDisplayLimit, setSalesDisplayLimit] = useState(12);
+  const [requestsDisplayLimit, setRequestsDisplayLimit] = useState(12);
+  const salesObserverTarget = useRef(null);
+  const requestsObserverTarget = useRef(null);
+
+  const salesObserverCallback = useCallback(
+    (entries) => {
+      const [entry] = entries;
+      if (entry.isIntersecting && sales.length > salesDisplayLimit) {
+        setSalesDisplayLimit(prev => prev + 12);
+      }
+    },
+    [sales.length, salesDisplayLimit]
+  );
+
+  const requestsObserverCallback = useCallback(
+    (entries) => {
+      const [entry] = entries;
+      if (entry.isIntersecting && requests.length > requestsDisplayLimit) {
+        setRequestsDisplayLimit(prev => prev + 12);
+      }
+    },
+    [requests.length, requestsDisplayLimit]
+  );
+
+  useEffect(() => {
+    const salesObserver = new IntersectionObserver(salesObserverCallback, {
+      root: null,
+      rootMargin: '20px',
+      threshold: 1.0
+    });
+
+    const requestsObserver = new IntersectionObserver(requestsObserverCallback, {
+      root: null,
+      rootMargin: '20px',
+      threshold: 1.0
+    });
+
+    if (salesObserverTarget.current) {
+      salesObserver.observe(salesObserverTarget.current);
+    }
+
+    if (requestsObserverTarget.current) {
+      requestsObserver.observe(requestsObserverTarget.current);
+    }
+
+    return () => {
+      if (salesObserverTarget.current) {
+        salesObserver.unobserve(salesObserverTarget.current);
+      }
+      if (requestsObserverTarget.current) {
+        requestsObserver.unobserve(requestsObserverTarget.current);
+      }
+    };
+  }, [salesObserverCallback, requestsObserverCallback]);
 
   useEffect(() => {
     const fetchRequests = async () => {
@@ -138,7 +194,7 @@ const PublicProfileComponent = ({ user }) => {
               <div className="flex flex-col">
                 {!loadingRequests && requests.length > 0 ? (
                   <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 min-w-[300px]">
-                    {requests.map((request) => (
+                    {requests.slice(0, requestsDisplayLimit).map((request) => (
                       <ItemCard
                         key={request.id}
                         item={request}
@@ -152,6 +208,14 @@ const PublicProfileComponent = ({ user }) => {
                         ).toFixed(1) : null}
                       />
                     ))}
+                    {requests.length > requestsDisplayLimit && (
+                      <div 
+                        ref={requestsObserverTarget}
+                        className="col-span-full flex justify-center p-4"
+                      >
+                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
+                      </div>
+                    )}
                   </div>
                 ) : loadingRequests ? (
                   <p>Loading Requests...</p>
@@ -163,7 +227,7 @@ const PublicProfileComponent = ({ user }) => {
               <div className="flex flex-col">
                 {!loadingSales && sales.length > 0 ? (
                   <div className="flex flex-col sm:grid sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 min-w-[300px]">
-                    {sales.map((sale) => (
+                    {sales.slice(0, salesDisplayLimit).map((sale) => (
                       <ItemCard
                         key={sale.id}
                         item={sale}
@@ -177,6 +241,14 @@ const PublicProfileComponent = ({ user }) => {
                         ).toFixed(1) : null}
                       />
                     ))}
+                    {sales.length > salesDisplayLimit && (
+                      <div 
+                        ref={salesObserverTarget}
+                        className="col-span-full flex justify-center p-4"
+                      >
+                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
+                      </div>
+                    )}
                   </div>
                 ) : loadingSales ? (
                   <p>Loading Sales...</p>

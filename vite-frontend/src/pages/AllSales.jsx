@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useCallback, useRef } from "react";
 import TopBar from "../components/TopBar";
 import Footer from "../components/Footer";
 import { useEffect, useState, useMemo } from "react";
@@ -25,6 +25,8 @@ const SalesPage = () => {
   const [distance, setDistance] = useState(50);
   const [sortBy, setSortBy] = useState("newest");
   const [selectedCategories, setSelectedCategories] = useState([]);
+  const [displayLimit, setDisplayLimit] = useState(12);
+  const observerTarget = useRef(null);
 
   const calculateDistanceForAll = (items) => {
     items.map((item) => {
@@ -122,6 +124,36 @@ const SalesPage = () => {
     [sales, searchTerm, distance, selectedCategories, sortBy, fuse]
   );
 
+  // Create intersection observer
+  const observerCallback = useCallback(
+    (entries) => {
+      const [entry] = entries;
+      if (entry.isIntersecting && filteredSales.length > displayLimit) {
+        setDisplayLimit(prev => prev + 12);
+      }
+    },
+    [filteredSales.length, displayLimit]
+  );
+
+  // Set up observer
+  useEffect(() => {
+    const observer = new IntersectionObserver(observerCallback, {
+      root: null,
+      rootMargin: '20px',
+      threshold: 1.0
+    });
+
+    if (observerTarget.current) {
+      observer.observe(observerTarget.current);
+    }
+
+    return () => {
+      if (observerTarget.current) {
+        observer.unobserve(observerTarget.current);
+      }
+    };
+  }, [observerCallback]);
+
   return (
     <div className="min-h-screen flex flex-col">
       <TopBar />
@@ -138,24 +170,35 @@ const SalesPage = () => {
           {loadingStates.sales ? (
             <div className="col-span-full text-center">Loading...</div>
           ) : filteredSales.length > 0 ? (
-            filteredSales.map((sale) => {
-              const distanceTemp = isAuthenticated ? haversine(
-                user.formatted_address.latitude,
-                user.formatted_address.longitude,
-                sale.user.formatted_address.latitude,
-                sale.user.formatted_address.longitude
-              ).toFixed(1) : null;
+            <>
+              {filteredSales.slice(0, displayLimit).map((sale) => {
+                const distanceTemp = isAuthenticated ? haversine(
+                  user.formatted_address.latitude,
+                  user.formatted_address.longitude,
+                  sale.user.formatted_address.latitude,
+                  sale.user.formatted_address.longitude
+                ).toFixed(1) : null;
 
-              return (
-                <ItemCard
-                  key={sale.id}
-                  currentUser={user}
-                  item={sale}
-                  type="sale"
-                  itemDistance={distanceTemp}
-                />
-              );
-            })
+                return (
+                  <ItemCard
+                    key={sale.id}
+                    currentUser={user}
+                    item={sale}
+                    type="sale"
+                    itemDistance={distanceTemp}
+                  />
+                );
+              })}
+              {/* Observer target */}
+              {filteredSales.length > displayLimit && (
+                <div 
+                  ref={observerTarget}
+                  className="col-span-full flex justify-center p-4"
+                >
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
+                </div>
+              )}
+            </>
           ) : (
             <div className="col-span-full text-center text-gray-500">
               No results found

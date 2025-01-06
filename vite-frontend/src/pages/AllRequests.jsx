@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useCallback, useRef } from "react";
 import TopBar from "../components/TopBar";
 import Footer from "../components/Footer";
 import { useEffect, useState, useMemo } from "react";
@@ -21,6 +21,8 @@ const AllRequests = () => {
   const [distance, setDistance] = useState(50);
   const [sortBy, setSortBy] = useState("urgent");
   const [selectedCategories, setSelectedCategories] = useState([]);
+  const [displayLimit, setDisplayLimit] = useState(12);
+  const observerTarget = useRef(null);
 
   const { user, loadingUser, isAuthenticated } = useUser();
   const { requests, categories: allCategories, loadingStates } = useData();
@@ -128,6 +130,36 @@ const AllRequests = () => {
     [requests, searchTerm, distance, selectedCategories, sortBy, fuse]
   );
 
+  // Create intersection observer
+  const observerCallback = useCallback(
+    (entries) => {
+      const [entry] = entries;
+      if (entry.isIntersecting && filteredRequests.length > displayLimit) {
+        setDisplayLimit(prev => prev + 12);
+      }
+    },
+    [filteredRequests.length, displayLimit]
+  );
+
+  // Set up observer
+  useEffect(() => {
+    const observer = new IntersectionObserver(observerCallback, {
+      root: null,
+      rootMargin: '20px',
+      threshold: 1.0
+    });
+
+    if (observerTarget.current) {
+      observer.observe(observerTarget.current);
+    }
+
+    return () => {
+      if (observerTarget.current) {
+        observer.unobserve(observerTarget.current);
+      }
+    };
+  }, [observerCallback]);
+
   return (
     <div className="min-h-screen flex flex-col">
       <TopBar />
@@ -144,24 +176,35 @@ const AllRequests = () => {
           {loadingStates.requests ? (
             <div className="col-span-full text-center">Loading...</div>
           ) : filteredRequests.length > 0 ? (
-            filteredRequests.map((request) => {
-              const distanceTemp = isAuthenticated ? haversine(
-                user.formatted_address.latitude,
-                user.formatted_address.longitude,
-                request.user.formatted_address.latitude,
-                request.user.formatted_address.longitude
-              ).toFixed(1) : null;
+            <>
+              {filteredRequests.slice(0, displayLimit).map((request) => {
+                const distanceTemp = isAuthenticated ? haversine(
+                  user.formatted_address.latitude,
+                  user.formatted_address.longitude,
+                  request.user.formatted_address.latitude,
+                  request.user.formatted_address.longitude
+                ).toFixed(1) : null;
 
-              return (
-                <ItemCard
-                  key={request.id}
-                  currentUser={user}
-                  item={request}
-                  type="request"
-                  itemDistance={distanceTemp}
-                />
-              );
-            })
+                return (
+                  <ItemCard
+                    key={request.id}
+                    currentUser={user}
+                    item={request}
+                    type="request"
+                    itemDistance={distanceTemp}
+                  />
+                );
+              })}
+              {/* Observer target */}
+              {filteredRequests.length > displayLimit && (
+                <div 
+                  ref={observerTarget}
+                  className="col-span-full flex justify-center p-4"
+                >
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
+                </div>
+              )}
+            </>
           ) : (
             <div className="col-span-full text-center text-gray-500">
               No results found
