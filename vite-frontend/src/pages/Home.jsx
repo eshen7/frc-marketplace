@@ -5,9 +5,10 @@ import Map from "../components/Map";
 import SuccessBanner from "../components/SuccessBanner";
 import ItemScrollBar from "../components/ItemScrollBar";
 import { useLocation, useNavigate } from "react-router-dom";
-import axiosInstance from "../utils/axiosInstance";
 import { useUser } from "../contexts/UserContext";
 import { motion } from "framer-motion"; 
+import { useData } from "../contexts/DataContext";
+import SectionHeader from "../components/SectionHeader";
 
 const Home = () => {
   const location = useLocation();
@@ -22,76 +23,11 @@ const Home = () => {
     setIsAuthenticated,
   } = useUser();
 
+  // Get data from context
+  const { users: allTeams, requests, sales, loadingStates } = useData();
+
   const [showLoginSuccessBanner, setShowLoginSuccessBanner] = useState(false);
   const [bannerMessage, setBannerMessage] = useState("");
-  const [allTeams, setAllTeams] = useState([]);
-
-  const [requests, setRequests] = useState([]);
-  const [sales, setSales] = useState([]);
-
-  const [loadingRequests, setLoadingRequests] = useState(true);
-  const [loadingSales, setLoadingSales] = useState(true);
-
-  const fetchRequests = async () => {
-    try {
-      const response = await axiosInstance.get("/requests/");
-      const data = response.data;
-
-      if (!data) {
-        throw new Error("Error fetching Reqeusts");
-      }
-
-      setRequests(data);
-      setLoadingRequests(false);
-      console.log("Requests:", data);
-    } catch (err) {
-      console.error("Error fetching Requests:", err);
-      setLoadingRequests(false);
-    }
-  };
-
-  const fetchSales = async () => {
-    try {
-      const response = await axiosInstance.get("/sales/");
-      const data = response.data;
-
-      if (!data) {
-        throw new Error("Error fetching Sales");
-      }
-
-      setSales(data);
-      setLoadingSales(false);
-      console.log("Sales:", data);
-    } catch (err) {
-      console.error("Error fetching Sales:", err);
-      setLoadingSales(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchRequests();
-    fetchSales();
-  }, []);
-
-  const fetchTeams = async () => {
-    try {
-      const response = await axiosInstance.get("/users/");
-      let data = response.data;
-      data = data.filter((user) => user.formatted_address != null);
-
-      if (!data) {
-        throw new Error("Error getting Teams");
-      }
-
-      setAllTeams(data);
-    } catch (error) {
-      console.error("Error fetching User Data:", error);
-    }
-  };
-
-  useEffect(() => {
-    fetchTeams();
-  }, []);
 
   useEffect(() => {
     if (location.state?.fromLogin) {
@@ -111,7 +47,7 @@ const Home = () => {
         <SuccessBanner message={bannerMessage} onClose={handleCloseBanner} />
       )}
       <TopBar />
-      
+      <div className="px-5 md:px-10 lg:px-20">
       {/* Hero Section */}
       <section className="relative pt-20 pb-20 overflow-hidden">
         <div className="container mx-auto px-4">
@@ -130,7 +66,7 @@ const Home = () => {
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
                   className="px-8 py-4 bg-blue-600 text-white rounded-lg font-semibold shadow-lg hover:bg-blue-700 transition-all"
-                  onClick={() => navigate("/request")}
+                  onClick={() => isAuthenticated ? navigate(isAuthenticated ? "/request" : "/login"): navigate("/login")}
                 >
                   Make a Request
                 </motion.button>
@@ -138,14 +74,13 @@ const Home = () => {
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
                   className="px-8 py-4 bg-white text-blue-600 rounded-lg font-semibold shadow-lg hover:bg-gray-50 transition-all border-2 border-blue-600"
-                  onClick={() => navigate("/sale")}
+                  onClick={() => isAuthenticated ? navigate(isAuthenticated ? "/sale" : "/login"): navigate("/login")}
                 >
                   Post a Sale
                 </motion.button>
               </div>
             </div>
             <div className="w-full lg:w-1/2 px-4">
-              {/* Add an illustration or image here */}
               <div className="relative rounded-2xl overflow-hidden shadow-2xl">
                 <Map zoom={8} locations={allTeams} className="h-[400px] w-full" />
               </div>
@@ -155,7 +90,7 @@ const Home = () => {
       </section>
 
       {/* Stats Section */}
-      <section className="py-10 bg-white">
+      
         <div className="container mx-auto px-4">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {[
@@ -175,18 +110,18 @@ const Home = () => {
             ))}
           </div>
         </div>
-      </section>
 
       {/* Marketplace Sections */}
       <section className="py-20">
         <div className="container mx-auto px-4">
           <div className="mb-16">
-            <h2 className="text-3xl font-bold text-blue-900 mb-8">Recent Part Requests</h2>
+            <SectionHeader title="Recent Part Requests" />
             <ItemScrollBar
-              key={requests[0]}
+              key={requests[0]?.id}
               items={requests}
-              loadingItems={loadingRequests}
+              loadingItems={loadingStates.requests}
               user={user}
+              isAuthenticated={isAuthenticated}
               loadingUser={loadingUser}
               type="request"
             />
@@ -201,14 +136,15 @@ const Home = () => {
           </div>
 
           <div>
-            <h2 className="text-3xl font-bold text-blue-900 mb-8">Parts for Sale</h2>
+            <SectionHeader title="Parts for Sale" />
             <ItemScrollBar
-              key={sales[0]}
+              key={sales[0]?.id}
               items={sales}
-              loadingItems={loadingSales}
+              loadingItems={loadingStates.sales}
               user={user}
               loadingUser={loadingUser}
               type="sale"
+              isAuthenticated={isAuthenticated}
             />
             <div className="text-center mt-8">
               <button
@@ -221,8 +157,9 @@ const Home = () => {
           </div>
         </div>
       </section>
-
+      </div>
       <Footer />
+
     </div>
   );
 };

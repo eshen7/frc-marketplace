@@ -25,10 +25,10 @@ import NewCategoryForm from "./NewCategoryForm";
 import NewManufacturerForm from "./NewManufacturerForm";
 import SuccessBanner from "./SuccessBanner";
 import ErrorBanner from "./ErrorBanner";
+import { useData } from '../contexts/DataContext';
 
 const NewPartForm = ({ open, onClose }) => {
-  const [categories, setCategories] = useState([]);
-  const [manufacturers, setManufacturers] = useState([]);
+  const { categories, manufacturers, refreshData } = useData();
   const [manufacturerDialogOpen, setManufacturerDialogOpen] = useState(false);
   const [categoryDialogOpen, setCategoryDialogOpen] = useState(false);
   const [partData, setPartData] = useState({
@@ -46,38 +46,13 @@ const NewPartForm = ({ open, onClose }) => {
   const [preview, setPreview] = useState(null);
   const [loading, setLoading] = useState(false);
 
-  const fetchCategories = async () => {
-    try {
-      const response = await axiosInstance.get("parts/categories/");
-      setCategories(response.data);
-    } catch (error) {
-      setError("Failed to fetch categories. Please try again.");
-      setCategories([]);
-    }
-  };
-
-  const fetchManufacturers = async () => {
-    try {
-      const response = await axiosInstance.get("parts/manufacturers/");
-      setManufacturers(response.data);
-    } catch (error) {
-      setError("Failed to fetch manufacturers. Please try again.");
-      setManufacturers([]);
-    }
-  };
-
-  useEffect(() => {
-    fetchCategories();
-    fetchManufacturers();
-  }, []);
-
   const handleChange = (field) => (event) => {
-    if (field === "manufacturer_id" && event.target.value === "create") {
+    if (field === "manufacturer" && event.target.value === "create") {
       setManufacturerDialogOpen(true);
       return;
     }
 
-    if (field === "category_id" && event.target.value === "create") {
+    if (field === "category" && event.target.value === "create") {
       setCategoryDialogOpen(true);
       return;
     }
@@ -172,13 +147,13 @@ const NewPartForm = ({ open, onClose }) => {
   const handleManufacturerSuccess = (newManufacturer) => {
     setPartData((prev) => ({ ...prev, manufacturer_id: newManufacturer.id }));
     setManufacturerDialogOpen(false);
-    fetchManufacturers();
+    refreshData('manufacturers');
   };
 
   const handleCategorySuccess = (newCategory) => {
     setPartData((prev) => ({ ...prev, category_id: newCategory.id }));
     setCategoryDialogOpen(false);
-    fetchCategories();
+    refreshData('categories');
   };
 
   const isFormValid = () => {
@@ -223,28 +198,30 @@ const NewPartForm = ({ open, onClose }) => {
               if (newValue === "create") {
                 setManufacturerDialogOpen(true);
               } else {
-                handleChange("manufacturer_id")({
-                  target: {
-                    value: newValue ? newValue.id : "",
-                  },
-                });
+                setPartData(prev => ({
+                  ...prev,
+                  manufacturer_id: newValue ? newValue.id : ""
+                }));
               }
             }}
             getOptionLabel={(option) => {
               if (option === "create") return "➕ ADD NEW MANUFACTURER";
               return option.name;
             }}
-            renderOption={(props, option) => (
-              <MenuItem {...props}>
-                {option === "create" ? (
-                  <span className="text-blue-600 font-medium">
-                    ➕ ADD NEW MANUFACTURER
-                  </span>
-                ) : (
-                  option.name
-                )}
-              </MenuItem>
-            )}
+            renderOption={(props, option, state) => {
+              const { key, ...otherProps } = props;
+              return (
+                <MenuItem key={key} {...otherProps}>
+                  {option === "create" ? (
+                    <span className="text-blue-600 font-medium">
+                      ➕ ADD NEW MANUFACTURER
+                    </span>
+                  ) : (
+                    option.name
+                  )}
+                </MenuItem>
+              );
+            }}
             renderInput={(params) => (
               <TextField {...params} label="Manufacturer *" margin="dense" />
             )}
@@ -279,28 +256,30 @@ const NewPartForm = ({ open, onClose }) => {
               if (newValue === "create") {
                 setCategoryDialogOpen(true);
               } else {
-                handleChange("category_id")({
-                  target: {
-                    value: newValue ? newValue.id : "",
-                  },
-                });
+                setPartData(prev => ({
+                  ...prev,
+                  category_id: newValue ? newValue.id : ""
+                }));
               }
             }}
             getOptionLabel={(option) => {
               if (option === "create") return "➕ ADD NEW CATEGORY";
               return option.name;
             }}
-            renderOption={(props, option) => (
-              <MenuItem {...props}>
-                {option === "create" ? (
-                  <span className="text-blue-600 font-medium">
-                    ➕ ADD NEW CATEGORY
-                  </span>
-                ) : (
-                  option.name
-                )}
-              </MenuItem>
-            )}
+            renderOption={(props, option, state) => {
+              const { key, ...otherProps } = props;
+              return (
+                <MenuItem key={key} {...otherProps}>
+                  {option === "create" ? (
+                    <span className="text-blue-600 font-medium">
+                      ➕ ADD NEW CATEGORY
+                    </span>
+                  ) : (
+                    option.name
+                  )}
+                </MenuItem>
+              );
+            }}
             renderInput={(params) => (
               <TextField {...params} label="Category *" margin="dense" />
             )}

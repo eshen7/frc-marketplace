@@ -39,7 +39,6 @@ class UserConsumer(AsyncJsonWebsocketConsumer):
         try:
             # Import models here to avoid circular imports
             from api.models import User, Message
-            from .tasks import send_email_task
             from django.conf import settings
             
             sender = User.objects.get(team_number=sender_id)
@@ -53,13 +52,14 @@ class UserConsumer(AsyncJsonWebsocketConsumer):
                 is_read=False
             )
 
+            # Import and call task here to avoid circular imports
+            from .tasks import send_dm_notification
             # Send email notification
             if receiver.email:
-                send_email_task.delay(
-                    subject=f"New Message from {sender.team_number} - {sender.team_name}",
-                    message=f"Hello {receiver.full_name},\n\nYou have received a new message from {sender.full_name} on Team {sender.team_number}:\n\n{message_content}\n\n- Millennium Market Team",
-                    from_email=settings.DEFAULT_FROM_EMAIL,
-                    recipient_list=[receiver.email]
+                send_dm_notification.delay(
+                    sender_id=sender.id,
+                    recipient_id=receiver.id,
+                    message_content=message.message
                 )
                 logger.info(f"Email notification queued for {receiver.email}")
 

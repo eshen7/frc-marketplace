@@ -5,6 +5,7 @@ import Fuse from "fuse.js";
 import axiosInstance from "../utils/axiosInstance";
 import { useNavigate } from "react-router-dom";
 import ProfilePhoto from "./ProfilePhoto";
+import { useData } from '../contexts/DataContext';
 
 const SearchBar = () => {
   const [searchTerm, setSearchTerm] = useState("");
@@ -14,6 +15,8 @@ const SearchBar = () => {
   const searchRef = useRef(null);
   const fuseRef = useRef(null);
   const navigate = useNavigate();
+
+  const { users, parts, requests, sales, loadingStates } = useData();
 
   const fuseOptions = {
     threshold: 0.3,
@@ -27,30 +30,22 @@ const SearchBar = () => {
   };
 
   useEffect(() => {
-    const fetchSearchData = async () => {
-      try {
-        const response = await axiosInstance.get("/search/all/");
-        const searchData = response.data;
+    const processSearchData = () => {
+      const processedSearchData = [
+        ...users.map((user) => ({ ...user, type: "team" })),
+        ...parts.map((part) => ({ ...part, type: "part" })),
+        ...requests.map((request) => ({ ...request, type: "request" })),
+        ...sales.map((sale) => ({ ...sale, type: "sale" })),
+      ];
 
-        const processedSearchData = [
-          ...searchData.users.map((user) => ({ ...user, type: "team" })),
-          ...searchData.parts.map((part) => ({ ...part, type: "part" })),
-          ...searchData.requests.map((request) => ({
-            ...request,
-            type: "request",
-          })),
-        ];
-
-        console.log("processed search data", processedSearchData);
-
-        fuseRef.current = new Fuse(processedSearchData, fuseOptions);
-      } catch (error) {
-        console.error("Error fetching search data:", error);
-      }
+      //console.log("processed search data", processedSearchData);
+      fuseRef.current = new Fuse(processedSearchData, fuseOptions);
     };
 
-    fetchSearchData();
-  }, []);
+    if (!Object.values(loadingStates).some(state => state)) {
+      processSearchData();
+    }
+  }, [users, parts, requests, sales, loadingStates]);
 
   useEffect(() => {
     const handleClickOutside = (event) => {

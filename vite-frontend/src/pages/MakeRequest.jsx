@@ -22,6 +22,8 @@ import ErrorBanner from "../components/ErrorBanner";
 import NewPartForm from "../components/NewPartForm";
 // Utils
 import axiosInstance from "../utils/axiosInstance";
+import { useData } from '../contexts/DataContext';
+import { useNavigate } from "react-router-dom";
 
 const INITIAL_FORM_STATE = {
   quantity: 1,
@@ -30,7 +32,8 @@ const INITIAL_FORM_STATE = {
 };
 
 const PartRequestForm = () => {
-  const [parts, setParts] = useState([]);
+  const navigate = useNavigate();
+  const { parts, loadingStates, refreshSingle } = useData();
   const [selectedPart, setSelectedPart] = useState("");
   const [dateNeeded, setDateNeeded] = useState(null);
   const [formData, setFormData] = useState(INITIAL_FORM_STATE);
@@ -38,20 +41,6 @@ const PartRequestForm = () => {
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState("");
   const [isNewPartFormOpen, setIsNewPartFormOpen] = useState(false);
-
-  useEffect(() => {
-    fetchParts();
-  }, []);
-
-  const fetchParts = async () => {
-    try {
-      const { data } = await axiosInstance.get("/parts/");
-      setParts(data);
-    } catch (error) {
-      setError("Failed to fetch parts list");
-      console.error("Error fetching parts:", error);
-    }
-  };
 
   const handleInputChange = (event) => {
     const { name, value } = event.target;
@@ -75,13 +64,13 @@ const PartRequestForm = () => {
         needed_date: new Date(dateNeeded).toISOString().split("T")[0],
       };
 
-      console.log("request data", requestData)
-
       await axiosInstance.post("/requests/", requestData);
       setSuccess(true);
       setSelectedPart("");
       setFormData(INITIAL_FORM_STATE);
       setDateNeeded(null);
+      refreshSingle('requests');
+      setTimeout(() => navigate('/requests'), 3000);
     } catch (error) {
       setError("Failed to submit request. Please try again.");
     } finally {
@@ -90,7 +79,6 @@ const PartRequestForm = () => {
   };
 
   const handleNewPartSuccess = async (newPart) => {
-    await fetchParts();
     setSelectedPart(newPart.id);
   };
 
@@ -98,7 +86,7 @@ const PartRequestForm = () => {
     <div className="min-h-screen flex flex-col">
       {success && (
         <SuccessBanner
-          message="Operation completed successfully!"
+          message="Request submitted successfully. Navigating to requests page..."
           onClose={() => setSuccess(false)}
         />
       )}
@@ -113,17 +101,18 @@ const PartRequestForm = () => {
           </h1>
 
           <form onSubmit={handleSubmit} className="w-full">
-            <FormControl fullWidth margin="normal">
-              <Autocomplete
-                id="part-select"
-                options={parts}
-                value={parts.find(part => part.id === selectedPart) || null}
-                onChange={(_, newValue) => {
-                  setSelectedPart(newValue ? newValue.id : '');
-                }}
-                getOptionLabel={(option) => `${option.name} - ${option.manufacturer.name}`}
-                renderOption={(props, option) => (
-                  <MenuItem {...props}>
+            <Autocomplete
+              id="part-select"
+              options={parts}
+              value={parts.find(part => part.id === selectedPart) || null}
+              onChange={(_, newValue) => {
+                setSelectedPart(newValue ? newValue.id : '');
+              }}
+              getOptionLabel={(option) => `${option.name} - ${option.manufacturer.name}`}
+              renderOption={(props, option) => {
+                const { key, ...otherProps } = props;
+                return (
+                  <MenuItem key={key} {...otherProps}>
                     <div className="flex flex-row w-full items-center justify-between">
                       <span>
                         {option.name} - <em>{option.manufacturer.name}</em>
@@ -143,18 +132,18 @@ const PartRequestForm = () => {
                       )}
                     </div>
                   </MenuItem>
-                )}
-                renderInput={(params) => (
-                  <TextField
-                    {...params}
-                    label="Part"
-                    required
-                  />
-                )}
-                isOptionEqualToValue={(option, value) => option.id === value.id}
-                noOptionsText="No parts found"
-              />
-            </FormControl>
+                );
+              }}
+              renderInput={(params) => (
+                <TextField
+                  {...params}
+                  label="Part"
+                  required
+                />
+              )}
+              isOptionEqualToValue={(option, value) => option.id === value.id}
+              noOptionsText="No parts found"
+            />
 
             <button
               className="w-full mt-1 mb-2 border border-blue-600 text-blue-600 hover:bg-blue-50 py-2 px-4 rounded"

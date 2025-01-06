@@ -8,7 +8,7 @@ const CreatorCard = ({ image, name, title, description, linkedin, insta }) => {
       <div className="flex flex-col justify-center place-items-center">
         {/* Image */}
         <div className="border-black min-w-[100px]">
-          <img src={image} className="rounded-full" width={100} />
+          <img src={image} className="rounded-full object-cover w-[100px] h-[100px]" />
         </div>
 
         {/* Logos & Links */}
@@ -50,7 +50,7 @@ export default function OurTeamPage() {
         <div className="">
           <h1 className="text-[40px] font-[500]">Our team</h1>
           <p className="mt-5">
-            Sample description about the website and the dev team.
+            Created by FIRST alumni.
           </p>
         </div>
 
@@ -59,11 +59,8 @@ export default function OurTeamPage() {
           <CreatorCard
             name={"Eric Grun"}
             image={"/grun.jpeg"}
-            title={"CS @ Rice"}
-            description={
-              "I'm an undergraduate at Rice University studying Computer Science and Entrepreneurship. " +
-              "I was the president of Team 3647 from 2023-2024."
-            }
+            title={"Fullstack dev - CS @ Rice"}
+            description={"skibidi sigma sigma"}
             linkedin={"https://www.linkedin.com/in/ericg4"}
             insta={"https://www.instagram.com/eric.g4/"}
           />
@@ -71,8 +68,7 @@ export default function OurTeamPage() {
             name={"Edison Shen"}
             image={"/edward.jpg"}
             title={"CS @ Michigan"}
-            description={"I'm an undergraduate at the University of Michigan, Ann Arbor studying Computer Science. " +
-              "I was the software lead of Team 3647 from 2023-2024."}
+            description={"biggest bench in 3647 history."}
             linkedin={"https://www.linkedin.com/in/edison-shen7/"}
             insta={"https://www.instagram.com/edisonshen91/"}
           />
@@ -95,8 +91,8 @@ export default function OurTeamPage() {
           <CreatorCard
             name={"Alexus Lee"}
             image={"/IMG_6769.jpg"}
-            title={"biggest back"}
-            description={"eater"}
+            title={"Design - Economics @ Rice"}
+            description={"sigma sigma on the wall, who's the skibidiest of them all?"}
             linkedin={"https://www.linkedin.com/in/alexus-lee-5b695a210/"}
             insta={"https://www.instagram.com/alexuss.27/"}
           />

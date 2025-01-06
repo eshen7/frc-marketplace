@@ -23,7 +23,7 @@ const NavButton = ({ name, link, navigate }) => {
   return (
     <button
       onClick={() => navigate(link)}
-      className="px-4 py-2 text-white hover:underline-offset-1 hover:underline mx-2 whitespace-nowrap"
+      className="px-4 py-2 text-white hover:underline-offset-1 hover:underline mx-1 whitespace-nowrap"
     >
       {name}
     </button>
@@ -84,14 +84,12 @@ const TopBar = () => {
       );
 
       if (response.status === 200) {
-        console.log("Logout successful");
         navigate("/", {
           state: { fromLogin: true, message: "You have been logged out" },
         });
         window.location.reload();
         return { success: true };
       } else {
-        console.log("Logout failed");
         return { success: false, error: "An error occured" };
       }
     } catch (error) {
@@ -105,13 +103,13 @@ const TopBar = () => {
   };
 
   return (
-    <div className="top-bar bg-black w-full border-b border-white max-w-[100vw] mx-auto px-2 sm:px-4 lg:px-6 flex flex-row place-items-center justify-between py-3">
+    <div className="top-bar bg-black w-full border-b border-white max-w-[100vw] mx-auto px-2 md:px-4 lg:px-6 flex flex-row place-items-center justify-between py-3">
       {/* Left Buttons */}
       <div className="flex flex-row">
         {/* Logo */}
-        <button onClick={() => navigate("/")}>
+        <button className="w-[50px] mx-5" onClick={() => navigate("/")}>
           <img
-            className="h-[40px] min-w-[32px] px-5 hover:cursor-pointer hover:scale-105 transition-translate duration-100 text-white"
+            className="hover:cursor-pointer hover:scale-105 transition-translate duration-100 text-white"
             src="/millenniumMarket.svg"
             alt="3647 logo"
           />
@@ -120,7 +118,7 @@ const TopBar = () => {
         {/* Nav Buttons */}
         <div
           className={`hidden ${
-            isAuthenticated ? "lg:flex lg:flex-row" : "sm:flex sm:flex-row"
+            isAuthenticated ? "lg:flex lg:flex-row" : "md:flex md:flex-row"
           }`}
         >
           <NavButton name={"Requests"} link={"/requests"} navigate={navigate} />
@@ -154,7 +152,7 @@ const TopBar = () => {
         </div>
 
         {/* Hamburger Button */}
-        <div className={`flex ${isAuthenticated ? "lg:hidden" : "sm:hidden"}`}>
+        <div className={`flex ${isAuthenticated ? "lg:hidden" : "md:hidden"}`}>
           <button onClick={() => setIsOpen(true)}>
             <RxHamburgerMenu className="w-[35px] h-[35px]" color={"#FFFFFF"} />
           </button>
@@ -163,7 +161,7 @@ const TopBar = () => {
         {/* Right Buttons */}
         <div
           className={`hidden ${
-            isAuthenticated ? "lg:flex lg:flex-row" : "sm:flex sm:flex-row"
+            isAuthenticated ? "lg:flex lg:flex-row" : "md:flex md:flex-row"
           } relative`}
         >
           {/* Chat Button if Logged In */}
@@ -194,7 +192,7 @@ const TopBar = () => {
               </div>
             )}
           </button>
-          
+
           {/* Profile Dropdown */}
           {profileDropdownIsOpen && (
             <div className="absolute top-[50px] right-[16px] bg-gray-100 whitespace-nowrap z-50 rounded-lg px-1 border border-gray-300 shadow-lg">

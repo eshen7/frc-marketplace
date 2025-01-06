@@ -66,7 +66,9 @@ ROOT_URLCONF = "frc_marketplace_API.urls"
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
-        "DIRS": [],
+        "DIRS": [
+            os.path.join(BASE_DIR, 'api/templates'),
+        ],
         "APP_DIRS": True,
         "OPTIONS": {
             "context_processors": [
@@ -292,3 +294,6 @@ LOGGING = {
         },
     },
 }
+
+# Password reset token timeout in seconds
+PASSWORD_RESET_TIMEOUT = 60 * 30  # 30 minutes

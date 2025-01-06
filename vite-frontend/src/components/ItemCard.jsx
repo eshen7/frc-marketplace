@@ -4,7 +4,7 @@ import { Skeleton } from "@mui/material";
 import { getDaysUntil, haversine, isDate } from "../utils/utils";
 import { useNavigate } from "react-router-dom";
 
-const ItemCard = ({ item, currentUser, type }) => {
+const ItemCard = ({ item, currentUser, type, itemDistance }) => {
   const navigate = useNavigate();
   const [imageLoaded, setImageLoaded] = useState(false);
   const [imageError, setImageError] = useState(false);
@@ -51,7 +51,12 @@ const ItemCard = ({ item, currentUser, type }) => {
       </div>
 
       <div className="p-4">
-        <h2 className="text-xl font-semibold mb-2 truncate">{item.part.name}</h2>
+        <p className="text-xs text-gray-500 text-right">
+          {isRequest ? (new Date(item.request_date)).toLocaleDateString() : (new Date(item.sale_creation_date)).toLocaleDateString()}
+        </p>
+        <h2 className="text-xl font-semibold mb-2 truncate">
+          {item.part.name}
+        </h2>
 
         <div onClick={() => navigate(`/profile/frc/${item.user.team_number}`)} className="text-gray-600 text-sm mb-2 truncate hover:underline cursor-pointer">
           {`Team ${item.user.team_number} - ${item.user.team_name}`}
@@ -61,17 +66,12 @@ const ItemCard = ({ item, currentUser, type }) => {
           <div>
             <p className="text-gray-600 text-sm mb-2">
               {currentUser && currentUser.team_number !== item.user.team_number
-                ? haversine(
-                    currentUser.formatted_address.latitude,
-                    currentUser.formatted_address.longitude,
-                    item.user.formatted_address.latitude,
-                    item.user.formatted_address.longitude
-                  ).toFixed(1) + " miles"
+                ? itemDistance + " miles away"
                 : currentUser
-                ? "Your Listing"
-                : !currentUser
-                ? "Please log in to view distance"
-                : ""}
+                  ? "Your Listing"
+                  : !currentUser
+                    ? "Please log in to view distance"
+                    : ""}
             </p>
             {(() => {
               let temp_date = item.needed_date;
@@ -82,9 +82,8 @@ const ItemCard = ({ item, currentUser, type }) => {
               const isUrgent = daysUntil < 3;
               return (
                 isRequest && (
-                  <p className={`text-sm mb-4 ${
-                    isUrgent ? "text-red-600 font-bold" : "text-gray-600"
-                  }`}>
+                  <p className={`text-sm mb-4 ${isUrgent ? "text-red-600 font-bold" : "text-gray-600"
+                    }`}>
                     Need By: {temp_date.toLocaleDateString()} ({daysUntil} days)
                   </p>
                 )
@@ -101,17 +100,12 @@ const ItemCard = ({ item, currentUser, type }) => {
             </p>
             <p className="text-gray-600 text-sm mb-4">
               {currentUser && currentUser.team_number !== item.user.team_number
-                ? haversine(
-                    currentUser.formatted_address.latitude,
-                    currentUser.formatted_address.longitude,
-                    item.user.formatted_address.latitude,
-                    item.user.formatted_address.longitude
-                  ).toFixed(1) + " miles"
+                ? itemDistance + " miles"
                 : currentUser
-                ? "Your Listing"
-                : !currentUser
-                ? "Please log in to view distance"
-                : ""}
+                  ? "Your Listing"
+                  : !currentUser
+                    ? "Please log in to view distance"
+                    : ""}
             </p>
           </div>
         )}
@@ -128,7 +122,7 @@ const ItemCard = ({ item, currentUser, type }) => {
         )}
         {isSale && (
           <button
-            className="w-full py-2 text-white bg-green-600 hover:bg-green-700 transition duration-200 rounded-md"
+            className="w-full py-2 text-white bg-blue-800 hover:bg-blue-900 transition duration-200 rounded-md"
             onClick={() => {
               navigate(`/sales/${item.id}`);
             }}

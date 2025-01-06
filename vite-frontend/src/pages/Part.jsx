@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import { useParams } from "react-router-dom";
 import axiosInstance from "../utils/axiosInstance";
 import TopBar from "../components/TopBar";
@@ -27,6 +27,8 @@ import LaunchIcon from "@mui/icons-material/Launch";
 import { FaEdit, FaSave } from "react-icons/fa";
 import SuccessBanner from "../components/SuccessBanner";
 import ErrorBanner from "../components/ErrorBanner";
+import { useData } from "../contexts/DataContext";
+import { haversine } from "../utils/utils";
 
 const PartDetailsComponent = ({ part, setPart, isAuthenticated }) => {
   const [isEditing, setIsEditing] = useState(false);
@@ -225,19 +227,19 @@ const PartDetailsComponent = ({ part, setPart, isAuthenticated }) => {
 
 const PartDetailsPage = () => {
   const { id } = useParams();
-
   const { user, isAuthenticated } = useUser();
+  const { requests, sales, loadingStates } = useData();
 
   const [part, setPart] = useState(null);
-  const [requests, setRequests] = useState([]);
-  const [sales, setSales] = useState([]);
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [loadingRequests, setLoadingRequests] = useState(true);
-  const [loadingSales, setLoadingSales] = useState(true);
-
   const [onRequests, setOnRequests] = useState(true);
+  const [salesDisplayLimit, setSalesDisplayLimit] = useState(12);
+  const [requestsDisplayLimit, setRequestsDisplayLimit] = useState(12);
+  const salesObserverTarget = useRef(null);
+  const requestsObserverTarget = useRef(null);
 
+  // Only fetch the part details, filter requests/sales from context
   useEffect(() => {
     const fetchPart = async () => {
       try {
@@ -250,41 +252,65 @@ const PartDetailsPage = () => {
         setLoading(false);
       }
     };
-
-    const fetchRequests = async () => {
-      try {
-        const response = await axiosInstance.get(`/parts/id/${id}/requests`);
-        setRequests(response.data);
-      } catch (error) {
-        console.error("Error fetching requests:", error);
-      } finally {
-        setLoadingRequests(false);
-      }
-    };
-
-    const fetchSales = async () => {
-      try {
-        const response = await axiosInstance.get(`/parts/id/${id}/sales`);
-        setSales(response.data);
-      } catch (error) {
-        console.error("Error fetching sales:", error);
-      } finally {
-        setLoadingSales(false);
-      }
-    };
-
     fetchPart();
-    fetchRequests();
-    fetchSales();
   }, [id]);
 
-  const handleClickSales = () => {
-    setOnRequests(false);
-  };
+  // Filter requests/sales from context instead of fetching
+  const filteredRequests = requests.filter(request => request.part.id === id);
+  const filteredSales = sales.filter(sale => sale.part.id === id);
 
-  const handleClickRequests = () => {
-    setOnRequests(true);
-  };
+  // Create intersection observers for both sections
+  const salesObserverCallback = useCallback(
+    (entries) => {
+      const [entry] = entries;
+      if (entry.isIntersecting && filteredSales.length > salesDisplayLimit) {
+        setSalesDisplayLimit(prev => prev + 12);
+      }
+    },
+    [filteredSales?.length, salesDisplayLimit]
+  );
+
+  const requestsObserverCallback = useCallback(
+    (entries) => {
+      const [entry] = entries;
+      if (entry.isIntersecting && filteredRequests.length > requestsDisplayLimit) {
+        setRequestsDisplayLimit(prev => prev + 12);
+      }
+    },
+    [filteredRequests?.length, requestsDisplayLimit]
+  );
+
+  // Set up observers
+  useEffect(() => {
+    const salesObserver = new IntersectionObserver(salesObserverCallback, {
+      root: null,
+      rootMargin: '20px',
+      threshold: 1.0
+    });
+
+    const requestsObserver = new IntersectionObserver(requestsObserverCallback, {
+      root: null,
+      rootMargin: '20px',
+      threshold: 1.0
+    });
+
+    if (salesObserverTarget.current) {
+      salesObserver.observe(salesObserverTarget.current);
+    }
+
+    if (requestsObserverTarget.current) {
+      requestsObserver.observe(requestsObserverTarget.current);
+    }
+
+    return () => {
+      if (salesObserverTarget.current) {
+        salesObserver.unobserve(salesObserverTarget.current);
+      }
+      if (requestsObserverTarget.current) {
+        requestsObserver.unobserve(requestsObserverTarget.current);
+      }
+    };
+  }, [salesObserverCallback, requestsObserverCallback]);
 
   return (
     <Box sx={{ display: "flex", flexDirection: "column", minHeight: "100vh" }}>
@@ -323,42 +349,70 @@ const PartDetailsPage = () => {
           <Box sx={{ mt: 3 }}>
             {onRequests ? (
               <Grid container spacing={2}>
-                {requests.length > 0 ? (
-                  requests.map((request) => (
-                    <Grid item xs={12} sm={6} md={4} lg={3} key={request.id}>
-                      <ItemCard
-                        item={request}
-                        currentUser={user}
-                        type="request"
-                      />
-                    </Grid>
-                  ))
-                ) : loadingRequests ? (
-                  <Typography color="text.secondary">
-                    Loading requests...
-                  </Typography>
+                {filteredRequests.length > 0 ? (
+                  <>
+                    {filteredRequests.slice(0, requestsDisplayLimit).map((request) => (
+                      <Grid item xs={12} sm={6} md={4} lg={3} key={request.id}>
+                        <ItemCard
+                          item={request}
+                          currentUser={user}
+                          type="request"
+                          itemDistance={isAuthenticated ? haversine(
+                            user.formatted_address.latitude,
+                            user.formatted_address.longitude,
+                            request.user.formatted_address.latitude,
+                            request.user.formatted_address.longitude
+                          ).toFixed(1) : null}
+                        />
+                      </Grid>
+                    ))}
+                    {filteredRequests.length > requestsDisplayLimit && (
+                      <div 
+                        ref={requestsObserverTarget}
+                        className="col-span-full flex justify-center p-4 w-full"
+                      >
+                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
+                      </div>
+                    )}
+                  </>
+                ) : loadingStates.requests ? (
+                  <Typography color="text.secondary">Loading requests...</Typography>
                 ) : (
-                  <Typography color="text.secondary">
-                    No requests found for this part.
-                  </Typography>
+                  <Typography color="text.secondary">No requests found for this part.</Typography>
                 )}
               </Grid>
             ) : (
               <Grid container spacing={2}>
-                {sales.length > 0 ? (
-                  sales.map((sale) => (
-                    <Grid item xs={12} sm={6} md={4} lg={3} key={sale.id}>
-                      <ItemCard item={sale} currentUser={user} type="sale" />
-                    </Grid>
-                  ))
-                ) : loadingSales ? (
-                  <Typography color="text.secondary">
-                    Loading sales...
-                  </Typography>
+                {filteredSales.length > 0 ? (
+                  <>
+                    {filteredSales.slice(0, salesDisplayLimit).map((sale) => (
+                      <Grid item xs={12} sm={6} md={4} lg={3} key={sale.id}>
+                        <ItemCard
+                          item={sale}
+                          currentUser={user}
+                          type="sale"
+                          itemDistance={isAuthenticated ? haversine(
+                            user.formatted_address.latitude,
+                            user.formatted_address.longitude,
+                            sale.user.formatted_address.latitude,
+                            sale.user.formatted_address.longitude
+                          ).toFixed(1) : null}
+                        />
+                      </Grid>
+                    ))}
+                    {filteredSales.length > salesDisplayLimit && (
+                      <div 
+                        ref={salesObserverTarget}
+                        className="col-span-full flex justify-center p-4 w-full"
+                      >
+                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
+                      </div>
+                    )}
+                  </>
+                ) : loadingStates.sales ? (
+                  <Typography color="text.secondary">Loading sales...</Typography>
                 ) : (
-                  <Typography color="text.secondary">
-                    No sales found for this part.
-                  </Typography>
+                  <Typography color="text.secondary">No sales found for this part.</Typography>
                 )}
               </Grid>
             )}

@@ -73,7 +73,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     password = models.CharField(max_length=128)  # Store hashed password
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    is_active = models.BooleanField(default=True)
+    is_active = models.BooleanField(default=False)  # Manual user auth
     is_staff = models.BooleanField(default=False)  # Default user is not staff
     is_superuser = models.BooleanField(default=False)  # Default user is not superuser
     date_joined = models.DateTimeField(auto_now_add=True)

@@ -14,6 +14,8 @@ import SuccessBanner from "../components/SuccessBanner";
 import ErrorBanner from "../components/ErrorBanner";
 import NewPartForm from "../components/NewPartForm";
 import axiosInstance from "../utils/axiosInstance";
+import { useData } from "../contexts/DataContext";
+import { useNavigate } from "react-router-dom";
 
 const INITIAL_FORM_STATE = {
   partId: "",
@@ -24,26 +26,13 @@ const INITIAL_FORM_STATE = {
 };
 
 const PartSaleForm = () => {
-  const [parts, setParts] = useState([]);
+  const navigate = useNavigate();
+  const { parts, refreshSingle } = useData();
   const [formData, setFormData] = useState(INITIAL_FORM_STATE);
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState("");
   const [isNewPartFormOpen, setIsNewPartFormOpen] = useState(false);
-
-  useEffect(() => {
-    fetchParts();
-  }, []);
-
-  const fetchParts = async () => {
-    try {
-      const { data } = await axiosInstance.get("/parts/");
-      setParts(data);
-    } catch (error) {
-      setError("Failed to fetch parts list");
-      console.error("Error fetching parts:", error);
-    }
-  };
 
   const handleInputChange = (event) => {
     const { name, value } = event.target;
@@ -69,6 +58,8 @@ const PartSaleForm = () => {
       await axiosInstance.post("/sales/", saleData);
       setSuccess(true);
       setFormData(INITIAL_FORM_STATE);
+      refreshSingle("sales");
+      setTimeout(() => navigate('/sales'), 3000);
     } catch (error) {
       setError("Failed to submit sale listing. Please try again.");
     } finally {
@@ -85,7 +76,7 @@ const PartSaleForm = () => {
     <div className="min-h-screen flex flex-col">
       {success && (
         <SuccessBanner
-          message="Part listed for sale successfully!"
+          message="Part listed for sale successfully. Navigating to sales page..."
           onClose={() => setSuccess(false)}
         />
       )}

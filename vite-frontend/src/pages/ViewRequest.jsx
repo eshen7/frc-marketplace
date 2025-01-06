@@ -15,11 +15,14 @@ import ItemScrollBar from '../components/ItemScrollBar.jsx'
 import DropdownButton from '../components/DropdownButton.jsx'
 import ItemProfileSection from '../components/ItemProfileSection.jsx'
 import { useUser } from '../contexts/UserContext.jsx'
+import { useData } from '../contexts/DataContext.jsx'
 
 export default function FulfillRequest() {
   const { request_id } = useParams();
 
   const navigate = useNavigate();
+
+  const { refreshSingle } = useData();
 
   const { user, loadingUser, isAuthenticated } = useUser();
 
@@ -161,8 +164,9 @@ export default function FulfillRequest() {
   const handleDeleteConfirm = async () => {
     try {
       await axiosInstance.delete(`/requests/id/${request_id}/delete/`);
-      setRequestChange("Request deleted successfully.");
-      navigate("/");
+      setRequestChange("Request deleted successfully. Navigating to requests page...");
+      refreshSingle("requests");
+      setTimeout(() => navigate('/requests'), 3000);
     } catch (error) {
       console.error("Error deleting request:", error);
       setRequestChange("Error deleting request, please try again.");
@@ -182,7 +186,7 @@ export default function FulfillRequest() {
   return (
     <div className='flex flex-col min-h-screen'>
       {/* Success / Failure Banners */}
-      {requestChange == "Request Updated Successfully." || requestChange == "No changes to save." ? (
+      {requestChange == "Request deleted successfully. Navigating to requests page..." ? (
         <SuccessBanner
           message={requestChange}
           onClose={closeRequestChangeBanner}
@@ -444,6 +448,7 @@ export default function FulfillRequest() {
                   user={user}
                   loadingUser={loadingUser}
                   type="request"
+                  isAuthenticated={isAuthenticated}
                 />
               </div>
             </div>

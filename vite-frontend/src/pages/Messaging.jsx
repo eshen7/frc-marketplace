@@ -10,6 +10,41 @@ import { FaArrowLeft } from "react-icons/fa";
 import { useUser } from "../contexts/UserContext";
 import ProfilePhoto from "../components/ProfilePhoto";
 import { useWebSocket } from '../contexts/WebSocketContext';
+import { useData } from "../contexts/DataContext";
+
+const convertUrlsToLinks = (text, isSentMessage = false) => {
+  // Regex to match URLs
+  const urlRegex = /(https?:\/\/[^\s]+)|(www\.[^\s]+)/g;
+  
+  // Split the text into parts (URLs and non-URLs)
+  const parts = text.split(urlRegex);
+  
+  return parts.map((part, index) => {
+    if (!part) return null;
+    
+    // Check if this part is a URL
+    if (urlRegex.test(part)) {
+      const href = part.startsWith('www.') ? `https://${part}` : part;
+      return (
+        <a
+          key={index}
+          href={href}
+          target="_blank"
+          rel="noopener noreferrer"
+          className={`hover:underline ${
+            isSentMessage 
+              ? 'text-white font-medium underline' 
+              : 'text-blue-500'
+          }`}
+          onClick={(e) => e.stopPropagation()}
+        >
+          {part}
+        </a>
+      );
+    }
+    return part;
+  });
+};
 
 const MessageSent = ({ message, allTeams }) => {
   const senderTeam = allTeams.find(
@@ -20,8 +55,10 @@ const MessageSent = ({ message, allTeams }) => {
       <p className="text-xs px-[2px]">
         {senderTeam ? senderTeam.full_name : "Unknown Team"}
       </p>
-      <div className="bg-[#2A9EFC] rounded-3xl text-left w-fit shadow-md max-w-[50%] overflow-hidden break-words">
-        <p className="text-white px-[20px]">{message.message}</p>
+      <div className="bg-[#2A9EFC] rounded-3xl text-left w-fit shadow-md max-w-[50%]">
+        <p className="text-white px-[20px] py-1 break-all whitespace-pre-wrap">
+          {convertUrlsToLinks(message.message, true)}
+        </p>
       </div>
       <p className="text-xs text-gray-500">
         {message.timestamp ? formatTimestamp(message.timestamp) : "..."}
@@ -39,8 +76,10 @@ const MessageReceived = ({ message, allTeams }) => {
       <p className="text-xs px-[2px]">
         {senderTeam ? senderTeam.full_name : "Unknown Team"}
       </p>
-      <div className="bg-gray-200 rounded-3xl text-left w-fit shadow-md max-w-[50%] overflow-hidden break-words">
-        <p className="text-gray-600 px-[20px]">{message.message}</p>
+      <div className="bg-gray-200 rounded-3xl text-left w-fit shadow-md max-w-[50%]">
+        <p className="text-gray-600 px-[20px] py-1 break-all whitespace-pre-wrap">
+          {convertUrlsToLinks(message.message, false)}
+        </p>
       </div>
       <p className="text-xs text-gray-500">
         {message.timestamp ? formatTimestamp(message.timestamp) : "..."}
@@ -109,8 +148,7 @@ const Chat = () => {
 
   const [receiverUser, setReceiverUser] = useState(null);
 
-  const [allTeams, setAllTeams] = useState([]);
-  const [loadingTeams, setLoadingTeams] = useState(true);
+  const { users: allTeams, loadingStates } = useData();
 
   const [subsetTeams, setSubsetTeams] = useState([]);
   const [loadingSubsetTeams, setLoadingSubsetTeams] = useState(true);
@@ -240,7 +278,6 @@ const Chat = () => {
       const response = await axiosInstance.post("/messages/mark_as_read/", {
         team_number: teamNumber,
       });
-      console.log(response.data); // "Messages marked as read."
     } catch (err) {
       console.error("Error marking messages as read:", err);
     }
@@ -270,29 +307,6 @@ const Chat = () => {
 
     markRead();
   }, [user, roomName]);
-
-  // Fetch All Teams
-  useEffect(() => {
-    const fetchTeams = async () => {
-      try {
-        const response = await axiosInstance.get("/users/");
-        const data = response.data;
-
-        if (!data) {
-          throw new Error("Error getting Teams");
-        }
-
-        setAllTeams(data);
-        // console.log(allTeams)
-        setLoadingTeams(false);
-      } catch (error) {
-        console.error("Error fetching User Data:", error);
-        setLoadingTeams(false);
-      }
-    };
-
-    fetchTeams();
-  }, []);
 
   // Add new effect to set receiver from allTeams
   useEffect(() => {
@@ -516,7 +530,7 @@ const Chat = () => {
                 />
               </div>
 
-              {!loadingTeams && subsetTeams ? (
+              {!loadingStates.users && subsetTeams ? (
                 <div className="flex flex-col">
                   <p className="mx-3 py-2 text-[20px] border-b border-gray-300">
                     Current Messages
@@ -551,7 +565,7 @@ const Chat = () => {
                     </div>
                   ))}
                 </div>
-              ) : loadingTeams ? (
+              ) : loadingStates.users ? (
                 <p>Loading Teams</p>
               ) : (
                 <p>error loading teams</p>
@@ -559,7 +573,7 @@ const Chat = () => {
             </div>
 
             {/* Right Panel with messages */}
-            <div className={`${!isLargerThanSmall && !isOnMessagePage ? "hidden" : "flex"} w-full flex-col p-5`}>
+            <div className={`${!isLargerThanSmall && !isOnMessagePage ? "hidden" : "flex"} w-full max-w-full flex-col p-5`}>
               <div>
                 <h1 className="text-3xl text-center">
                   {roomName ? roomName : "Select a user to chat with!"}
@@ -570,7 +584,7 @@ const Chat = () => {
                 className="overflow-y-auto flex-grow"
                 ref={messagesContainerRef}
               >
-                {!loadingTeams && allTeams ? (
+                {!loadingStates.users && allTeams ? (
                   <>
                     {(messagesByRoom[roomName] || []).map((msg, index) => (
                       <div key={index}>
@@ -596,7 +610,7 @@ const Chat = () => {
               </div>
 
               {/* Input Section */}
-              <div className="flex flex-row w-full justify-end">
+              <div className="flex flex-row w-full max-w-full justify-end">
                 <input
                   type="text"
                   value={newMessage}
@@ -608,7 +622,7 @@ const Chat = () => {
                     }
                   }}
                   className="mr-3 border border-gray-300 
-                                focus:shadow-md focus:border-b-2 focus:ring-0 px-3 py-1 bg-inherit w-[87%] rounded-md"
+                                focus:shadow-md focus:border-b-2 focus:ring-0 px-3 py-1 bg-inherit w-[87%] flex-shrink-0 rounded-md"
                 />
                 <button
                   disabled={!newMessage || !roomName}

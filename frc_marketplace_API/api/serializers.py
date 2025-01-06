@@ -129,7 +129,6 @@ class UserSerializer(serializers.ModelSerializer):
             }
 
         representation.pop("password", None)
-        representation.pop("is_active", None)
         representation.pop("is_staff", None)
         representation.pop("is_superuser", None)
         

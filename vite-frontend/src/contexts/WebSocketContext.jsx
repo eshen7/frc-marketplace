@@ -18,7 +18,6 @@ export const WebSocketProvider = ({ children }) => {
     const ws = new WebSocket(`${wsUrl}/ws/user/${user.team_number}/`);
 
     ws.onopen = () => {
-      console.log('WebSocket Connected');
       setIsConnected(true);
     };
 
@@ -34,7 +33,6 @@ export const WebSocketProvider = ({ children }) => {
     };
 
     ws.onclose = () => {
-      console.log('WebSocket Disconnected');
       setIsConnected(false);
     };
 
