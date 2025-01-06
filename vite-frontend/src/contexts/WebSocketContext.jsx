@@ -13,12 +13,13 @@ export const WebSocketProvider = ({ children }) => {
   useEffect(() => {
     if (!user?.team_number) return;
 
-    // Use window.location to determine the WebSocket URL
-    const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+    // Always use wss:// in production, ws:// only in development
+    const protocol = import.meta.env.PROD || window.location.protocol === 'https:' 
+      ? 'wss:' 
+      : 'ws:';
     const host = window.location.hostname;
-    const wsUrl = import.meta.env.PROD 
-      ? `${protocol}//${host}` 
-      : `${protocol}//${host}:8000`;
+    const port = import.meta.env.PROD ? '' : ':80';
+    const wsUrl = `${protocol}//${host}${port}`;
 
     console.log('Connecting to WebSocket URL:', `${wsUrl}/ws/user/${user.team_number}/`);
     
