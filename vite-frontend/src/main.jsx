@@ -22,6 +22,8 @@ import Chat from "./pages/Messaging.jsx";
 import PartDetails from "./pages/Part.jsx";
 import OurTeamPage from "./pages/OurTeam.jsx";
 import AllParts from "./pages/AllParts.jsx";
+import ResetPassword from "./pages/ResetPassword.jsx";
+import ForgotPassword from "./pages/ForgotPassword.jsx";
 
 const ErrorPage = () => <p> Sorry, this page does not exist</p>;
 
@@ -99,6 +101,14 @@ const router = createBrowserRouter(
         {
           path: "/parts",
           element: <AllParts />,
+        },
+        {
+          path: "/forgot-password",
+          element: <ForgotPassword />,
+        },
+        {
+          path: "/reset-password/:uidb64/:token",
+          element: <ResetPassword />,
         },
         {
           path: "*",

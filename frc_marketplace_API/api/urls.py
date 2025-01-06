@@ -30,6 +30,8 @@ from .views import (
     dm_list_view,
     mark_messages_as_read,
     edit_part,
+    password_reset_request,
+    password_reset_confirm,
 )
 
 urlpatterns = [
@@ -75,4 +77,6 @@ urlpatterns = [
     path("parts/manufacturers/", manufacturer_view),
     path("search/all/", search_all_view, name="search_all_view"),
     path("sales/", part_sale_views, name="part_sale_views"),
+    path('password-reset/', password_reset_request, name='password-reset'),
+    path('password-reset/confirm/', password_reset_confirm, name='password-reset-confirm'),
 ]

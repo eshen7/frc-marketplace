@@ -23,6 +23,7 @@ import NewPartForm from "../components/NewPartForm";
 // Utils
 import axiosInstance from "../utils/axiosInstance";
 import { useData } from '../contexts/DataContext';
+import { useNavigate } from "react-router-dom";
 
 const INITIAL_FORM_STATE = {
   quantity: 1,
@@ -31,6 +32,7 @@ const INITIAL_FORM_STATE = {
 };
 
 const PartRequestForm = () => {
+  const navigate = useNavigate();
   const { parts, loadingStates, refreshSingle } = useData();
   const [selectedPart, setSelectedPart] = useState("");
   const [dateNeeded, setDateNeeded] = useState(null);
@@ -67,11 +69,12 @@ const PartRequestForm = () => {
       setSelectedPart("");
       setFormData(INITIAL_FORM_STATE);
       setDateNeeded(null);
+      refreshSingle('requests');
+      setTimeout(() => navigate('/requests'), 3000);
     } catch (error) {
       setError("Failed to submit request. Please try again.");
     } finally {
       setLoading(false);
-      refreshSingle('requests');
     }
   };
 
@@ -83,7 +86,7 @@ const PartRequestForm = () => {
     <div className="min-h-screen flex flex-col">
       {success && (
         <SuccessBanner
-          message="Operation completed successfully!"
+          message="Request submitted successfully. Navigating to requests page..."
           onClose={() => setSuccess(false)}
         />
       )}
