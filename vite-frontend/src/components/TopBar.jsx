@@ -105,7 +105,7 @@ const TopBar = () => {
   };
 
   return (
-    <div className="top-bar bg-black w-full border-b border-white max-w-[100vw] mx-auto px-2 sm:px-4 lg:px-6 flex flex-row place-items-center justify-between py-3 overflow-x-hidden">
+    <div className="top-bar bg-black w-full border-b border-white max-w-[100vw] mx-auto px-2 sm:px-4 lg:px-6 flex flex-row place-items-center justify-between py-3">
       {/* Left Buttons */}
       <div className="flex flex-row">
         {/* Logo */}
@@ -194,10 +194,10 @@ const TopBar = () => {
               </div>
             )}
           </button>
-
+          
           {/* Profile Dropdown */}
           {profileDropdownIsOpen && (
-            <div className="fixed top-[60px] right-[16px] bg-gray-100 whitespace-nowrap z-[100] rounded-lg px-1 border border-gray-300 shadow-lg">
+            <div className="absolute top-[50px] right-[16px] bg-gray-100 whitespace-nowrap z-50 rounded-lg px-1 border border-gray-300 shadow-lg">
               {isAuthenticated && user ? (
                 <>
                   <DropdownButton
