@@ -744,3 +744,34 @@ def message_post_view(request):
         )
     except Exception as e:
         return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+@api_view(['PUT'])
+@permission_classes([IsAuthenticated])
+def edit_part(request, part_id):
+    """
+    Edit a part's description and link
+    """
+    try:
+        part = Part.objects.get(id=part_id)
+        
+        # Update only the editable fields
+        if 'description' in request.data:
+            part.description = request.data['description']
+        if 'link' in request.data:
+            part.link = request.data['link']
+            
+        part.save()
+        
+        serializer = PartSerializer(part)
+        return Response(serializer.data)
+    except Part.DoesNotExist:
+        return Response(
+            {"error": "Part not found"}, 
+            status=status.HTTP_404_NOT_FOUND
+        )
+    except Exception as e:
+        return Response(
+            {"error": str(e)}, 
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR
+        )

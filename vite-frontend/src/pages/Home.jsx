@@ -1,52 +1,13 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect } from "react";
 import TopBar from "../components/TopBar";
 import Footer from "../components/Footer";
 import Map from "../components/Map";
 import SuccessBanner from "../components/SuccessBanner";
-import ItemCard from "../components/ItemCard";
-
+import ItemScrollBar from "../components/ItemScrollBar";
 import { useLocation, useNavigate } from "react-router-dom";
 import axiosInstance from "../utils/axiosInstance";
-import { haversine, getDaysUntil } from "../utils/utils";
-import ItemScrollBar from "../components/ItemScrollBar";
 import { useUser } from "../contexts/UserContext";
-
-const recentSales = [
-  { id: 1, title: "NEO Motor", team: "Team 2468", price: 50, distance: 3 },
-  { id: 2, title: "Falcon 500", team: "Team 1357", price: 75, distance: 7 },
-  { id: 3, title: "Victor SPX", team: "Team 3690", price: 30, distance: 12 },
-  { id: 4, title: "PDP", team: "Team 9876", price: 60, distance: 5 },
-  { id: 5, title: "Spark MAX", team: "Team 3647", price: 45, distance: 9 },
-  {
-    id: 6,
-    title: "Ultrasonic Sensor",
-    team: "Team 5678",
-    price: 25,
-    distance: 14,
-  },
-  {
-    id: 7,
-    title: "Pneumatic Tubing",
-    team: "Team 4321",
-    price: 15,
-    distance: 18,
-  },
-  { id: 8, title: "Joystick", team: "Team 8765", price: 35, distance: 6 },
-  {
-    id: 9,
-    title: "Voltage Regulator",
-    team: "Team 2109",
-    price: 20,
-    distance: 11,
-  },
-  {
-    id: 10,
-    title: "Aluminum Extrusion",
-    team: "Team 6543",
-    price: 40,
-    distance: 16,
-  },
-];
+import { motion } from "framer-motion"; 
 
 const Home = () => {
   const location = useLocation();
@@ -145,103 +106,124 @@ const Home = () => {
   };
 
   return (
-    <>
+    <div className="min-h-screen bg-gradient-to-b from-gray-50 to-gray-100">
       {showLoginSuccessBanner && (
         <SuccessBanner message={bannerMessage} onClose={handleCloseBanner} />
       )}
       <TopBar />
-      <div className="bg-gray-100">
-        {/* Title Section */}
-        <div className="flex flex-col place-items-center pt-[80px] mb-[80px] mx-[16px]">
-          {/* Title */}
-          <div className="text-5xl text-center text-black font-semibold text-shadow-md mb-10">
-            <h1>Where Teamwork</h1>
-            <h1 className="text-[#050A44]">Drives Innovation</h1>
-          </div>
-          {/* Description */}
-          <div className="text-center border-b-white max-w-[600px]">
-            <p className="text-sm">
-              Millennium Market is an online marketplace designed specifically
-              for high school robotics teams to buy, sell, and trade parts and
-              components. Whether you're looking for motors, sensors, gears, or
-              even custom-built parts, this platform connects teams across the
-              region, making it easier to source specific materials and tools
-              for your robotics projects. Users can list surplus components,
-              negotiate prices, and offer bulk deals, fostering a collaborative
-              ecosystem where teams help each other by sharing resources. It's a
-              one-stop shop for teams to save on costs, access hard-to-find
-              parts, and build stronger networks within the robotics community.
-            </p>
-          </div>
-          {/* Buttons */}
-          <div className="flex flex-row justify-center mt-5 max-w-screen border-b border-b-black pb-5">
-            {/* Request */}
-            <button
-              className="py-3 px-5 bg-blue-800 text-white text-[14px] rounded-sm hover:bg-blue-900 mr-5"
-              onClick={() => {
-                navigate("/request");
-              }}
-            >
-              Make a Request
-            </button>
-            {/* Sale */}
-            <button
-              className="py-3 px-5 border border-blue-800 text-blue-800 text-[14px] rounded-sm hover:bg-white"
-              onClick={() => {
-                navigate("/sale");
-              }}
-            >
-              Post a Sale
-            </button>
+      
+      {/* Hero Section */}
+      <section className="relative pt-20 pb-20 overflow-hidden">
+        <div className="container mx-auto px-4">
+          <div className="flex flex-wrap items-center -mx-4">
+            <div className="w-full lg:w-1/2 px-4 mb-16 lg:mb-0">
+              <h1 className="text-6xl md:text-7xl font-bold mb-8 leading-tight text-blue-900">
+                Where Teamwork
+                <span className="block text-blue-600">Drives Innovation</span>
+              </h1>
+              <p className="text-lg text-gray-600 mb-8">
+                Connect, collaborate, and create with fellow robotics teams. 
+                Find the parts you need or help others build their dreams.
+              </p>
+              <div className="flex flex-wrap gap-4">
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  className="px-8 py-4 bg-blue-600 text-white rounded-lg font-semibold shadow-lg hover:bg-blue-700 transition-all"
+                  onClick={() => navigate("/request")}
+                >
+                  Make a Request
+                </motion.button>
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  className="px-8 py-4 bg-white text-blue-600 rounded-lg font-semibold shadow-lg hover:bg-gray-50 transition-all border-2 border-blue-600"
+                  onClick={() => navigate("/sale")}
+                >
+                  Post a Sale
+                </motion.button>
+              </div>
+            </div>
+            <div className="w-full lg:w-1/2 px-4">
+              {/* Add an illustration or image here */}
+              <div className="relative rounded-2xl overflow-hidden shadow-2xl">
+                <Map zoom={8} locations={allTeams} className="h-[400px] w-full" />
+              </div>
+            </div>
           </div>
         </div>
-        <section className="mx-[30px] mb-[40px]">
+      </section>
+
+      {/* Stats Section */}
+      <section className="py-10 bg-white">
+        <div className="container mx-auto px-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            {[
+              { title: "Active Teams", value: allTeams.length },
+              { title: "Open Sales", value: sales.length },
+              { title: "Active Requests", value: requests.length },
+            ].map((stat, index) => (
+              <motion.div
+                key={index}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                className="text-center p-8 rounded-xl bg-gray-50 shadow-lg"
+              >
+                <h3 className="text-4xl font-bold text-blue-600 mb-2">{stat.value}</h3>
+                <p className="text-gray-600">{stat.title}</p>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Marketplace Sections */}
+      <section className="py-20">
+        <div className="container mx-auto px-4">
+          <div className="mb-16">
+            <h2 className="text-3xl font-bold text-blue-900 mb-8">Recent Part Requests</h2>
+            <ItemScrollBar
+              key={requests[0]}
+              items={requests}
+              loadingItems={loadingRequests}
+              user={user}
+              loadingUser={loadingUser}
+              type="request"
+            />
+            <div className="text-center mt-8">
+              <button
+                onClick={() => navigate("/requests")}
+                className="inline-flex items-center justify-center px-6 py-3 border border-transparent rounded-md shadow-sm text-base font-medium text-white bg-blue-600 hover:bg-blue-700"
+              >
+                View All Requests
+              </button>
+            </div>
+          </div>
+
           <div>
-            <h2 className="text-2xl font-bold mb-[30px]">See Nearby Teams</h2>
-            <Map zoom={10} locations={allTeams} />
+            <h2 className="text-3xl font-bold text-blue-900 mb-8">Parts for Sale</h2>
+            <ItemScrollBar
+              key={sales[0]}
+              items={sales}
+              loadingItems={loadingSales}
+              user={user}
+              loadingUser={loadingUser}
+              type="sale"
+            />
+            <div className="text-center mt-8">
+              <button
+                onClick={() => navigate("/sales")}
+                className="inline-flex items-center justify-center px-6 py-3 border border-transparent rounded-md shadow-sm text-base font-medium text-white bg-blue-600 hover:bg-blue-700"
+              >
+                View All Sales
+              </button>
+            </div>
           </div>
-        </section>
-        <section className="mb-12 mx-[30px]">
-          <div className="flex justify-between items-center mb-4">
-            <h2 className="text-2xl font-bold">Recent Part Requests Nearby</h2>
-            <button
-              onClick={() => navigate("/requests")}
-              className="bg-blue-800 text-white py-3 px-5 rounded-[5px] hover:bg-blue-900 transition-translate duration-100"
-            >
-              See All Requests
-            </button>
-          </div>
-          <ItemScrollBar
-            key={requests[0]}
-            items={requests}
-            loadingItems={loadingRequests}
-            user={user}
-            loadingUser={loadingUser}
-            type="request"
-          />
-        </section>
-        <section className="pb-12 mx-[30px]">
-          <div className="flex justify-between items-center mb-4">
-            <h2 className="text-2xl font-bold">Recent Parts for Sale Nearby</h2>
-            <button
-              onClick={() => navigate("/sales")}
-              className="bg-blue-800 text-white py-3 px-5 rounded-[5px] hover:bg-blue-900 transition-translate duration-100"
-            >
-              See All Parts for Sale
-            </button>
-          </div>
-          <ItemScrollBar
-            key={sales[0]}
-            items={sales}
-            loadingItems={loadingSales}
-            user={user}
-            loadingUser={loadingUser}
-            type="sale"
-          />
-        </section>
-      </div>
+        </div>
+      </section>
+
       <Footer />
-    </>
+    </div>
   );
 };
 

@@ -20,112 +20,213 @@ import {
   Tabs,
   Tab,
   Alert,
+  TextField,
+  TextareaAutosize,
 } from "@mui/material";
 import LaunchIcon from "@mui/icons-material/Launch";
+import { FaEdit, FaSave } from "react-icons/fa";
+import SuccessBanner from "../components/SuccessBanner";
+import ErrorBanner from "../components/ErrorBanner";
 
-const PartDetailsComponent = ({ part }) => {
+const PartDetailsComponent = ({ part, setPart, isAuthenticated }) => {
+  const [isEditing, setIsEditing] = useState(false);
+  const [formData, setFormData] = useState({
+    description: part.description || "",
+    link: part.link || "",
+  });
+  const [partChange, setPartChange] = useState("");
+
+  const handleChange = (e) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
+
+  const handleEditClick = () => {
+    if (isEditing && (formData.description !== part.description || formData.link !== part.link)) {
+      axiosInstance.put(`/parts/id/${part.id}/edit/`, formData)
+        .then((response) => {
+          setPart(response.data);
+          setIsEditing(false);
+          setPartChange("Part Updated Successfully.");
+        })
+        .catch((error) => {
+          console.error("Error updating part:", error);
+          setPartChange("Error updating part, please try again.");
+        });
+    } else if (isEditing) {
+      setIsEditing(false);
+    } else {
+      setIsEditing(true);
+    }
+  };
+
+  const closePartChangeBanner = () => {
+    setPartChange("");
+  };
+
   return (
-    <Box sx={{ bgcolor: "grey.100", p: 2, minWidth: 300 }}>
-      <Container
-        maxWidth="lg"
-        sx={{ display: "flex", justifyContent: "center" }}
-      >
-        <Card sx={{ maxWidth: 600, width: "100%", p: 3 }}>
-          <Box sx={{ display: "flex", justifyContent: "center" }}>
-            {part.image ? (
-              <CardMedia
-                component="img"
-                image={part.image}
-                alt={part.name}
-                sx={{
-                  borderRadius: 1,
-                  boxShadow: 1,
-                  maxHeight: 400,
-                  objectFit: "cover",
-                }}
-              />
-            ) : (
-              <Box
-                sx={{
-                  width: "100%",
-                  height: 200,
-                  bgcolor: "grey.200",
-                  borderRadius: 1,
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                }}
-              >
-                <Typography color="text.secondary">
-                  No image available
-                </Typography>
+    <>
+      {partChange === "Part Updated Successfully." ? (
+        <SuccessBanner
+          message={partChange}
+          onClose={closePartChangeBanner}
+        />
+      ) : partChange !== "" ? (
+        <ErrorBanner
+          message={partChange}
+          onClose={closePartChangeBanner}
+        />
+      ) : null}
+
+      <Box sx={{ bgcolor: "grey.100", p: 2, minWidth: 300 }}>
+        <Container
+          maxWidth="lg"
+          sx={{ display: "flex", justifyContent: "center" }}
+        >
+          <Card sx={{ maxWidth: 600, width: "100%", p: 3 }}>
+            <div className="relative">
+              <Box sx={{ display: "flex", justifyContent: "center" }}>
+                {part.image ? (
+                  <CardMedia
+                    component="img"
+                    image={part.image}
+                    alt={part.name}
+                    sx={{
+                      borderRadius: 1,
+                      boxShadow: 1,
+                      maxHeight: 400,
+                      objectFit: "cover",
+                    }}
+                  />
+                ) : (
+                  <Box
+                    sx={{
+                      width: "100%",
+                      height: 200,
+                      bgcolor: "grey.200",
+                      borderRadius: 1,
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                    }}
+                  >
+                    <Typography color="text.secondary">
+                      No image available
+                    </Typography>
+                  </Box>
+                )}
               </Box>
-            )}
-          </Box>
+              {isAuthenticated && (
+                <div className="absolute top-0 right-0">
+                  <button
+                    className={`text-white p-2 rounded-full hover:scale-105 transition-all duration-300 text-2xl text-center ${isEditing ? "bg-green-500 hover:bg-green-600" : "bg-blue-500 hover:bg-blue-600"
+                      }`}
+                    onClick={handleEditClick}
+                  >
+                    {isEditing ? <FaSave /> : <FaEdit />}
+                  </button>
 
-          <Typography
-            variant="h4"
-            component="h1"
-            sx={{ textAlign: "center", mt: 3, fontWeight: "bold" }}
-          >
-            {part.name || "Unnamed Part"}
-          </Typography>
+                </div>
+              )}
+            </div>
 
-          <Paper sx={{ bgcolor: "grey.100", p: 2, mt: 3 }}>
-            <Typography variant="h6" sx={{ mb: 2 }}>
-              Part Information
+            <Typography
+              variant="h4"
+              component="h1"
+              sx={{ textAlign: "center", mt: 3, fontWeight: "bold" }}
+            >
+              {part.name || "Unnamed Part"}
             </Typography>
-            <Box sx={{ display: "flex", flexDirection: "column", gap: 1 }}>
-              <Box sx={{ display: "flex", justifyContent: "space-between" }}>
-                <Typography variant="subtitle1" color="text.secondary">
-                  ID:
-                </Typography>
-                <Typography>{part.model_id || "N/A"}</Typography>
-              </Box>
-              <Box sx={{ display: "flex", justifyContent: "space-between" }}>
-                <Typography variant="subtitle1" color="text.secondary">
-                  Category:
-                </Typography>
-                <Typography>{part.category.name || "Uncategorized"}</Typography>
-              </Box>
-              <Box sx={{ display: "flex", justifyContent: "space-between" }}>
-                <Typography variant="subtitle1" color="text.secondary">
-                  Manufacturer:
-                </Typography>
-                {part.manufacturer.website ?<Link href = {part.manufacturer.website}>{part.manufacturer.name}</Link>:<Typography>{part.manufacturer.name || "Unknown"}</Typography>}
-              </Box>
-              <Box sx={{ display: "flex", justifyContent: "space-between" }}>
-                <Typography variant="subtitle1" color="text.secondary">
-                  Link:
-                </Typography>
-                {part.link ? <Link href={part.link}>{part.link || "N/A"}</Link>: <Typography>N/A</Typography>}
-              </Box>
-            </Box>
-          </Paper>
 
-          {part.externalLink && (
-            <Box sx={{ display: "flex", justifyContent: "center", mt: 2 }}>
-              <Button
-                variant="contained"
-                startIcon={<LaunchIcon />}
-                href={part.externalLink}
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                View More Details
-              </Button>
-            </Box>
-          )}
-        </Card>
-      </Container>
-    </Box>
+            <Paper sx={{ bgcolor: "grey.100", p: 2, mt: 3 }}>
+              <Typography variant="h6" sx={{ mb: 2 }}>
+                Part Information
+              </Typography>
+              <Box sx={{ display: "flex", flexDirection: "column", gap: 1 }}>
+                <Box sx={{ display: "flex", justifyContent: "space-between" }}>
+                  <Typography variant="subtitle1" color="text.secondary">
+                    ID:
+                  </Typography>
+                  <Typography>{part.model_id || "N/A"}</Typography>
+                </Box>
+                <Box sx={{ display: "flex", justifyContent: "space-between" }}>
+                  <Typography variant="subtitle1" color="text.secondary">
+                    Category:
+                  </Typography>
+                  <Typography>{part.category.name || "Uncategorized"}</Typography>
+                </Box>
+                <Box sx={{ display: "flex", justifyContent: "space-between" }}>
+                  <Typography variant="subtitle1" color="text.secondary">
+                    Manufacturer:
+                  </Typography>
+                  <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                    {part.manufacturer.website ? (
+                      <a href={part.manufacturer.website}
+                        target="_blank" rel="noopener noreferrer"
+                        className="text-blue-500 hover:text-blue-600 hover:underline">
+                        <Typography sx={{ color: 'primary.main', '&:hover': { textDecoration: 'underline' } }}>
+                          {part.manufacturer.name || "Unknown"}
+                        </Typography>
+                      </a>
+                    ) : (
+                      <Typography>{part.manufacturer.name || "Unknown"}</Typography>
+                    )}
+                  </Box>
+                </Box>
+                <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                  <Typography variant="subtitle1" color="text.secondary">
+                    Link:
+                  </Typography>
+                  {!isEditing ? (
+                    <a className="text-blue-500 hover:text-blue-600 hover:underline truncate ml-2"
+                      href={formData.link} target="_blank" rel="noopener noreferrer">
+                      {formData.link || "N/A"}
+                    </a>
+                  ) : (
+                    <div className="w-full ml-5">
+                      <TextField
+                        fullWidth
+                        name="link"
+                        value={formData.link}
+                        onChange={handleChange}
+                        variant="outlined"
+                        size="small"
+                      />
+                    </div>
+                  )}
+                </Box>
+              </Box>
+            </Paper>
+
+            <Paper sx={{ bgcolor: "grey.100", p: 2, mt: 3 }}>
+              <Typography variant="h6" sx={{ mb: 2 }}>
+                Description
+              </Typography>
+              {!isEditing ? (
+                <Typography variant="body1" color="text.secondary">
+                  {part.description || "No description available for this part."}
+                </Typography>
+              ) : (
+                <TextareaAutosize
+                  name="description"
+                  value={formData.description}
+                  onChange={handleChange}
+                  variant="outlined"
+                  size="small"
+                  className="w-full p-2 border border-gray-300 rounded-md bg-inherit hover:border-gray-500"
+                />
+              )}
+            </Paper>
+          </Card>
+        </Container>
+      </Box>
+    </>
   );
 };
 
 const PartDetailsPage = () => {
   const { id } = useParams();
 
-  const { user } = useUser();
+  const { user, isAuthenticated } = useUser();
 
   const [part, setPart] = useState(null);
   const [requests, setRequests] = useState([]);
@@ -190,7 +291,7 @@ const PartDetailsPage = () => {
       <TopBar />
       <Box sx={{ flexGrow: 1, bgcolor: "grey.100", px: 3 }}>
         {!error && part ? (
-          <PartDetailsComponent part={part} />
+          <PartDetailsComponent part={part} setPart={setPart} isAuthenticated={isAuthenticated} />
         ) : loading ? (
           <Box
             sx={{
@@ -232,6 +333,10 @@ const PartDetailsPage = () => {
                       />
                     </Grid>
                   ))
+                ) : loadingRequests ? (
+                  <Typography color="text.secondary">
+                    Loading requests...
+                  </Typography>
                 ) : (
                   <Typography color="text.secondary">
                     No requests found for this part.
@@ -246,6 +351,10 @@ const PartDetailsPage = () => {
                       <ItemCard item={sale} currentUser={user} type="sale" />
                     </Grid>
                   ))
+                ) : loadingSales ? (
+                  <Typography color="text.secondary">
+                    Loading sales...
+                  </Typography>
                 ) : (
                   <Typography color="text.secondary">
                     No sales found for this part.
