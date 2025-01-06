@@ -80,7 +80,7 @@ const ItemScrollBar = ({ items, loadingItems, user, loadingUser, type, isAuthent
               item={item}
               currentUser={user}
               type={type}
-              itemDistance={isAuthenticated ? haversine(
+              itemDistance={ (isAuthenticated && user?.formatted_address && item.user?.formatted_address) ? haversine(
                 user.formatted_address.latitude,
                 user.formatted_address.longitude,
                 item.user.formatted_address.latitude,

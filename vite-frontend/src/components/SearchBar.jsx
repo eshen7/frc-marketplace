@@ -38,7 +38,7 @@ const SearchBar = () => {
         ...sales.map((sale) => ({ ...sale, type: "sale" })),
       ];
 
-      console.log("processed search data", processedSearchData);
+      //console.log("processed search data", processedSearchData);
       fuseRef.current = new Fuse(processedSearchData, fuseOptions);
     };
 

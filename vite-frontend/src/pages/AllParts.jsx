@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useCallback, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import TopBar from "../components/TopBar";
 import Footer from "../components/Footer";
@@ -25,6 +25,8 @@ const AllParts = () => {
   const [sortBy, setSortBy] = useState("name");
   const [selectedCategories, setSelectedCategories] = useState([]);
   const [selectedManufacturers, setSelectedManufacturers] = useState([]);
+  const [displayLimit, setDisplayLimit] = useState(12);
+  const observerTarget = useRef(null);
 
   const fuse = useMemo(() => new Fuse(parts, fuseOptions), [parts]);
 
@@ -73,6 +75,34 @@ const AllParts = () => {
     [parts, searchTerm, selectedCategories, selectedManufacturers, sortBy, fuse]
   );
 
+  const observerCallback = useCallback(
+    (entries) => {
+      const [entry] = entries;
+      if (entry.isIntersecting && filteredParts.length > displayLimit) {
+        setDisplayLimit(prev => prev + 12);
+      }
+    },
+    [filteredParts.length, displayLimit]
+  );
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(observerCallback, {
+      root: null,
+      rootMargin: '20px',
+      threshold: 1.0
+    });
+
+    if (observerTarget.current) {
+      observer.observe(observerTarget.current);
+    }
+
+    return () => {
+      if (observerTarget.current) {
+        observer.unobserve(observerTarget.current);
+      }
+    };
+  }, [observerCallback]);
+
   return (
     <div className="min-h-screen flex flex-col">
       <TopBar />
@@ -89,9 +119,19 @@ const AllParts = () => {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             {!loadingStates.parts ? (
               filteredParts.length > 0 ? (
-                filteredParts.map((part) => (
-                  <PartItemCard key={part.id} part={part} />
-                ))
+                <>
+                  {filteredParts.slice(0, displayLimit).map((part) => (
+                    <PartItemCard key={part.id} part={part} />
+                  ))}
+                  {filteredParts.length > displayLimit && (
+                    <div 
+                      ref={observerTarget}
+                      className="col-span-full flex justify-center p-4"
+                    >
+                      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
+                    </div>
+                  )}
+                </>
               ) : (
                 <div className="col-span-full text-center text-gray-500">
                   No results found
