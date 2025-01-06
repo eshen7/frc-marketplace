@@ -128,7 +128,7 @@ const Home = () => {
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
                   className="px-8 py-4 bg-blue-600 text-white rounded-lg font-semibold shadow-lg hover:bg-blue-700 transition-all"
-                  onClick={() => navigate("/request")}
+                  onClick={() => isAuthenticated ? navigate("/request"): navigate("/login")}
                 >
                   Make a Request
                 </motion.button>
@@ -136,7 +136,7 @@ const Home = () => {
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
                   className="px-8 py-4 bg-white text-blue-600 rounded-lg font-semibold shadow-lg hover:bg-gray-50 transition-all border-2 border-blue-600"
-                  onClick={() => navigate("/sale")}
+                  onClick={() => isAuthenticated ? navigate("/sale"): navigate("/login")}
                 >
                   Post a Sale
                 </motion.button>
