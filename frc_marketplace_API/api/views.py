@@ -190,10 +190,18 @@ def login_view(request):
         data = request.data
         email = data.get("email")
         password = data.get("password")
+        is_active = False
+        try:
+            user = User.objects.get(email=email)
+            is_active = user.is_active
+        except User.DoesNotExist:
+            return JsonResponse(
+                {"error": "User with that email not found"}, status=404
+            )
+        authenticated = authenticate(request, email=email, password=password)
 
-        user = authenticate(request, email=email, password=password)
-        if user:
-            login(request, user)
+        if authenticated and is_active:
+            login(request, authenticated)
             id_to_set = str(user.id)
             response = JsonResponse(
                 {
@@ -210,6 +218,11 @@ def login_view(request):
                 path="/",
             )
             return response
+        elif not is_active:
+            return JsonResponse(
+            {"error": "Account is not active. Please wait until your account has been approved!"},
+                status=403,
+            )
         else:
             return JsonResponse({"error": "Invalid credentials"}, status=400)
     return JsonResponse({"error": "Only POST requests are allowed"}, status=405)

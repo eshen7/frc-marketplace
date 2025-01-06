@@ -15,6 +15,7 @@ const Login = () => {
   });
 
   const [showErrorBanner, setShowErrorBanner] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
 
   const handleCloseBanner = () => {
     setShowErrorBanner(false);
@@ -29,7 +30,11 @@ const Login = () => {
 
   const login = async () => {
     try {
-      const response = await axiosInstance.post("/login/", formData);
+      const response = await axiosInstance.post("/login/", formData).catch((error) => {
+        setShowErrorBanner(true);
+        setErrorMessage(error.response.data.error || "Login failed");
+        throw error;
+      });
 
       // Extract tokens
       const { access, refresh } = response.data;
@@ -43,14 +48,13 @@ const Login = () => {
         return { success: true, access, userID };
       } else {
         setShowErrorBanner(true);
+        setErrorMessage("Login response missing required data");
         return {
           success: false,
           error: "Login response missing required data",
         };
       }
     } catch (error) {
-      console.error("An error occurred:", error);
-      setShowErrorBanner(true);
       return { success: false, error: error.message };
     }
   };
@@ -68,7 +72,7 @@ const Login = () => {
         },
       });
     } else {
-      console.error("An error occurred:", result.error);
+      return
     }
   }
 
@@ -76,7 +80,7 @@ const Login = () => {
     <>
       {showErrorBanner && (
         <ErrorBanner
-          message="An error occurred during login"
+          message={errorMessage}
           onClose={handleCloseBanner}
         />
       )}
