@@ -103,7 +103,7 @@ const TopBar = () => {
   };
 
   return (
-    <div className="top-bar bg-black w-full border-b border-white max-w-[100vw] mx-auto px-2 sm:px-4 lg:px-6 flex flex-row place-items-center justify-between py-3">
+    <div className="top-bar bg-black w-full border-b border-white max-w-[100vw] mx-auto px-2 md:px-4 lg:px-6 flex flex-row place-items-center justify-between py-3">
       {/* Left Buttons */}
       <div className="flex flex-row">
         {/* Logo */}
@@ -118,7 +118,7 @@ const TopBar = () => {
         {/* Nav Buttons */}
         <div
           className={`hidden ${
-            isAuthenticated ? "lg:flex lg:flex-row" : "sm:flex sm:flex-row"
+            isAuthenticated ? "lg:flex lg:flex-row" : "md:flex md:flex-row"
           }`}
         >
           <NavButton name={"Requests"} link={"/requests"} navigate={navigate} />
@@ -152,7 +152,7 @@ const TopBar = () => {
         </div>
 
         {/* Hamburger Button */}
-        <div className={`flex ${isAuthenticated ? "lg:hidden" : "sm:hidden"}`}>
+        <div className={`flex ${isAuthenticated ? "lg:hidden" : "md:hidden"}`}>
           <button onClick={() => setIsOpen(true)}>
             <RxHamburgerMenu className="w-[35px] h-[35px]" color={"#FFFFFF"} />
           </button>
@@ -161,7 +161,7 @@ const TopBar = () => {
         {/* Right Buttons */}
         <div
           className={`hidden ${
-            isAuthenticated ? "lg:flex lg:flex-row" : "sm:flex sm:flex-row"
+            isAuthenticated ? "lg:flex lg:flex-row" : "md:flex md:flex-row"
           } relative`}
         >
           {/* Chat Button if Logged In */}
