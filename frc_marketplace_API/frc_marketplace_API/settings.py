@@ -139,8 +139,8 @@ CORS_ALLOW_ALL_ORIGINS = True  # Only for development!
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:5173",
     "http://127.0.0.1:5173",
-    "http://127.0.0.1:5174",
     "https://millenniummarket.net",
+    "http://millenniummarket.net",
 ]
 
 CSRF_TRUSTED_ORIGINS = [
@@ -297,3 +297,9 @@ LOGGING = {
 
 # Password reset token timeout in seconds
 PASSWORD_RESET_TIMEOUT = 60 * 30  # 30 minutes
+
+# For WebSocket support
+CORS_ALLOWED_ORIGIN_REGEXES = [
+    r"^https?://(localhost|127\.0\.0\.1)(:\d+)?$",
+    r"^https?://millenniummarket\.net$",
+]

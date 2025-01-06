@@ -13,8 +13,15 @@ export const WebSocketProvider = ({ children }) => {
   useEffect(() => {
     if (!user?.team_number) return;
 
-    // Use the same base URL as your API
-    const wsUrl = "wss://backend_app:8000";
+    // Use window.location to determine the WebSocket URL
+    const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+    const host = window.location.hostname;
+    const wsUrl = import.meta.env.PROD 
+      ? `${protocol}//${host}` 
+      : `${protocol}//${host}:8000`;
+
+    console.log('Connecting to WebSocket URL:', `${wsUrl}/ws/user/${user.team_number}/`);
+    
     const ws = new WebSocket(`${wsUrl}/ws/user/${user.team_number}/`);
 
     ws.onopen = () => {
@@ -24,6 +31,13 @@ export const WebSocketProvider = ({ children }) => {
 
     ws.onerror = (error) => {
       console.error('WebSocket Error:', error);
+      // Try to reconnect after a delay
+      setTimeout(() => {
+        if (socketRef.current?.readyState === WebSocket.CLOSED) {
+          console.log('Attempting to reconnect...');
+          socketRef.current = new WebSocket(`${wsUrl}/ws/user/${user.team_number}/`);
+        }
+      }, 5000);
     };
 
     ws.onmessage = (event) => {
@@ -36,6 +50,13 @@ export const WebSocketProvider = ({ children }) => {
     ws.onclose = () => {
       console.log('WebSocket Disconnected');
       setIsConnected(false);
+      // Try to reconnect after a delay
+      setTimeout(() => {
+        if (socketRef.current?.readyState === WebSocket.CLOSED) {
+          console.log('Attempting to reconnect...');
+          socketRef.current = new WebSocket(`${wsUrl}/ws/user/${user.team_number}/`);
+        }
+      }, 5000);
     };
 
     socketRef.current = ws;
@@ -57,6 +78,8 @@ export const WebSocketProvider = ({ children }) => {
   const sendMessage = (message) => {
     if (socketRef.current?.readyState === WebSocket.OPEN) {
       socketRef.current.send(JSON.stringify(message));
+    } else {
+      console.warn('WebSocket is not connected. Message not sent:', message);
     }
   };
 
