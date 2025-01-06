@@ -4,7 +4,7 @@ import { Skeleton } from "@mui/material";
 import { getDaysUntil, haversine, isDate } from "../utils/utils";
 import { useNavigate } from "react-router-dom";
 
-const ItemCard = ({ item, currentUser, type }) => {
+const ItemCard = ({ item, currentUser, type, itemDistance }) => {
   const navigate = useNavigate();
   const [imageLoaded, setImageLoaded] = useState(false);
   const [imageError, setImageError] = useState(false);
@@ -51,7 +51,12 @@ const ItemCard = ({ item, currentUser, type }) => {
       </div>
 
       <div className="p-4">
-        <h2 className="text-xl font-semibold mb-2 truncate">{item.part.name}</h2>
+        <h2 className="text-xl font-semibold mb-2 truncate">
+          {item.part.name}
+          <span className="text-sm text-gray-500 ml-2">
+            Posted {item.request_date || item.sale_creation_date}
+          </span>
+        </h2>
 
         <div onClick={() => navigate(`/profile/frc/${item.user.team_number}`)} className="text-gray-600 text-sm mb-2 truncate hover:underline cursor-pointer">
           {`Team ${item.user.team_number} - ${item.user.team_name}`}
@@ -61,17 +66,12 @@ const ItemCard = ({ item, currentUser, type }) => {
           <div>
             <p className="text-gray-600 text-sm mb-2">
               {currentUser && currentUser.team_number !== item.user.team_number
-                ? haversine(
-                    currentUser.formatted_address.latitude,
-                    currentUser.formatted_address.longitude,
-                    item.user.formatted_address.latitude,
-                    item.user.formatted_address.longitude
-                  ).toFixed(1) + " miles"
+                ? itemDistance + " miles away"
                 : currentUser
                 ? "Your Listing"
                 : !currentUser
                 ? "Please log in to view distance"
-                : ""}
+                : ""} 
             </p>
             {(() => {
               let temp_date = item.needed_date;
@@ -101,12 +101,7 @@ const ItemCard = ({ item, currentUser, type }) => {
             </p>
             <p className="text-gray-600 text-sm mb-4">
               {currentUser && currentUser.team_number !== item.user.team_number
-                ? haversine(
-                    currentUser.formatted_address.latitude,
-                    currentUser.formatted_address.longitude,
-                    item.user.formatted_address.latitude,
-                    item.user.formatted_address.longitude
-                  ).toFixed(1) + " miles"
+                ? itemDistance + " miles"
                 : currentUser
                 ? "Your Listing"
                 : !currentUser

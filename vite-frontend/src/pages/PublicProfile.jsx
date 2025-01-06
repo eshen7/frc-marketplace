@@ -190,7 +190,6 @@ const PublicProfilePage = () => {
       try {
         const response = await axiosInstance.get(`/users/frc${teamNumber}/`);
         setUser(response.data);
-        console.log("Fetched User:", response.data);
       } catch (error) {
         console.error("Error fetching user:", error);
         setError("Failed to load user data.");

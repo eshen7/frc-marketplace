@@ -24,7 +24,7 @@ const PartItemCard = ({ part }) => {
       />
       <CardContent>
         <Link href={`/part/${part.id}`} sx={{ textDecoration: "none" }}>
-          <Typography variant="h6" gutterBottom>
+          <Typography variant="h6" sx={{fontWeight: "bold"}} gutterBottom>
             {part.name || "Part Name"}
           </Typography>
         </Link>
