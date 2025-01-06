@@ -14,7 +14,7 @@ export const WebSocketProvider = ({ children }) => {
     if (!user?.team_number) return;
 
     // Use the same base URL as your API
-    const wsUrl = import.meta.env.VITE_API_URL?.replace('http', 'ws') || 'ws://localhost:8000';
+    const wsUrl = import.meta.env.PRODUCTION ? import.meta.env.PRODUCTION_URL?.replace('https', 'ws') : 'ws://localhost:8000';
     const ws = new WebSocket(`${wsUrl}/ws/user/${user.team_number}/`);
 
     ws.onopen = () => {
