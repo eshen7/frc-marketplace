@@ -115,10 +115,13 @@ services:
     container_name: nginx_proxy
     ports:
       - "80:80"
+      - "443:443"
     volumes:
       - ./nginx:/etc/nginx/conf.d
       - staticfiles_volume:/usr/local/app/static
       - ./vite-frontend/dist:/usr/share/nginx/html
+      - /etc/letsencrypt:/etc/letsencrypt:ro
+      - /etc/ssl/certs:/etc/ssl/certs:ro
     depends_on:
       - backend_app
       - frontend_app

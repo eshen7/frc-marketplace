@@ -138,14 +138,14 @@ CORS_ALLOWED_ORIGINS = [
     "http://localhost:5173",
     "http://127.0.0.1:5173",
     "http://127.0.0.1:5174",
-"millenniummarket.net",
+    "https://millenniummarket.net",
 ]
 
 CSRF_TRUSTED_ORIGINS = [
     "http://localhost:5173",
     "http://127.0.0.1:5173",
     "http://127.0.0.1:5174",
-"millenniummarket.net",
+    "https://millenniummarket.net",
 ]
 
 # Allow credentials if you're using cookies/sessions
