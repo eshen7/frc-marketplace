@@ -47,7 +47,7 @@ const Home = () => {
         <SuccessBanner message={bannerMessage} onClose={handleCloseBanner} />
       )}
       <TopBar />
-      
+      <div className="px-5 md:px-10 lg:px-20">
       {/* Hero Section */}
       <section className="relative pt-20 pb-20 overflow-hidden">
         <div className="container mx-auto px-4">
@@ -90,7 +90,7 @@ const Home = () => {
       </section>
 
       {/* Stats Section */}
-      <section className="py-10 bg-white">
+      
         <div className="container mx-auto px-4">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {[
@@ -110,7 +110,6 @@ const Home = () => {
             ))}
           </div>
         </div>
-      </section>
 
       {/* Marketplace Sections */}
       <section className="py-20">
@@ -158,8 +157,9 @@ const Home = () => {
           </div>
         </div>
       </section>
-
+      </div>
       <Footer />
+
     </div>
   );
 };

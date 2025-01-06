@@ -117,7 +117,7 @@ const ItemScrollBar = ({ items, loadingItems, user, loadingUser, type, isAuthent
         style={{
           msOverflowStyle: 'none',
           scrollbarWidth: 'none',
-          '::-webkit-scrollbar': { display: 'none' }
+          '::WebkitScrollbar': { display: 'none' }
         }}
       >
         {renderContent()}
