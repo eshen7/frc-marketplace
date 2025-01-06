@@ -240,7 +240,6 @@ const Chat = () => {
       const response = await axiosInstance.post("/messages/mark_as_read/", {
         team_number: teamNumber,
       });
-      console.log(response.data); // "Messages marked as read."
     } catch (err) {
       console.error("Error marking messages as read:", err);
     }
@@ -283,7 +282,6 @@ const Chat = () => {
         }
 
         setAllTeams(data);
-        // console.log(allTeams)
         setLoadingTeams(false);
       } catch (error) {
         console.error("Error fetching User Data:", error);

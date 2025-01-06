@@ -21,6 +21,7 @@ export function haversine(lat1, lon1, lat2, lon2) {
 
 export function getDaysUntil(dueDate) {
     const now = new Date();
+    dueDate = new Date(dueDate);
     const diffTime = dueDate.getTime() - now.getTime();
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
     return diffDays;

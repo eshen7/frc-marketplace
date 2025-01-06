@@ -40,7 +40,6 @@ const Login = () => {
         ?.split("=")[1];
 
       if (response.status === 200) {
-        console.log("Login successful", response.data);
         return { success: true, access, userID };
       } else {
         setShowErrorBanner(true);

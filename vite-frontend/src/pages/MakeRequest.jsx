@@ -75,8 +75,6 @@ const PartRequestForm = () => {
         needed_date: new Date(dateNeeded).toISOString().split("T")[0],
       };
 
-      console.log("request data", requestData)
-
       await axiosInstance.post("/requests/", requestData);
       setSuccess(true);
       setSelectedPart("");

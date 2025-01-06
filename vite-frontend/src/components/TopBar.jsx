@@ -84,14 +84,12 @@ const TopBar = () => {
       );
 
       if (response.status === 200) {
-        console.log("Logout successful");
         navigate("/", {
           state: { fromLogin: true, message: "You have been logged out" },
         });
         window.location.reload();
         return { success: true };
       } else {
-        console.log("Logout failed");
         return { success: false, error: "An error occured" };
       }
     } catch (error) {
@@ -194,7 +192,7 @@ const TopBar = () => {
               </div>
             )}
           </button>
-          
+
           {/* Profile Dropdown */}
           {profileDropdownIsOpen && (
             <div className="absolute top-[50px] right-[16px] bg-gray-100 whitespace-nowrap z-50 rounded-lg px-1 border border-gray-300 shadow-lg">

@@ -234,17 +234,20 @@ const NewPartForm = ({ open, onClose }) => {
               if (option === "create") return "➕ ADD NEW MANUFACTURER";
               return option.name;
             }}
-            renderOption={(props, option) => (
-              <MenuItem {...props}>
-                {option === "create" ? (
-                  <span className="text-blue-600 font-medium">
-                    ➕ ADD NEW MANUFACTURER
-                  </span>
-                ) : (
-                  option.name
-                )}
-              </MenuItem>
-            )}
+            renderOption={(props, option) => {
+              const { key, ...otherProps } = props;
+              return (
+                <MenuItem key={key} {...otherProps}>
+                  {option === "create" ? (
+                    <span className="text-blue-600 font-medium">
+                      ➕ ADD NEW MANUFACTURER
+                    </span>
+                  ) : (
+                    option.name
+                  )}
+                </MenuItem>
+              );
+            }}
             renderInput={(params) => (
               <TextField {...params} label="Manufacturer *" margin="dense" />
             )}
@@ -290,17 +293,20 @@ const NewPartForm = ({ open, onClose }) => {
               if (option === "create") return "➕ ADD NEW CATEGORY";
               return option.name;
             }}
-            renderOption={(props, option) => (
-              <MenuItem {...props}>
-                {option === "create" ? (
-                  <span className="text-blue-600 font-medium">
-                    ➕ ADD NEW CATEGORY
-                  </span>
-                ) : (
-                  option.name
-                )}
-              </MenuItem>
-            )}
+            renderOption={(props, option) => {
+              const { key, ...otherProps } = props;
+              return (
+                <MenuItem key={key} {...otherProps}>
+                  {option === "create" ? (
+                    <span className="text-blue-600 font-medium">
+                      ➕ ADD NEW CATEGORY
+                    </span>
+                  ) : (
+                    option.name
+                  )}
+                </MenuItem>
+              );
+            }}
             renderInput={(params) => (
               <TextField {...params} label="Category *" margin="dense" />
             )}

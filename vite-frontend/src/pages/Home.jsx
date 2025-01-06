@@ -43,7 +43,6 @@ const Home = () => {
 
       setRequests(data);
       setLoadingRequests(false);
-      console.log("Requests:", data);
     } catch (err) {
       console.error("Error fetching Requests:", err);
       setLoadingRequests(false);
@@ -61,7 +60,6 @@ const Home = () => {
 
       setSales(data);
       setLoadingSales(false);
-      console.log("Sales:", data);
     } catch (err) {
       console.error("Error fetching Sales:", err);
       setLoadingSales(false);

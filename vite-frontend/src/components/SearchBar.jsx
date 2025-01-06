@@ -41,8 +41,6 @@ const SearchBar = () => {
           })),
         ];
 
-        console.log("processed search data", processedSearchData);
-
         fuseRef.current = new Fuse(processedSearchData, fuseOptions);
       } catch (error) {
         console.error("Error fetching search data:", error);

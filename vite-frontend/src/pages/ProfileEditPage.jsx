@@ -182,7 +182,6 @@ const UserProfile = () => {
         passwordData
       );
 
-      console.log("Password changed successfully:", response.data);
       setPasswordData({ current: "", new: "", confirmation: "" }); // Clear the form
       setPasswordError(""); // Clear any errors
       setProfileChange("Password changed successfully.");
@@ -208,7 +207,6 @@ const UserProfile = () => {
 
     try {
       const response = await axiosInstance.delete("/users/self/delete/");
-      console.log(response.data);
       alert("Account deleted successfully.");
       localStorage.removeItem("authToken");
       navigate("/");
