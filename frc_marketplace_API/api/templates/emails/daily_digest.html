@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            margin: 0;
+            padding: 0;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #ffffff;
+        }
+        .header {
+            background-color: #1a56db;
+            color: white;
+            padding: 20px;
+            text-align: center;
+            border-radius: 8px 8px 0 0;
+        }
+        .content {
+            padding: 20px;
+            background-color: #ffffff;
+            border-radius: 0 0 8px 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        .request-item {
+            margin-bottom: 20px;
+            padding: 15px;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            background-color: #f9fafb;
+        }
+        .request-item:hover {
+            border-color: #1a56db;
+        }
+        .request-title {
+            color: #1a56db;
+            font-size: 18px;
+            font-weight: bold;
+            margin: 0 0 10px 0;
+        }
+        .request-detail {
+            margin: 5px 0;
+            color: #4b5563;
+        }
+        .urgent {
+            color: #dc2626;
+            font-weight: bold;
+        }
+        .button {
+            display: inline-block;
+            padding: 8px 16px;
+            background-color: #1a56db;
+            color: white;
+            text-decoration: none;
+            border-radius: 4px;
+            margin-top: 10px;
+        }
+        .button:hover {
+            background-color: #1e40af;
+        }
+        .footer {
+            text-align: center;
+            padding: 20px;
+            color: #6b7280;
+            font-size: 14px;
+        }
+        .team-info {
+            color: #6b7280;
+            font-size: 14px;
+        }
+        .distance {
+            display: inline-block;
+            padding: 4px 8px;
+            background-color: #e5e7eb;
+            border-radius: 12px;
+            font-size: 12px;
+            color: #4b5563;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1 style="margin: 0;">Daily Part Requests Digest</h1>
+            <p style="margin: 10px 0 0 0;">Team {{ team_number }}</p>
+        </div>
+        
+        <div class="content">
+            <p>Hello {{ team_name }},</p>
+            <p>Here are the new part requests within 50 miles of your location from the last 24 hours:</p>
+
+            {% for item in requests %}
+            <div class="request-item">
+                <h3 class="request-title">{{ item.request.part.name }}</h3>
+                <div class="team-info">
+                    Requested by Team {{ item.request.user.team_number }}
+                    <span class="distance">{{ item.distance }} miles away</span>
+                </div>
+                <p class="request-detail">
+                    <strong>Quantity needed:</strong> {{ item.request.quantity }}
+                </p>
+                <p class="request-detail {% if item.request.is_urgent %}urgent{% endif %}">
+                    <strong>Needed by:</strong> {{ item.request.needed_date }}
+                </p>
+                {% if item.request.additional_info %}
+                <p class="request-detail">
+                    <strong>Additional info:</strong><br>
+                    {{ item.request.additional_info }}
+                </p>
+                {% endif %}
+                <a href="{{ frontend_url }}/requests/{{ item.request.id }}" class="button">
+                    View Request
+                </a>
+            </div>
+            {% endfor %}
+
+            <div class="footer">
+                <p>
+                    Best regards,<br>
+                    Millennium Market Team
+                </p>
+                <p style="font-size: 12px; color: #9ca3af;">
+                    This email was sent because you have an account on Millennium Market. 
+                    To stop receiving these emails, please update your notification settings.
+                </p>
+            </div>
+        </div>
+    </div>
+</body>
+</html> 

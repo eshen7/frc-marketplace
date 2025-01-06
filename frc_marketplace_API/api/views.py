@@ -31,7 +31,7 @@ from django.db import models
 from django.core.paginator import Paginator, EmptyPage
 from django.conf import settings
 from django.shortcuts import get_object_or_404
-from .tasks import send_email_task
+from .tasks import send_email_task, send_dm_notification, send_daily_requests_digest
 from django.contrib.auth.tokens import default_token_generator
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from django.utils.encoding import force_bytes, force_str  # use force_str instead of force_text in newer Django versions
@@ -748,11 +748,10 @@ def message_post_view(request):
 
         # Use Celery to send the email asynchronously
         if receiver.email:
-            send_email_task.delay(
-                subject=f"New Message from {sender.team_number}",
-                message=f"Hello {receiver.full_name},\n\nYou have received a new message from {sender.full_name} on team {sender.team_number}:\n\n{message.message}\n\n- FRC Marketplace Team",
-                from_email=settings.DEFAULT_FROM_EMAIL,
-                recipient_list=[receiver.email],
+            send_dm_notification.delay(
+                sender_id=sender.id,
+                recipient_id=receiver.id,
+                message_content=message.message
             )
 
         serializer = MessageSerializer(message)
@@ -838,3 +837,11 @@ def password_reset_confirm(request):
         return Response({'message': 'Invalid or expired token'}, status=400)
     except (TypeError, ValueError, OverflowError, User.DoesNotExist):
         return Response({'message': 'Invalid reset link'}, status=400)
+
+@api_view(['GET'])
+def daily_digest_view(request):
+    """
+    View for handling daily part requests digest.
+    """
+    send_daily_requests_digest.delay()
+    return Response({'message': 'Daily digest email sent'})

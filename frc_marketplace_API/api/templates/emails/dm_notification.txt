@@ -1,0 +1,13 @@
+New Message from Team {{ sender_team_number }}
+
+Hello Team {{ recipient_team_number }},
+
+You have received a new message from {{ sender_team_name }}:
+
+Message:
+{{ message_content }}
+
+To reply, visit: {{ frontend_url }}/messages/{{ sender_team_number }}
+
+Best regards,
+Millennium Market Team 
