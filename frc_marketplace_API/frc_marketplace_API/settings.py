@@ -27,9 +27,9 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = "django-insecure-vaj&&)r(b638*t&z5l+0cuz*)dkh)3sslmwrzr!br&m^uel$mf"
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
-ALLOWED_HOSTS = ['localhost', '127.0.0.1']
+ALLOWED_HOSTS = ['localhost', '127.0.0.1', 'millenniummarket.net', 'http://millenniummarket.net', 'https://millenniummarket.net']
 
 # Application definition
 
@@ -128,8 +128,6 @@ DATABASES = {
     }
 }
 
-SESSION_COOKIE_DOMAIN = "127.0.0.1"
-SESSION_COOKIE_PATH = "/"
 SESSION_COOKIE_SAMESITE = None  # Allows cross-site usage
 SESSION_COOKIE_SECURE = False  # Allow insecure for local development
 
@@ -140,12 +138,14 @@ CORS_ALLOWED_ORIGINS = [
     "http://localhost:5173",
     "http://127.0.0.1:5173",
     "http://127.0.0.1:5174",
+"millenniummarket.net",
 ]
 
 CSRF_TRUSTED_ORIGINS = [
     "http://localhost:5173",
     "http://127.0.0.1:5173",
     "http://127.0.0.1:5174",
+"millenniummarket.net",
 ]
 
 # Allow credentials if you're using cookies/sessions
