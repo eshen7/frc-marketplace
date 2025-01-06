@@ -9,7 +9,7 @@ import {
   Link,
 } from "@mui/material";
 
-const PartItemCard = ({ part }) => {
+const PartItemCard = ({ part, navigate}) => {
   return (
     <Card sx={{ maxWidth: 345, height: "100%" }}>
       <CardMedia
@@ -23,11 +23,11 @@ const PartItemCard = ({ part }) => {
         }}
       />
       <CardContent>
-        <Link href={`/part/${part.id}`} sx={{ textDecoration: "none" }}>
-          <Typography variant="h6" sx={{fontWeight: "bold"}} gutterBottom>
+        <button onClick={() => navigate(`/part/${part.id}`)} className="text-blue-500 hover:text-blue-700 hover:underline">
+          <Typography variant="h6" gutterBottom>
             {part.name || "Part Name"}
           </Typography>
-        </Link>
+        </button>
 
         <Box sx={{ mb: 1.5 }}>
           <Typography variant="body2" color="text.secondary">

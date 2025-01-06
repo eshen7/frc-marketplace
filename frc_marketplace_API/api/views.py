@@ -43,13 +43,17 @@ def search_all_view(request):
         users = User.objects.all()
         parts = Part.objects.all()
         requests = PartRequest.objects.all()
+        sales = PartSale.objects.all()
+        
         user_serializer = PublicUserSerializer(users, many=True)
         part_serializer = PartSerializer(parts, many=True)
         request_serializer = PartRequestSerializer(requests, many=True)
+        sale_serializer = PartSaleSerializer(sales, many=True)
 
         total_data["users"] = user_serializer.data
         total_data["parts"] = part_serializer.data
         total_data["requests"] = request_serializer.data
+        total_data["sales"] = sale_serializer.data
         return Response(total_data, status=status.HTTP_200_OK)
     return JsonResponse({"error": "Only GET requests are allowed"}, status=405)
 

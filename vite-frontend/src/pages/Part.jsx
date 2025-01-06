@@ -27,6 +27,8 @@ import LaunchIcon from "@mui/icons-material/Launch";
 import { FaEdit, FaSave } from "react-icons/fa";
 import SuccessBanner from "../components/SuccessBanner";
 import ErrorBanner from "../components/ErrorBanner";
+import { useData } from "../contexts/DataContext";
+import { haversine } from "../utils/utils";
 
 const PartDetailsComponent = ({ part, setPart, isAuthenticated }) => {
   const [isEditing, setIsEditing] = useState(false);
@@ -225,19 +227,15 @@ const PartDetailsComponent = ({ part, setPart, isAuthenticated }) => {
 
 const PartDetailsPage = () => {
   const { id } = useParams();
-
   const { user, isAuthenticated } = useUser();
+  const { requests, sales, loadingStates } = useData();
 
   const [part, setPart] = useState(null);
-  const [requests, setRequests] = useState([]);
-  const [sales, setSales] = useState([]);
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [loadingRequests, setLoadingRequests] = useState(true);
-  const [loadingSales, setLoadingSales] = useState(true);
-
   const [onRequests, setOnRequests] = useState(true);
 
+  // Only fetch the part details, filter requests/sales from context
   useEffect(() => {
     const fetchPart = async () => {
       try {
@@ -250,41 +248,12 @@ const PartDetailsPage = () => {
         setLoading(false);
       }
     };
-
-    const fetchRequests = async () => {
-      try {
-        const response = await axiosInstance.get(`/parts/id/${id}/requests`);
-        setRequests(response.data);
-      } catch (error) {
-        console.error("Error fetching requests:", error);
-      } finally {
-        setLoadingRequests(false);
-      }
-    };
-
-    const fetchSales = async () => {
-      try {
-        const response = await axiosInstance.get(`/parts/id/${id}/sales`);
-        setSales(response.data);
-      } catch (error) {
-        console.error("Error fetching sales:", error);
-      } finally {
-        setLoadingSales(false);
-      }
-    };
-
     fetchPart();
-    fetchRequests();
-    fetchSales();
   }, [id]);
 
-  const handleClickSales = () => {
-    setOnRequests(false);
-  };
-
-  const handleClickRequests = () => {
-    setOnRequests(true);
-  };
+  // Filter requests/sales from context instead of fetching
+  const filteredRequests = requests.filter(request => request.part.id === id);
+  const filteredSales = sales.filter(sale => sale.part.id === id);
 
   return (
     <Box sx={{ display: "flex", flexDirection: "column", minHeight: "100vh" }}>
@@ -323,17 +292,23 @@ const PartDetailsPage = () => {
           <Box sx={{ mt: 3 }}>
             {onRequests ? (
               <Grid container spacing={2}>
-                {requests.length > 0 ? (
-                  requests.map((request) => (
+                {filteredRequests.length > 0 ? (
+                  filteredRequests.map((request) => (
                     <Grid item xs={12} sm={6} md={4} lg={3} key={request.id}>
                       <ItemCard
                         item={request}
                         currentUser={user}
                         type="request"
+                        itemDistance={isAuthenticated ? haversine(
+                          user.formatted_address.latitude,
+                          user.formatted_address.longitude,
+                          request.user.formatted_address.latitude,
+                          request.user.formatted_address.longitude
+                        ).toFixed(1) : null}
                       />
                     </Grid>
                   ))
-                ) : loadingRequests ? (
+                ) : loadingStates.requests ? (
                   <Typography color="text.secondary">
                     Loading requests...
                   </Typography>
@@ -345,13 +320,23 @@ const PartDetailsPage = () => {
               </Grid>
             ) : (
               <Grid container spacing={2}>
-                {sales.length > 0 ? (
-                  sales.map((sale) => (
+                {filteredSales.length > 0 ? (
+                  filteredSales.map((sale) => (
                     <Grid item xs={12} sm={6} md={4} lg={3} key={sale.id}>
-                      <ItemCard item={sale} currentUser={user} type="sale" />
+                      <ItemCard
+                        item={sale}
+                        currentUser={user}
+                        type="sale"
+                        itemDistance={isAuthenticated ? haversine(
+                          user.formatted_address.latitude,
+                          user.formatted_address.longitude,
+                          sale.user.formatted_address.latitude,
+                          sale.user.formatted_address.longitude
+                        ).toFixed(1) : null}
+                      />
                     </Grid>
                   ))
-                ) : loadingSales ? (
+                ) : loadingStates.sales ? (
                   <Typography color="text.secondary">
                     Loading sales...
                   </Typography>

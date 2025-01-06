@@ -11,7 +11,7 @@ const SearchAndFilter = ({
 }) => {
   const [searchTerm, setSearchTerm] = useState("");
   const [distance, setDistance] = useState(50);
-  const [sortBy, setSortBy] = useState("newest");
+  const [sortBy, setSortBy] = useState(implementationType == "request" ? "urgent" : "newest");
   const [showFilters, setShowFilters] = useState(false);
   const [selectedCategories, setSelectedCategories] = useState([]);
 

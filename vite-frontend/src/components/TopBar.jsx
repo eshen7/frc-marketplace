@@ -23,7 +23,7 @@ const NavButton = ({ name, link, navigate }) => {
   return (
     <button
       onClick={() => navigate(link)}
-      className="px-4 py-2 text-white hover:underline-offset-1 hover:underline mx-2 whitespace-nowrap"
+      className="px-4 py-2 text-white hover:underline-offset-1 hover:underline mx-1 whitespace-nowrap"
     >
       {name}
     </button>
@@ -107,9 +107,9 @@ const TopBar = () => {
       {/* Left Buttons */}
       <div className="flex flex-row">
         {/* Logo */}
-        <button onClick={() => navigate("/")}>
+        <button className="w-[50px] mx-5" onClick={() => navigate("/")}>
           <img
-            className="h-[40px] min-w-[32px] px-5 hover:cursor-pointer hover:scale-105 transition-translate duration-100 text-white"
+            className="hover:cursor-pointer hover:scale-105 transition-translate duration-100 text-white"
             src="/millenniumMarket.svg"
             alt="3647 logo"
           />

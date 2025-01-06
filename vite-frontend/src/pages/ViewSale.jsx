@@ -434,6 +434,7 @@ export default function ViewSale() {
                   user={user}
                   loadingUser={loadingUser}
                   type="sale"
+                  isAuthenticated={isAuthenticated}
                 />
               </div>
             </div>

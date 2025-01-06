@@ -396,11 +396,11 @@ const UserProfile = () => {
                       <h2 className="text-xl font-semibold mb-4">
                         Uneditable Information
                       </h2>
-                      <div className="absolute right-[20px] top-[20px] rounded-lg bg-gray-200">
+                      <div className="absolute right-[20px] top-[20px] rounded-lg bg-gray-200 p-2">
                         <ProfilePhoto 
                           src={user.profile_photo}
                           teamNumber={user.team_number}
-                          className="p-2 w-[60px] h-[60px] rounded-md"
+                          className="w-[52px] h-[52px] rounded-md"
                           alt={"Team Logo"}
                         />
                       </div>
