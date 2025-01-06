@@ -3,17 +3,18 @@ import { Outlet } from "react-router-dom";
 import "./App.css";
 import { UserProvider } from "./contexts/UserContext";
 import { WebSocketProvider } from './contexts/WebSocketContext';
+import { DataProvider } from './contexts/DataContext';
 
 const App = () => {
   console.log("App component rendered");
   return (
-    <>
-      <UserProvider>
+    <UserProvider>
+      <DataProvider>
         <WebSocketProvider>
           <Outlet />
         </WebSocketProvider>
-      </UserProvider>
-    </>
+      </DataProvider>
+    </UserProvider>
   );
 };
 

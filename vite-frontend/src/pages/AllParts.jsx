@@ -1,10 +1,12 @@
 import React from "react";
+import { useNavigate } from "react-router-dom";
 import TopBar from "../components/TopBar";
 import Footer from "../components/Footer";
 import { useEffect, useState, useMemo } from "react";
-import axiosInstance from "../utils/axiosInstance";
+import { FiSearch, FiSliders } from "react-icons/fi";
 import Fuse from "fuse.js";
 import PartItemCard from "../components/PartItemCard";
+import { useData } from '../contexts/DataContext';
 import SearchAndFilter from "../components/SearchAndFilter";
 import PartsSearchAndFilter from "../components/PartsSearchAndFilter";
 
@@ -15,59 +17,14 @@ const fuseOptions = {
 };
 
 const AllParts = () => {
+  const { parts, categories, manufacturers, loadingStates } = useData();
+
+  const navigate = useNavigate();
+  
   const [searchTerm, setSearchTerm] = useState("");
   const [sortBy, setSortBy] = useState("name");
   const [selectedCategories, setSelectedCategories] = useState([]);
   const [selectedManufacturers, setSelectedManufacturers] = useState([]);
-  const [allCategories, setAllCategories] = useState([]);
-  const [allManufacturers, setAllManufacturers] = useState([]);
-
-  const [parts, setParts] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-
-  const fetchParts = async () => {
-    try {
-      const response = await axiosInstance.get("/parts/");
-      setParts(Array.isArray(response.data) ? response.data : []);
-      setLoading(false);
-    } catch (err) {
-      setError("Failed to fetch parts");
-      setLoading(false);
-    }
-  };
-
-  const fetchCategories = async () => {
-    try {
-      const response = await axiosInstance.get("/parts/categories/");
-      setAllCategories(response.data);
-    } catch (error) {
-      setAllCategories([]);
-    }
-  };
-
-  const fetchManufacturers = async () => {
-    try {
-      const response = await axiosInstance.get("/parts/manufacturers/");
-      setAllManufacturers(response.data);
-    } catch (error) {
-      setAllManufacturers([]);
-    }
-  };
-
-  useEffect(() => {
-    const setupPage = async () => {
-      try {
-        await Promise.all([
-          fetchParts(),
-          fetchCategories(),
-          fetchManufacturers(),
-        ]);
-      } catch (error) {}
-    };
-
-    setupPage();
-  }, []);
 
   const fuse = useMemo(() => new Fuse(parts, fuseOptions), [parts]);
 
@@ -125,12 +82,12 @@ const AllParts = () => {
           onSearchChange={setSearchTerm}
           onCategoriesChange={setSelectedCategories}
           onManufacturersChange={setSelectedManufacturers}
-          allCategories={allCategories}
-          allManufacturers={allManufacturers}
+          allCategories={categories}
+          allManufacturers={manufacturers}
         />
         <div className="p-8">
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            {!loading ? (
+            {!loadingStates.parts ? (
               filteredParts.length > 0 ? (
                 filteredParts.map((part) => (
                   <PartItemCard key={part.id} part={part} />

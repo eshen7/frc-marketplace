@@ -444,6 +444,7 @@ export default function FulfillRequest() {
                   user={user}
                   loadingUser={loadingUser}
                   type="request"
+                  isAuthenticated={isAuthenticated}
                 />
               </div>
             </div>

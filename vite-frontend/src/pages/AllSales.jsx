@@ -8,6 +8,7 @@ import ItemCard from "../components/ItemCard";
 import SearchAndFilter from "../components/SearchAndFilter";
 import { haversine } from "../utils/utils";
 import { useUser } from "../contexts/UserContext";
+import { useData } from "../contexts/DataContext";
 
 // Fuse.js options
 const fuseOptions = {
@@ -17,38 +18,13 @@ const fuseOptions = {
 };
 
 const SalesPage = () => {
-  const { user, isAuthenticated } = useUser();
-
-  const [items, setItems] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const [allCategories, setAllCategories] = useState([]);
+  const { user, loadingUser, isAuthenticated } = useUser();
+  const { sales, categories, loadingStates } = useData();
 
   const [searchTerm, setSearchTerm] = useState("");
   const [distance, setDistance] = useState(50);
   const [sortBy, setSortBy] = useState("newest");
   const [selectedCategories, setSelectedCategories] = useState([]);
-
-  const fetchData = async () => {
-    try {
-      const response = await axiosInstance.get("/sales/");
-      setItems(Array.isArray(response.data) ? response.data : []);
-      setLoading(false);
-    } catch (err) {
-      setError("Failed to fetch data");
-      setLoading(false);
-    }
-  };
-
-  const fetchCategories = async () => {
-    try {
-      const response = await axiosInstance.get("/parts/categories/");
-      setAllCategories(response.data);
-    } catch (error) {
-      console.error("Error fetching categories:", error);
-      setAllCategories([]);
-    }
-  };
 
   const calculateDistanceForAll = (items) => {
     items.map((item) => {
@@ -66,8 +42,7 @@ const SalesPage = () => {
         item.user.formatted_address.latitude,
         item.user.formatted_address.longitude
       );
-      item.distance = distance;
-      setItems([...items]);
+      item.distance = Math.round(distance);
     });
   };
 
@@ -91,21 +66,19 @@ const SalesPage = () => {
   useEffect(() => {
     const setupPage = async () => {
       try {
-        await fetchData();
-        await fetchCategories();
-        if (user && items) calculateDistanceForAll(items);
+        if (user && sales) calculateDistanceForAll(sales);
       } catch (error) {
-        console.error("Error fetching data:", error);
+        console.error("Error calculating distances:", error);
       }
     };
 
     setupPage();
   }, []);
 
-  const fuse = useMemo(() => new Fuse(items, fuseOptions), [items]);
+  const fuse = useMemo(() => new Fuse(sales, fuseOptions), [sales]);
 
   const getFilteredResults = () => {
-    let results = [...items];
+    let results = [...sales];
 
     if (searchTerm) {
       results = fuse.search(searchTerm).map((result) => result.item);
@@ -146,7 +119,7 @@ const SalesPage = () => {
 
   const filteredSales = useMemo(
     () => getFilteredResults(),
-    [items, searchTerm, distance, selectedCategories, sortBy, fuse]
+    [sales, searchTerm, distance, selectedCategories, sortBy, fuse]
   );
 
   return (
@@ -157,28 +130,32 @@ const SalesPage = () => {
         onDistanceChange={setDistance}
         onSortChange={setSortBy}
         onCategoriesChange={setSelectedCategories}
-        allCategories={allCategories}
+        allCategories={categories}
         implementationType={"sale"}
       />
       <div className="flex flex-col flex-grow bg-gray-100 font-sans p-8">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-          {loading ? (
+          {loadingStates.sales ? (
             <div className="col-span-full text-center">Loading...</div>
           ) : filteredSales.length > 0 ? (
-            filteredSales.map((sale) => (
-              <ItemCard
-                key={sale.id}
-                currentUser={user}
-                item={sale}
-                type="sale"
-                itemDistance={haversine(
-                  user.formatted_address.latitude,
-                  user.formatted_address.longitude,
-                  sale.user.formatted_address.latitude,
-                  sale.user.formatted_address.longitude
-                ).toFixed(1)}
-              />
-            ))
+            filteredSales.map((sale) => {
+              const distanceTemp = isAuthenticated ? haversine(
+                user.formatted_address.latitude,
+                user.formatted_address.longitude,
+                sale.user.formatted_address.latitude,
+                sale.user.formatted_address.longitude
+              ).toFixed(1) : null;
+
+              return (
+                <ItemCard
+                  key={sale.id}
+                  currentUser={user}
+                  item={sale}
+                  type="sale"
+                  itemDistance={distanceTemp}
+                />
+              );
+            })
           ) : (
             <div className="col-span-full text-center text-gray-500">
               No results found

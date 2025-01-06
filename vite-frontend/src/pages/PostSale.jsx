@@ -14,6 +14,7 @@ import SuccessBanner from "../components/SuccessBanner";
 import ErrorBanner from "../components/ErrorBanner";
 import NewPartForm from "../components/NewPartForm";
 import axiosInstance from "../utils/axiosInstance";
+import { useData } from "../contexts/DataContext";
 
 const INITIAL_FORM_STATE = {
   partId: "",
@@ -24,26 +25,12 @@ const INITIAL_FORM_STATE = {
 };
 
 const PartSaleForm = () => {
-  const [parts, setParts] = useState([]);
+  const { parts } = useData();
   const [formData, setFormData] = useState(INITIAL_FORM_STATE);
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState("");
   const [isNewPartFormOpen, setIsNewPartFormOpen] = useState(false);
-
-  useEffect(() => {
-    fetchParts();
-  }, []);
-
-  const fetchParts = async () => {
-    try {
-      const { data } = await axiosInstance.get("/parts/");
-      setParts(data);
-    } catch (error) {
-      setError("Failed to fetch parts list");
-      console.error("Error fetching parts:", error);
-    }
-  };
 
   const handleInputChange = (event) => {
     const { name, value } = event.target;

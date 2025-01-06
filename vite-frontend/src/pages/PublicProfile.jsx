@@ -8,6 +8,7 @@ import ItemCard from '../components/ItemCard';
 import { MdOutlineEdit } from "react-icons/md";
 import { useUser } from '../contexts/UserContext';
 import ProfilePhoto from '../components/ProfilePhoto';
+import { haversine } from '../utils/utils';
 
 const PublicProfileComponent = ({ user }) => {
   const navigate = useNavigate();
@@ -143,6 +144,12 @@ const PublicProfileComponent = ({ user }) => {
                         item={request}
                         currentUser={user}
                         type="request"
+                        itemDistance={isAuthenticated ? haversine(
+                          user.formatted_address.latitude,
+                          user.formatted_address.longitude,
+                          request.user.formatted_address.latitude,
+                          request.user.formatted_address.longitude
+                        ).toFixed(1) : null}
                       />
                     ))}
                   </div>
@@ -162,6 +169,12 @@ const PublicProfileComponent = ({ user }) => {
                         item={sale}
                         currentUser={user}
                         type="sale"
+                        itemDistance={isAuthenticated ? haversine(
+                          user.formatted_address.latitude,
+                          user.formatted_address.longitude,
+                          sale.user.formatted_address.latitude,
+                          sale.user.formatted_address.longitude
+                        ).toFixed(1) : null}
                       />
                     ))}
                   </div>

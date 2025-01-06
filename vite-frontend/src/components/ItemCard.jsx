@@ -51,11 +51,11 @@ const ItemCard = ({ item, currentUser, type, itemDistance }) => {
       </div>
 
       <div className="p-4">
+        <p className="text-xs text-gray-500 text-right">
+          {isRequest ? (new Date(item.request_date)).toLocaleDateString() : (new Date(item.sale_creation_date)).toLocaleDateString()}
+        </p>
         <h2 className="text-xl font-semibold mb-2 truncate">
           {item.part.name}
-          <span className="text-sm text-gray-500 ml-2">
-            Posted {item.request_date || item.sale_creation_date}
-          </span>
         </h2>
 
         <div onClick={() => navigate(`/profile/frc/${item.user.team_number}`)} className="text-gray-600 text-sm mb-2 truncate hover:underline cursor-pointer">
@@ -68,10 +68,10 @@ const ItemCard = ({ item, currentUser, type, itemDistance }) => {
               {currentUser && currentUser.team_number !== item.user.team_number
                 ? itemDistance + " miles away"
                 : currentUser
-                ? "Your Listing"
-                : !currentUser
-                ? "Please log in to view distance"
-                : ""} 
+                  ? "Your Listing"
+                  : !currentUser
+                    ? "Please log in to view distance"
+                    : ""}
             </p>
             {(() => {
               let temp_date = item.needed_date;
@@ -82,9 +82,8 @@ const ItemCard = ({ item, currentUser, type, itemDistance }) => {
               const isUrgent = daysUntil < 3;
               return (
                 isRequest && (
-                  <p className={`text-sm mb-4 ${
-                    isUrgent ? "text-red-600 font-bold" : "text-gray-600"
-                  }`}>
+                  <p className={`text-sm mb-4 ${isUrgent ? "text-red-600 font-bold" : "text-gray-600"
+                    }`}>
                     Need By: {temp_date.toLocaleDateString()} ({daysUntil} days)
                   </p>
                 )
@@ -103,10 +102,10 @@ const ItemCard = ({ item, currentUser, type, itemDistance }) => {
               {currentUser && currentUser.team_number !== item.user.team_number
                 ? itemDistance + " miles"
                 : currentUser
-                ? "Your Listing"
-                : !currentUser
-                ? "Please log in to view distance"
-                : ""}
+                  ? "Your Listing"
+                  : !currentUser
+                    ? "Please log in to view distance"
+                    : ""}
             </p>
           </div>
         )}

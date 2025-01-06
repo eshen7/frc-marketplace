@@ -10,6 +10,7 @@ import { FaArrowLeft } from "react-icons/fa";
 import { useUser } from "../contexts/UserContext";
 import ProfilePhoto from "../components/ProfilePhoto";
 import { useWebSocket } from '../contexts/WebSocketContext';
+import { useData } from "../contexts/DataContext";
 
 const MessageSent = ({ message, allTeams }) => {
   const senderTeam = allTeams.find(
@@ -109,8 +110,7 @@ const Chat = () => {
 
   const [receiverUser, setReceiverUser] = useState(null);
 
-  const [allTeams, setAllTeams] = useState([]);
-  const [loadingTeams, setLoadingTeams] = useState(true);
+  const { users: allTeams, loadingStates } = useData();
 
   const [subsetTeams, setSubsetTeams] = useState([]);
   const [loadingSubsetTeams, setLoadingSubsetTeams] = useState(true);
@@ -269,28 +269,6 @@ const Chat = () => {
 
     markRead();
   }, [user, roomName]);
-
-  // Fetch All Teams
-  useEffect(() => {
-    const fetchTeams = async () => {
-      try {
-        const response = await axiosInstance.get("/users/");
-        const data = response.data;
-
-        if (!data) {
-          throw new Error("Error getting Teams");
-        }
-
-        setAllTeams(data);
-        setLoadingTeams(false);
-      } catch (error) {
-        console.error("Error fetching User Data:", error);
-        setLoadingTeams(false);
-      }
-    };
-
-    fetchTeams();
-  }, []);
 
   // Add new effect to set receiver from allTeams
   useEffect(() => {
@@ -514,7 +492,7 @@ const Chat = () => {
                 />
               </div>
 
-              {!loadingTeams && subsetTeams ? (
+              {!loadingStates.users && subsetTeams ? (
                 <div className="flex flex-col">
                   <p className="mx-3 py-2 text-[20px] border-b border-gray-300">
                     Current Messages
@@ -549,7 +527,7 @@ const Chat = () => {
                     </div>
                   ))}
                 </div>
-              ) : loadingTeams ? (
+              ) : loadingStates.users ? (
                 <p>Loading Teams</p>
               ) : (
                 <p>error loading teams</p>
@@ -568,7 +546,7 @@ const Chat = () => {
                 className="overflow-y-auto flex-grow"
                 ref={messagesContainerRef}
               >
-                {!loadingTeams && allTeams ? (
+                {!loadingStates.users && allTeams ? (
                   <>
                     {(messagesByRoom[roomName] || []).map((msg, index) => (
                       <div key={index}>

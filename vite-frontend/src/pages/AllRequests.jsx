@@ -8,6 +8,7 @@ import ItemCard from "../components/ItemCard";
 import SearchAndFilter from "../components/SearchAndFilter";
 import { getDaysUntil, haversine } from "../utils/utils";
 import { useUser } from "../contexts/UserContext";
+import { useData } from "../contexts/DataContext";
 
 const fuseOptions = {
   keys: ["part.name"],
@@ -16,38 +17,13 @@ const fuseOptions = {
 };
 
 const AllRequests = () => {
-  const [items, setItems] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const [allCategories, setAllCategories] = useState([]);
-
   const [searchTerm, setSearchTerm] = useState("");
   const [distance, setDistance] = useState(50);
-  const [sortBy, setSortBy] = useState("newest");
+  const [sortBy, setSortBy] = useState("urgent");
   const [selectedCategories, setSelectedCategories] = useState([]);
 
-  const { user, isAuthenticated } = useUser();
-
-  const fetchData = async () => {
-    try {
-      const response = await axiosInstance.get("/requests/");
-      setItems(response.data); // Ensure it's an array
-      setLoading(false);
-    } catch (err) {
-      setError("Failed to fetch data");
-      setLoading(false);
-    }
-  };
-
-  const fetchCategories = async () => {
-    try {
-      const response = await axiosInstance.get("/parts/categories/");
-      setAllCategories(response.data);
-    } catch (error) {
-      console.error("Error fetching categories:", error);
-      setAllCategories([]);
-    }
-  };
+  const { user, loadingUser, isAuthenticated } = useUser();
+  const { requests, categories: allCategories, loadingStates } = useData();
 
   const calculateDistanceForAll = (items) => {
     items.map((item) => {
@@ -70,8 +46,7 @@ const AllRequests = () => {
         item_latitude,
         item_longitude
       );
-      item.distance = distance;
-      setItems([...items]);
+      item.distance = Math.round(distance);
     });
   };
 
@@ -95,21 +70,21 @@ const AllRequests = () => {
   useEffect(() => {
     const setupPage = async () => {
       try {
-        await fetchData();
-        await fetchCategories();
-        if (user && items) calculateDistanceForAll(items);
+        if (user && requests) calculateDistanceForAll(requests);
       } catch (error) {
-        console.error("Error fetching data:", error);
+        console.error("Error calculating distances:", error);
       }
     };
 
     setupPage();
   }, [isAuthenticated]);
 
-  const fuse = useMemo(() => new Fuse(items, fuseOptions), [items]);
+  // Update Fuse instance to use requests from context
+  const fuse = useMemo(() => new Fuse(requests, fuseOptions), [requests]);
 
+  // Update getFilteredResults to use requests from context
   const getFilteredResults = () => {
-    let results = [...items];
+    let results = [...requests];
 
     if (searchTerm) {
       results = fuse.search(searchTerm).map((result) => result.item);
@@ -150,7 +125,7 @@ const AllRequests = () => {
 
   const filteredRequests = useMemo(
     () => getFilteredResults(),
-    [items, searchTerm, distance, selectedCategories, sortBy, fuse]
+    [requests, searchTerm, distance, selectedCategories, sortBy, fuse]
   );
 
   return (
@@ -166,23 +141,27 @@ const AllRequests = () => {
       />
       <div className="flex flex-col flex-grow bg-gray-100 font-sans p-8">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-          {loading ? (
+          {loadingStates.requests ? (
             <div className="col-span-full text-center">Loading...</div>
           ) : filteredRequests.length > 0 ? (
-            filteredRequests.map((request) => (
-              <ItemCard
-                key={request.id}
-                currentUser={user}
-                item={request}
-                type="request"
-                itemDistance={haversine(
-                  user.formatted_address.latitude,
-                  user.formatted_address.longitude,
-                  request.user.formatted_address.latitude,
-                  request.user.formatted_address.longitude
-                ).toFixed(1)}
-              />
-            ))
+            filteredRequests.map((request) => {
+              const distanceTemp = isAuthenticated ? haversine(
+                user.formatted_address.latitude,
+                user.formatted_address.longitude,
+                request.user.formatted_address.latitude,
+                request.user.formatted_address.longitude
+              ).toFixed(1) : null;
+
+              return (
+                <ItemCard
+                  key={request.id}
+                  currentUser={user}
+                  item={request}
+                  type="request"
+                  itemDistance={distanceTemp}
+                />
+              );
+            })
           ) : (
             <div className="col-span-full text-center text-gray-500">
               No results found
