@@ -36,32 +36,47 @@ def send_daily_requests_digest():
     # Get requests from the last 24 hours
     recent_requests = PartRequest.objects.filter(
         request_date__gte=timezone.now() - timedelta(days=1)
-    )
+    ).order_by('needed_date')  # First sort by needed_date at database level
 
     for user in users:
         if not user.address:  # Check if user has an address
             continue
 
-        # Filter requests within 50 miles
+        # Filter requests within 50 miles and exclude user's own requests
         nearby_requests = []
         for request in recent_requests:
-            if not request.user.address:  # Check if request user has an address
+            # Skip if it's the user's own request or if request user has no address
+            if request.user == user or not request.user.address:
                 continue
                 
             distance = haversine(
-                user.address.latitude,  # Access latitude directly from Address model
-                user.address.longitude,  # Access longitude directly from Address model
+                user.address.latitude,
+                user.address.longitude,
                 request.user.address.latitude,
                 request.user.address.longitude
             )
             
             if distance <= 50:  # 50 miles radius
+                # Calculate days until needed
+                days_until = None
+                if request.needed_date:
+                    days_until = (request.needed_date - timezone.now().date()).days
+                
                 nearby_requests.append({
                     'request': request,
-                    'distance': round(distance, 1)
+                    'distance': round(distance, 1),
+                    'days_until': days_until
                 })
 
         if nearby_requests:
+            # Sort requests by days_until (None values last)
+            nearby_requests.sort(
+                key=lambda x: (
+                    x['days_until'] is None,  # None values last
+                    x['days_until'] if x['days_until'] is not None else float('inf')
+                )
+            )
+
             # Create email content
             context = {
                 'team_name': user.team_name,

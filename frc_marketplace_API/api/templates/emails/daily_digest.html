@@ -1,3 +1,5 @@
+{% load custom_filters %}
+
 <!DOCTYPE html>
 <html>
 <head>
@@ -51,8 +53,7 @@
             color: #4b5563;
         }
         .urgent {
-            color: #dc2626;
-            font-weight: bold;
+            color: #f97316;
         }
         .button {
             display: inline-block;
@@ -84,6 +85,29 @@
             font-size: 12px;
             color: #4b5563;
         }
+        .overdue {
+            color: #dc2626;
+            font-weight: bold;
+        }
+        .due-today {
+            color: #dc2626;
+            font-weight: bold;
+        }
+        .part-image {
+            width: 100%;
+            max-height: 200px;
+            object-fit: contain;
+            margin-bottom: 10px;
+            background-color: white;
+            border-radius: 4px;
+        }
+        .part-image-container {
+            background-color: white;
+            padding: 10px;
+            border: 1px solid #e5e7eb;
+            border-radius: 4px;
+            margin-bottom: 10px;
+        }
     </style>
 </head>
 <body>
@@ -95,32 +119,57 @@
         
         <div class="content">
             <p>Hello {{ team_name }},</p>
-            <p>Here are the new part requests within 50 miles of your location from the last 24 hours:</p>
+            
+            {% if requests %}
+                <p>Here are the new part requests within 50 miles of your location from the last 24 hours:</p>
 
-            {% for item in requests %}
-            <div class="request-item">
-                <h3 class="request-title">{{ item.request.part.name }}</h3>
-                <div class="team-info">
-                    Requested by Team {{ item.request.user.team_number }}
-                    <span class="distance">{{ item.distance }} miles away</span>
+                {% for item in requests %}
+                <div class="request-item">
+                    {% if item.request.part.image %}
+                    <div class="part-image-container">
+                        <img 
+                            src="{{ item.request.part.image.url }}" 
+                            alt="{{ item.request.part.name }}"
+                            class="part-image"
+                        />
+                    </div>
+                    {% endif %}
+                    <h3 class="request-title">{{ item.request.part.name }}</h3>
+                    <div class="team-info">
+                        Requested by Team {{ item.request.user.team_number }}
+                        <span class="distance">{{ item.distance }} miles away</span>
+                    </div>
+                    <p class="request-detail">
+                        <strong>Quantity needed:</strong> {{ item.request.quantity }}
+                    </p>
+                    <p class="request-detail {% if item.days_until is not None and item.days_until <= 5 %}urgent{% endif %}">
+                        <strong>Needed by:</strong> 
+                        {{ item.request.needed_date }}
+                        {% if item.days_until is not None %}
+                            {% if item.days_until < 0 %}
+                                <span class="overdue">(Overdue by {{ item.days_until|absolute }} days)</span>
+                            {% elif item.days_until == 0 %}
+                                <span class="due-today">(Due today!)</span>
+                            {% else %}
+                                <span>({{ item.days_until }} days remaining)</span>
+                            {% endif %}
+                        {% endif %}
+                    </p>
+                    {% if item.request.additional_info %}
+                    <p class="request-detail">
+                        <strong>Additional info:</strong><br>
+                        {{ item.request.additional_info }}
+                    </p>
+                    {% endif %}
+                    <a href="{{ frontend_url }}/requests/{{ item.request.id }}" class="button">
+                        View Request
+                    </a>
                 </div>
-                <p class="request-detail">
-                    <strong>Quantity needed:</strong> {{ item.request.quantity }}
-                </p>
-                <p class="request-detail {% if item.request.is_urgent %}urgent{% endif %}">
-                    <strong>Needed by:</strong> {{ item.request.needed_date }}
-                </p>
-                {% if item.request.additional_info %}
-                <p class="request-detail">
-                    <strong>Additional info:</strong><br>
-                    {{ item.request.additional_info }}
-                </p>
-                {% endif %}
-                <a href="{{ frontend_url }}/requests/{{ item.request.id }}" class="button">
-                    View Request
-                </a>
-            </div>
-            {% endfor %}
+                {% endfor %}
+            {% else %}
+                <p>There are no new part requests within 50 miles of your location from the last 24 hours.</p>
+                <p>We'll notify you when new requests are made in your area!</p>
+            {% endif %}
 
             <div class="footer">
                 <p>
