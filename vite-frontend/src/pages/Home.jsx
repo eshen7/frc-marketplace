@@ -8,6 +8,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { useUser } from "../contexts/UserContext";
 import { motion } from "framer-motion"; 
 import { useData } from "../contexts/DataContext";
+import SectionHeader from "../components/SectionHeader";
 
 const Home = () => {
   const location = useLocation();
@@ -115,7 +116,7 @@ const Home = () => {
       <section className="py-20">
         <div className="container mx-auto px-4">
           <div className="mb-16">
-            <h2 className="text-3xl font-bold text-blue-900 mb-8">Recent Part Requests</h2>
+            <SectionHeader title="Recent Part Requests" />
             <ItemScrollBar
               key={requests[0]?.id}
               items={requests}
@@ -136,7 +137,7 @@ const Home = () => {
           </div>
 
           <div>
-            <h2 className="text-3xl font-bold text-blue-900 mb-8">Parts for Sale</h2>
+            <SectionHeader title="Parts for Sale" />
             <ItemScrollBar
               key={sales[0]?.id}
               items={sales}

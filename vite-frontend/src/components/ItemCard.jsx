@@ -122,7 +122,7 @@ const ItemCard = ({ item, currentUser, type, itemDistance }) => {
         )}
         {isSale && (
           <button
-            className="w-full py-2 text-white bg-green-600 hover:bg-green-700 transition duration-200 rounded-md"
+            className="w-full py-2 text-white bg-blue-800 hover:bg-blue-900 transition duration-200 rounded-md"
             onClick={() => {
               navigate(`/sales/${item.id}`);
             }}

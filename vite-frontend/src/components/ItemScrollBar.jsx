@@ -92,31 +92,45 @@ const ItemScrollBar = ({ items, loadingItems, user, loadingUser, type, isAuthent
     }
 
     if (items.length === 0) {
-      return <p className="text-center">No parts for sale!</p>;
+      return <p className="text-center">{type == "sale" ? "No parts for sale!": "No requests!"}</p>;
     }
 
     return <></>;
   };
 
   return (
-    <div className="relative">
+    <div className="relative group">
       <button
         onClick={scrollLeft}
-        className="absolute left-[-15px] top-1/2 transform -translate-y-1/2 bg-gray-800 text-white p-2 rounded-full shadow-lg hover:bg-gray-900 z-10"
+        className="absolute left-2 top-1/2 transform -translate-y-1/2 bg-white/90 text-gray-800 p-3 
+                 rounded-full shadow-lg hover:bg-gray-100 transition-all duration-200 
+                 opacity-0 group-hover:opacity-100 backdrop-blur-sm z-20"
       >
-        &#8592;
+        <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+        </svg>
       </button>
+
       <div
         ref={scrollContainerRef}
-        className="flex overflow-x-auto space-x-4 pb-4"
+        className="flex overflow-x-auto space-x-6 pb-4 px-4 scroll-smooth scrollbar-hide"
+        style={{
+          msOverflowStyle: 'none',
+          scrollbarWidth: 'none',
+          '::-webkit-scrollbar': { display: 'none' }
+        }}
       >
         {renderContent()}
       </div>
       <button
         onClick={scrollRight}
-        className="absolute right-[-15px] top-1/2 transform -translate-y-1/2 bg-gray-800 text-white p-2 rounded-full shadow-lg hover:bg-gray-900 z-10"
+        className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-white/90 text-gray-800 p-3 
+                 rounded-full shadow-lg hover:bg-gray-100 transition-all duration-200 
+                 opacity-0 group-hover:opacity-100 backdrop-blur-sm z-20"
       >
-        &#8594;
+        <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+        </svg>
       </button>
     </div>
   );
