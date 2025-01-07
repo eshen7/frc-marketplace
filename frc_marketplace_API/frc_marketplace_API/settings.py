@@ -150,6 +150,8 @@ CSRF_TRUSTED_ORIGINS = [
     "https://millenniummarket.net",
 ]
 
+FRONTEND_URL = "https://millenniummarket.net"
+
 # Allow credentials if you're using cookies/sessions
 CORS_ALLOW_CREDENTIALS = True
 CORS_ALLOW_METHODS = [
@@ -229,6 +231,7 @@ DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 
 CELERY_ACCEPT_CONTENT = ["json"]
 CELERY_TASK_SERIALIZER = "json"
+CELERY_RESULT_SERIALIZER = "json"
 
 
 # AWS Configuration
@@ -303,3 +306,10 @@ CORS_ALLOWED_ORIGIN_REGEXES = [
     r"^https?://(localhost|127\.0\.0\.1)(:\d+)?$",
     r"^https?://millenniummarket\.net$",
 ]
+
+# Celery Configuration
+CELERY_BROKER_URL = f"redis://redis:{config('REDIS_PORT_CONTAINER', default=6379)}/0"
+CELERY_RESULT_BACKEND = CELERY_BROKER_URL
+CELERY_ACCEPT_CONTENT = ["json"]
+CELERY_TASK_SERIALIZER = "json"
+CELERY_RESULT_SERIALIZER = "json"
