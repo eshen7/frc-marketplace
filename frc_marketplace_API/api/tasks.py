@@ -11,20 +11,13 @@ from utils.utils import haversine
 logger = logging.getLogger(__name__)
 
 @shared_task
-def send_email_task(subject, message, recipient_list, html_message=None):
+def send_email_task(subject, message, from_email, recipient_list, html_message=None):
     try:
-        # Log all email-related settings
-        logger.info(f"Attempting to send email from {settings.DEFAULT_FROM_EMAIL} to {recipient_list}")
-        logger.info(f"Email settings: HOST={settings.EMAIL_HOST}, PORT={settings.EMAIL_PORT}")
-        logger.info(f"Using email account: {settings.EMAIL_HOST_USER}")
-        
-        # Ensure from_email is millenniummarket.team@gmail.com
-        from_email_const = 'millenniummarket.team@gmail.com'
-        
+        logger.info(f"Attempting to send email from {from_email} to {recipient_list}")
         result = send_mail(
             subject=subject,
             message=message,
-            from_email=from_email_const,  # Use the forced email
+            from_email=from_email,
             recipient_list=recipient_list,
             fail_silently=False,
             html_message=html_message
@@ -99,6 +92,7 @@ def send_daily_requests_digest():
             send_email_task.delay(
                 subject=f'Daily Part Requests Digest for FRC Team {user.team_number}',
                 message=text_content,
+                from_email=settings.DEFAULT_FROM_EMAIL,
                 recipient_list=[user.email],
                 html_message=html_content
             )
@@ -109,10 +103,6 @@ def send_dm_notification(sender_id, recipient_id, message_content):
         sender = User.objects.get(id=sender_id)
         recipient = User.objects.get(id=recipient_id)
 
-        # Log the email that will be used
-        logger.info(f"DEFAULT_FROM_EMAIL setting is: {settings.DEFAULT_FROM_EMAIL}")
-        logger.info(f"EMAIL_HOST_USER setting is: {settings.EMAIL_HOST_USER}")
-
         context = {
             'sender_team_name': sender.team_name,
             'sender_team_number': sender.team_number,
@@ -121,12 +111,15 @@ def send_dm_notification(sender_id, recipient_id, message_content):
             'frontend_url': settings.FRONTEND_URL
         }
 
+        # Render both HTML and text versions
         html_content = render_to_string('emails/dm_notification.html', context)
         text_content = render_to_string('emails/dm_notification.txt', context)
-        
+
+        # Send email with both HTML and text versions
         send_email_task.delay(
             subject=f'New Message from Team {sender.team_number}',
             message=text_content,
+            from_email=settings.DEFAULT_FROM_EMAIL,
             recipient_list=[recipient.email],
             html_message=html_content
         )
