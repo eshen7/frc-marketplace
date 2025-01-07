@@ -17,12 +17,11 @@ import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 // Components
 import TopBar from "../components/TopBar";
 import Footer from "../components/Footer";
-import SuccessBanner from "../components/SuccessBanner";
-import ErrorBanner from "../components/ErrorBanner";
 import NewPartForm from "../components/NewPartForm";
+import AlertBanner from "../components/AlertBanner";
 // Utils
 import axiosInstance from "../utils/axiosInstance";
-import { useData } from '../contexts/DataContext';
+import { useData } from "../contexts/DataContext";
 import { useNavigate } from "react-router-dom";
 
 const INITIAL_FORM_STATE = {
@@ -33,14 +32,33 @@ const INITIAL_FORM_STATE = {
 
 const PartRequestForm = () => {
   const navigate = useNavigate();
-  const { parts, loadingStates, refreshSingle } = useData();
+  const [parts, setParts] = useState([]);
   const [selectedPart, setSelectedPart] = useState("");
   const [dateNeeded, setDateNeeded] = useState(null);
   const [formData, setFormData] = useState(INITIAL_FORM_STATE);
   const [loading, setLoading] = useState(false);
-  const [success, setSuccess] = useState(false);
-  const [error, setError] = useState("");
   const [isNewPartFormOpen, setIsNewPartFormOpen] = useState(false);
+  const [alertState, setAlertState] = useState({
+    open: false,
+    message: "",
+    severity: "success",
+  });
+
+  useEffect(() => {
+    fetchParts();
+  }, []);
+  const fetchParts = async () => {
+    try {
+      const { data } = await axiosInstance.get("/parts/");
+      setParts(data);
+    } catch (error) {
+      setAlertState({
+        open: true,
+        message: "Failed to fetch parts list",
+        severity: "error",
+      });
+    }
+  };
 
   const handleInputChange = (event) => {
     const { name, value } = event.target;
@@ -52,7 +70,6 @@ const PartRequestForm = () => {
     if (!selectedPart || !dateNeeded) return;
 
     setLoading(true);
-    setError("");
 
     try {
       setLoading(true);
@@ -65,32 +82,46 @@ const PartRequestForm = () => {
       };
 
       await axiosInstance.post("/requests/", requestData);
-      setSuccess(true);
+      setAlertState({
+        open: true,
+        message:
+          "Request submitted successfully. Navigating to requests page...",
+        severity: "success",
+      });
       setSelectedPart("");
       setFormData(INITIAL_FORM_STATE);
       setDateNeeded(null);
-      refreshSingle('requests');
-      setTimeout(() => navigate('/requests'), 3000);
+      setTimeout(() => navigate("/requests"), 3000);
     } catch (error) {
-      setError("Failed to submit request. Please try again.");
+      setAlertState({
+        open: true,
+        message: "Failed to submit request. Please try again.",
+        severity: "error",
+      });
     } finally {
       setLoading(false);
     }
   };
 
   const handleNewPartSuccess = async (newPart) => {
-    setSelectedPart(newPart.id);
+    if (newPart) {
+      await fetchParts();
+      setSelectedPart(newPart.id);
+      setAlertState({
+        open: true,
+        message: "Part created successfully!",
+        severity: "success",
+      });
+    }
+    setIsNewPartFormOpen(false);
   };
 
   return (
     <div className="min-h-screen flex flex-col">
-      {success && (
-        <SuccessBanner
-          message="Request submitted successfully. Navigating to requests page..."
-          onClose={() => setSuccess(false)}
-        />
-      )}
-      {error && <ErrorBanner message={error} onClose={() => setError("")} />}
+      <AlertBanner
+        {...alertState}
+        onClose={() => setAlertState({ ...alertState, open: false })}
+      />
 
       <TopBar />
       <div className="w-screen flex-grow flex flex-col place-items-center bg-white relative">
@@ -101,51 +132,52 @@ const PartRequestForm = () => {
           </h1>
 
           <form onSubmit={handleSubmit} className="w-full">
-            <Autocomplete
-              id="part-select"
-              options={parts}
-              value={parts.find(part => part.id === selectedPart) || null}
-              onChange={(_, newValue) => {
-                setSelectedPart(newValue ? newValue.id : '');
-              }}
-              getOptionLabel={(option) => `${option.name} - ${option.manufacturer.name}`}
-              renderOption={(props, option) => {
-                const { key, ...otherProps } = props;
-                return (
-                  <MenuItem key={key} {...otherProps}>
-                    <div className="flex flex-row w-full items-center justify-between">
-                      <span>
-                        {option.name} - <em>{option.manufacturer.name}</em>
-                      </span>
-                      {option.image ? (
-                        <img
-                          src={option.image}
-                          alt={option.name}
-                          className="w-[30px] h-[30px] ml-[10px]"
-                        />
-                      ) : (
-                        <img
-                          src="/IMG_6769.jpg"
-                          alt="IMG_6769.jpg"
-                          className="w-[30px] h-[30px] ml-[10px]"
-                        />
-                      )}
-                    </div>
-                  </MenuItem>
-                );
-              }}
-              renderInput={(params) => (
-                <TextField
-                  {...params}
-                  label="Part"
-                  required
-                />
-              )}
-              isOptionEqualToValue={(option, value) => option.id === value.id}
-              noOptionsText="No parts found"
-            />
+            <FormControl fullWidth margin="normal">
+              <Autocomplete
+                id="part-select"
+                options={parts}
+                value={parts.find((part) => part.id === selectedPart) || null}
+                onChange={(_, newValue) => {
+                  setSelectedPart(newValue ? newValue.id : "");
+                }}
+                getOptionLabel={(option) =>
+                  `${option.name} - ${option.manufacturer.name}`
+                }
+                renderOption={(props, option) => {
+                  const { key, ...otherProps } = props;
+                  return (
+                    <MenuItem key={key} {...otherProps}>
+                      <div className="flex flex-row w-full items-center justify-between">
+                        <span>
+                          {option.name} - <em>{option.manufacturer.name}</em>
+                        </span>
+                        {option.image ? (
+                          <img
+                            src={option.image}
+                            alt={option.name}
+                            className="w-[30px] h-[30px] ml-[10px]"
+                          />
+                        ) : (
+                          <img
+                            src="/IMG_6769.jpg"
+                            alt="IMG_6769.jpg"
+                            className="w-[30px] h-[30px] ml-[10px]"
+                          />
+                        )}
+                      </div>
+                    </MenuItem>
+                  );
+                }}
+                renderInput={(params) => (
+                  <TextField {...params} label="Part" required />
+                )}
+                isOptionEqualToValue={(option, value) => option.id === value.id}
+                noOptionsText="No parts found"
+              />
+            </FormControl>
 
             <button
+              type="button"
               className="w-full mt-1 mb-2 border border-blue-600 text-blue-600 hover:bg-blue-50 py-2 px-4 rounded"
               onClick={() => setIsNewPartFormOpen(true)}
             >
@@ -171,8 +203,8 @@ const PartRequestForm = () => {
                   slotProps={{
                     textField: {
                       fullWidth: true,
-                      required: true
-                    }
+                      required: true,
+                    },
                   }}
                 />
               </LocalizationProvider>
@@ -200,11 +232,12 @@ const PartRequestForm = () => {
 
           <NewPartForm
             open={isNewPartFormOpen}
-            onClose={(newPart) => {
+            onClose={() => {
               setIsNewPartFormOpen(false);
-              if (newPart) handleNewPartSuccess(newPart);
             }}
-            onSubmit={handleNewPartSuccess}
+            onSuccess={(newPart) => {
+              handleNewPartSuccess(newPart);
+            }}
           />
         </div>
       </div>

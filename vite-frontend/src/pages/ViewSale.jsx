@@ -8,13 +8,12 @@ import axiosInstance from '../utils/axiosInstance.js'
 import { Skeleton } from "@mui/material";
 import { MdDelete, MdOutlineEdit } from 'react-icons/md'
 import { LuSave } from 'react-icons/lu'
-import SuccessBanner from '../components/SuccessBanner.jsx'
-import ErrorBanner from '../components/ErrorBanner.jsx'
 import ItemScrollBar from '../components/ItemScrollBar.jsx'
 import DropdownButton from '../components/DropdownButton.jsx'
 import ItemProfileSection from '../components/ItemProfileSection.jsx'
 import { useUser } from '../contexts/UserContext.jsx'
 import { useData } from '../contexts/DataContext.jsx'
+import AlertBanner from '../components/AlertBanner';
 
 export default function ViewSale() {
   const { sale_id } = useParams();
@@ -47,6 +46,12 @@ export default function ViewSale() {
     ask_price: { val: 0, edited: false },
     condition: { val: "", edited: false },
     additional_info: { val: "", edited: false },
+  });
+
+  const [alertState, setAlertState] = useState({
+    open: false,
+    message: '',
+    severity: 'success'
   });
 
   useEffect(() => {
@@ -119,10 +124,18 @@ export default function ViewSale() {
 
         setSale(response.data);
         setIsEditing(false);
-        setSaleChange("Sale Updated Successfully.");
+        setAlertState({
+          open: true,
+          message: "Sale Updated Successfully.",
+          severity: 'success'
+        });
       } catch (error) {
         console.error("Error saving sale:", error);
-        setSaleChange("Error saving sale, please try again.");
+        setAlertState({
+          open: true,
+          message: "Error saving sale, please try again.",
+          severity: 'error'
+        });
       }
     } else {
       setIsEditing(false);
@@ -132,12 +145,20 @@ export default function ViewSale() {
   const handleDeleteConfirm = async () => {
     try {
       await axiosInstance.delete(`/sales/id/${sale_id}/delete/`);
-      setSaleChange("Sale deleted successfully. Navigating to sales page...");
+      setAlertState({
+        open: true,
+        message: "Sale deleted successfully. Navigating to sales page...",
+        severity: 'success'
+      });
       refreshSingle("sales");
       setTimeout(() => navigate('/sales'), 3000);
     } catch (error) {
       console.error("Error deleting sale:", error);
-      setSaleChange("Error deleting sale, please try again.");
+      setAlertState({
+        open: true,
+        message: "Error deleting sale, please try again.",
+        severity: 'error'
+      });
     } finally {
       setDeleteConfirmOpen(false);
     }
@@ -153,19 +174,10 @@ export default function ViewSale() {
 
   return (
     <div className='flex flex-col min-h-screen'>
-      {saleChange == "Sale deleted successfully. Navigating to sales page..." ? (
-        <SuccessBanner
-          message={saleChange}
-          onClose={closeSaleChangeBanner}
-        />
-      ) : saleChange != "" ? (
-        <ErrorBanner
-          message={saleChange}
-          onClose={closeSaleChangeBanner}
-        />
-      ) : (
-        <></>
-      )}
+      <AlertBanner
+        {...alertState}
+        onClose={() => setAlertState({ ...alertState, open: false })}
+      />
       {deleteConfirmOpen && (
         <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full flex items-center justify-center z-50">
           <div className="bg-white p-5 rounded-lg shadow-xl max-w-[320px]">

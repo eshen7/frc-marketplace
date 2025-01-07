@@ -3,27 +3,32 @@ import { useNavigate, useParams } from 'react-router-dom';
 import axiosInstance from '../utils/axiosInstance';
 import TopBar from '../components/TopBar';
 import Footer from '../components/Footer';
-import SuccessBanner from '../components/SuccessBanner';
-import ErrorBanner from '../components/ErrorBanner';
+import AlertBanner from "../components/AlertBanner";
 
 const ResetPassword = () => {
     const { uidb64, token } = useParams();
     const [password, setPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
-    const [success, setSuccess] = useState(false);
-    const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
     const navigate = useNavigate();
+    const [alertState, setAlertState] = useState({
+        open: false,
+        message: '',
+        severity: 'success'
+    });
 
     const handleSubmit = async (e) => {
         e.preventDefault();
         if (password !== confirmPassword) {
-            setError('Passwords do not match');
+            setAlertState({
+                open: true,
+                message: 'Passwords do not match',
+                severity: 'error'
+            });
             return;
         }
 
         setLoading(true);
-        setError('');
 
         try {
             await axiosInstance.post('/password-reset/confirm/', {
@@ -31,10 +36,18 @@ const ResetPassword = () => {
                 token,
                 new_password: password,
             });
-            setSuccess(true);
+            setAlertState({
+                open: true,
+                message: 'Password reset successful! Redirecting to login...',
+                severity: 'success'
+            });
             setTimeout(() => navigate('/login'), 3000);
         } catch (err) {
-            setError(err.response?.data?.message || 'Failed to reset password');
+            setAlertState({
+                open: true,
+                message: err.response?.data?.message || 'Failed to reset password',
+                severity: 'error'
+            });
         } finally {
             setLoading(false);
         }
@@ -42,18 +55,17 @@ const ResetPassword = () => {
 
     return (
         <>
-            {error && <ErrorBanner message={error} onClose={() => setError('')} />}
-            {success && (
-                <SuccessBanner
-                    message="Password reset successful! Redirecting to login..."
-                />)}
+            <AlertBanner
+                {...alertState}
+                onClose={() => setAlertState({ ...alertState, open: false })}
+            />
             <div className="min-h-screen flex flex-col">
                 <TopBar />
                 <div className="flex-grow flex items-center justify-center bg-gray-100 p-4">
                     <div className="max-w-md w-full bg-white rounded-lg shadow-md p-8">
                         <h2 className="text-2xl font-bold text-center mb-6">Set New Password</h2>
 
-                        {!success && (
+                        {!alertState.open && alertState.severity !== 'success' && (
                             <form onSubmit={handleSubmit}>
                                 <div className="mb-4">
                                     <label className="block text-gray-700 text-sm font-bold mb-2">
@@ -100,4 +112,4 @@ const ResetPassword = () => {
     );
 };
 
-export default ResetPassword; 
+export default ResetPassword;

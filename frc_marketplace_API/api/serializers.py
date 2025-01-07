@@ -144,6 +144,9 @@ class PublicUserSerializer(serializers.ModelSerializer):
 
     def to_representation(self, instance):
         """Output representation"""
+        if instance.is_superuser or instance.is_staff or not instance.is_active:
+            return None
+
         representation = super().to_representation(instance)
 
         if instance.address:
