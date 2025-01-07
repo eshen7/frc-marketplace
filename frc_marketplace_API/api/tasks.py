@@ -14,6 +14,8 @@ logger = logging.getLogger(__name__)
 def send_email_task(subject, message, from_email, recipient_list, html_message=None):
     try:
         logger.info(f"Attempting to send email from {from_email} to {recipient_list}")
+        logger.info(f"Email settings: HOST={settings.EMAIL_HOST}, PORT={settings.EMAIL_PORT}")
+        logger.info(f"Using email account: {settings.EMAIL_HOST_USER}")
         result = send_mail(
             subject=subject,
             message=message,
