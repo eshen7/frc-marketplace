@@ -11,10 +11,10 @@ from utils.utils import haversine
 logger = logging.getLogger(__name__)
 
 @shared_task
-def send_email_task(subject, message, from_email, recipient_list, html_message=None):
+def send_email_task(subject, message, recipient_list, html_message=None):
     try:
         # Log all email-related settings
-        logger.info(f"Attempting to send email from {from_email} to {recipient_list}")
+        logger.info(f"Attempting to send email from {settings.DEFAULT_FROM_EMAIL} to {recipient_list}")
         logger.info(f"Email settings: HOST={settings.EMAIL_HOST}, PORT={settings.EMAIL_PORT}")
         logger.info(f"Using email account: {settings.EMAIL_HOST_USER}")
         
@@ -95,14 +95,10 @@ def send_daily_requests_digest():
             html_content = render_to_string('emails/daily_digest.html', context)
             text_content = render_to_string('emails/daily_digest.txt', context)
 
-            # Force the from_email to be millenniummarket.team@gmail.com
-            from_email = 'millenniummarket.team@gmail.com'
-
             # Send email
             send_email_task.delay(
                 subject=f'Daily Part Requests Digest for FRC Team {user.team_number}',
                 message=text_content,
-                from_email=from_email,  # Use the forced email
                 recipient_list=[user.email],
                 html_message=html_content
             )
@@ -127,14 +123,10 @@ def send_dm_notification(sender_id, recipient_id, message_content):
 
         html_content = render_to_string('emails/dm_notification.html', context)
         text_content = render_to_string('emails/dm_notification.txt', context)
-
-        # Force the from_email to be millenniummarket.team@gmail.com
-        from_email = 'millenniummarket.team@gmail.com'
         
         send_email_task.delay(
             subject=f'New Message from Team {sender.team_number}',
             message=text_content,
-            from_email=from_email,  # Use the forced email
             recipient_list=[recipient.email],
             html_message=html_content
         )
