@@ -3,18 +3,16 @@ import { useNavigate } from 'react-router-dom';
 import axiosInstance from '../utils/axiosInstance';
 import TopBar from '../components/TopBar';
 import Footer from '../components/Footer';
-import AlertBanner from "../components/AlertBanner";
+import SuccessBanner from '../components/SuccessBanner';
+import ErrorBanner from '../components/ErrorBanner';
 
 const ForgotPassword = () => {
   const [email, setEmail] = useState('');
+  const [success, setSuccess] = useState(false);
+  const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [canResend, setCanResend] = useState(false);
   const [countdown, setCountdown] = useState(0);
-  const [alertState, setAlertState] = useState({
-    open: false,
-    message: '',
-    severity: 'success'
-  });
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -23,31 +21,24 @@ const ForgotPassword = () => {
       timer = setInterval(() => {
         setCountdown(prev => prev - 1);
       }, 1000);
-    } else if (alertState.severity === 'success') {
+    } else if (success) {
       setCanResend(true);
     }
     return () => clearInterval(timer);
-  }, [countdown, alertState.severity]);
+  }, [countdown, success]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
+    setError('');
     setCanResend(false);
 
     try {
       await axiosInstance.post('/password-reset/', { email });
-      setAlertState({
-        open: true,
-        message: 'If an account exists with this email, you will receive password reset instructions.',
-        severity: 'success'
-      });
+      setSuccess(true);
       setCountdown(60); // Start 60 second countdown
     } catch (err) {
-      setAlertState({
-        open: true,
-        message: err.response?.data?.message || 'Failed to send reset email',
-        severity: 'error'
-      });
+      setError(err.response?.data?.message || 'Failed to send reset email');
     } finally {
       setLoading(false);
     }
@@ -55,17 +46,14 @@ const ForgotPassword = () => {
 
   const handleResend = async () => {
     setLoading(true);
+    setError('');
     setCanResend(false);
 
     try {
       await axiosInstance.post('/password-reset/', { email });
       setCountdown(60); // Reset countdown
     } catch (err) {
-      setAlertState({
-        open: true,
-        message: err.response?.data?.message || 'Failed to resend reset email',
-        severity: 'error'
-      });
+      setError(err.response?.data?.message || 'Failed to resend reset email');
       setCanResend(true);
     } finally {
       setLoading(false);
@@ -74,16 +62,12 @@ const ForgotPassword = () => {
 
   return (
     <div className="min-h-screen flex flex-col">
-      <AlertBanner
-        {...alertState}
-        onClose={() => setAlertState({ ...alertState, open: false })}
-      />
       <TopBar />
       <div className="flex-grow flex items-center justify-center bg-gray-100 p-4">
         <div className="max-w-md w-full bg-white rounded-lg shadow-md p-8">
           <h2 className="text-2xl font-bold text-center mb-6">Reset Password</h2>
           
-          {alertState.severity === 'success' && alertState.open ? (
+          {success ? (
             <div className="text-center">
               <p className="text-green-600 mb-4">
                 If an account exists with this email, you will receive password reset instructions.
@@ -135,6 +119,8 @@ const ForgotPassword = () => {
               >
                 {loading ? 'Sending...' : 'Send Reset Link'}
               </button>
+
+              {error && <ErrorBanner message={error} onClose={() => setError('')} />}
             </form>
           )}
         </div>
@@ -144,4 +130,4 @@ const ForgotPassword = () => {
   );
 };
 
-export default ForgotPassword;
+export default ForgotPassword; 

@@ -25,9 +25,10 @@ import {
 } from "@mui/material";
 import LaunchIcon from "@mui/icons-material/Launch";
 import { FaEdit, FaSave } from "react-icons/fa";
+import SuccessBanner from "../components/SuccessBanner";
+import ErrorBanner from "../components/ErrorBanner";
 import { useData } from "../contexts/DataContext";
 import { haversine } from "../utils/utils";
-import AlertBanner from "../components/AlertBanner";
 
 const PartDetailsComponent = ({ part, setPart, isAuthenticated }) => {
   const [isEditing, setIsEditing] = useState(false);
@@ -35,11 +36,7 @@ const PartDetailsComponent = ({ part, setPart, isAuthenticated }) => {
     description: part.description || "",
     link: part.link || "",
   });
-  const [alertState, setAlertState] = useState({
-    open: false,
-    message: '',
-    severity: 'success'
-  });
+  const [partChange, setPartChange] = useState("");
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -51,18 +48,11 @@ const PartDetailsComponent = ({ part, setPart, isAuthenticated }) => {
         .then((response) => {
           setPart(response.data);
           setIsEditing(false);
-          setAlertState({
-            open: true,
-            message: "Part Updated Successfully.",
-            severity: 'success'
-          });
+          setPartChange("Part Updated Successfully.");
         })
         .catch((error) => {
-          setAlertState({
-            open: true,
-            message: "Error updating part, please try again.",
-            severity: 'error'
-          });
+          console.error("Error updating part:", error);
+          setPartChange("Error updating part, please try again.");
         });
     } else if (isEditing) {
       setIsEditing(false);
@@ -71,12 +61,23 @@ const PartDetailsComponent = ({ part, setPart, isAuthenticated }) => {
     }
   };
 
+  const closePartChangeBanner = () => {
+    setPartChange("");
+  };
+
   return (
     <>
-      <AlertBanner
-        {...alertState}
-        onClose={() => setAlertState({ ...alertState, open: false })}
-      />
+      {partChange === "Part Updated Successfully." ? (
+        <SuccessBanner
+          message={partChange}
+          onClose={closePartChangeBanner}
+        />
+      ) : partChange !== "" ? (
+        <ErrorBanner
+          message={partChange}
+          onClose={closePartChangeBanner}
+        />
+      ) : null}
 
       <Box sx={{ bgcolor: "grey.100", p: 2, minWidth: 300 }}>
         <Container

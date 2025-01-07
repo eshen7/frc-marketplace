@@ -48,14 +48,11 @@ def search_all_view(request):
         sales = PartSale.objects.all()
         
         user_serializer = PublicUserSerializer(users, many=True)
-        # Filter out any null users from the serialized data
-        filtered_users = [user for user in user_serializer.data if user is not None]
-        
         part_serializer = PartSerializer(parts, many=True)
         request_serializer = PartRequestSerializer(requests, many=True)
         sale_serializer = PartSaleSerializer(sales, many=True)
 
-        total_data["users"] = filtered_users
+        total_data["users"] = user_serializer.data
         total_data["parts"] = part_serializer.data
         total_data["requests"] = request_serializer.data
         total_data["sales"] = sale_serializer.data
@@ -70,9 +67,7 @@ def user_views(request):
     if request.method == "GET":
         users = User.objects.all()
         serializer = PublicUserSerializer(users, many=True)
-        # Filter out any null users from the serialized data
-        filtered_users = [user for user in serializer.data if user is not None]
-        return Response(filtered_users, status=status.HTTP_200_OK)
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
     if request.method == "POST":
         try:
@@ -99,16 +94,10 @@ def user_by_team_number_view(request, team_number):
     try:
         user = User.objects.get(team_number=team_number)
         serializer = PublicUserSerializer(user)
-        # Check if serialized user is null
-        if serializer.data is None:
-            return Response(
-                {"error": f"User data for team {team_number} is invalid"},
-                status=status.HTTP_404_NOT_FOUND,
-            )
         return Response(serializer.data, status=status.HTTP_200_OK)
     except User.DoesNotExist:
         return Response(
-            {"error": f"User frc{team_number} not found"},
+            {"error": "User frc{team_number} not found"},
             status=status.HTTP_404_NOT_FOUND,
         )
 
@@ -260,7 +249,7 @@ def manufacturer_view(request):
         serializer = PartManufacturerSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
+            return Response(request.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
@@ -275,7 +264,7 @@ def category_view(request):
         serializer = PartCategorySerializer(data=request.data)
         if serializer.is_valid():
             serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
+            return Response(request.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 

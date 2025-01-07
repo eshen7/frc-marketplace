@@ -6,7 +6,7 @@ import { Box, Button } from "@mui/material";
 import TextField from "@mui/material/TextField";
 import axiosInstance from "../utils/axiosInstance.js";
 import Footer from "../components/Footer.jsx";
-import AlertBanner from "../components/AlertBanner";
+import ErrorBanner from "../components/ErrorBanner.jsx";
 
 const Login = () => {
   const [formData, setFormData] = useState({
@@ -14,13 +14,12 @@ const Login = () => {
     password: "",
   });
 
-  const [alertState, setAlertState] = useState({
-    open: false,
-    message: '',
-    severity: 'error'
-  });
+  const [showErrorBanner, setShowErrorBanner] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
 
-  const [isLoading, setIsLoading] = useState(false);
+  const handleCloseBanner = () => {
+    setShowErrorBanner(false);
+  };
 
   const navigate = useNavigate();
 
@@ -32,11 +31,8 @@ const Login = () => {
   const login = async () => {
     try {
       const response = await axiosInstance.post("/login/", formData).catch((error) => {
-        setAlertState({
-          open: true,
-          message: error.response?.data?.error || "Login failed",
-          severity: 'error'
-        });
+        setShowErrorBanner(true);
+        setErrorMessage(error.response.data.error || "Login failed");
         throw error;
       });
 
@@ -51,11 +47,8 @@ const Login = () => {
       if (response.status === 200) {
         return { success: true, access, userID };
       } else {
-        setAlertState({
-          open: true,
-          message: "Login response missing required data",
-          severity: 'error'
-        });
+        setShowErrorBanner(true);
+        setErrorMessage("Login response missing required data");
         return {
           success: false,
           error: "Login response missing required data",
@@ -67,7 +60,6 @@ const Login = () => {
   };
 
   async function handleSubmit() {
-    setIsLoading(true);
     const result = await login();
     if (result.success) {
       // Store tokens in localStorage
@@ -79,16 +71,19 @@ const Login = () => {
           message: "Logged in Successfully!",
         },
       });
+    } else {
+      return
     }
-    setIsLoading(false);
   }
 
   return (
     <>
-      <AlertBanner
-        {...alertState}
-        onClose={() => setAlertState({ ...alertState, open: false })}
-      />
+      {showErrorBanner && (
+        <ErrorBanner
+          message={errorMessage}
+          onClose={handleCloseBanner}
+        />
+      )}
       <div className="flex flex-col min-h-screen">
         <TopBar />
         <div className="flex flex-row min-h-screen">
@@ -173,16 +168,9 @@ const Login = () => {
                   <button
                     type="submit"
                     className="w-full whitespace-nowrap bg-black text-white p-3 rounded-sm hover:bg-gray-900 hover:cursor-pointer disabled:bg-gray-400 disabled:cursor-not-allowed"
-                    disabled={formData.email === "" || formData.password === "" || isLoading}
+                    disabled={formData.email === "" || formData.password === ""}
                   >
-                    {isLoading ? (
-                      <div className="flex items-center justify-center">
-                        <div className="animate-spin h-5 w-5 border-2 border-white border-t-transparent rounded-full mr-2" />
-                        <span>Logging in...</span>
-                      </div>
-                    ) : (
-                      "Log In"
-                    )}
+                    Log In
                   </button>
 
                   <div className="text-center flex flex-row justify-center mt-4">

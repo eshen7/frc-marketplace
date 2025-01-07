@@ -2,5 +2,3 @@
 .env
 node_modules
 vite-frontend/.env
-millennium.pem
-millennium2.pem

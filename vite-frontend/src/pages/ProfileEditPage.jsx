@@ -4,7 +4,9 @@ import Footer from "../components/Footer";
 import axiosInstance from "../utils/axiosInstance";
 import { useNavigate } from "react-router-dom";
 import Skeleton from "react-loading-skeleton";
+import SuccessBanner from "../components/SuccessBanner";
 import TextField from "@mui/material/TextField";
+import ErrorBanner from "../components/ErrorBanner";
 import {
   Button,
   Dialog,
@@ -14,7 +16,6 @@ import {
 } from "@mui/material";
 import { useUser } from "../contexts/UserContext";
 import ProfilePhoto from "../components/ProfilePhoto";
-import AlertBanner from "../components/AlertBanner";
 
 const UserProfile = () => {
   const { user, loadingUser, isAuthenticated } = useUser();
@@ -219,24 +220,22 @@ const UserProfile = () => {
     }
   };
 
-  const [alertState, setAlertState] = useState({
-    open: false,
-    message: '',
-    severity: 'success'
-  });
-
-  const handleCloseAlert = () => {
-    setAlertState({ ...alertState, open: false });
-  };
-
   return (
     <div className="min-h-screen flex flex-col">
-      <AlertBanner
-        message={alertState.message}
-        severity={alertState.severity}
-        open={alertState.open}
-        onClose={handleCloseAlert}
-      />
+      {profileChange == "Profile Updated Successfully." ||
+      profileChange == "Password changed successfully." ? (
+        <SuccessBanner
+          message={profileChange}
+          onClose={closeProfileChangeBanner}
+        />
+      ) : profileChange != "" ? (
+        <ErrorBanner
+          message={profileChange}
+          onClose={closeProfileChangeBanner}
+        />
+      ) : (
+        <></>
+      )}
       <TopBar />
       <div className="flex flex-col flex-grow px-20 pt-10">
         <div className="container mx-auto py-10 px-4">

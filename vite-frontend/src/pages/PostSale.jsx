@@ -10,10 +10,12 @@ import {
 } from "@mui/material";
 import TopBar from "../components/TopBar";
 import Footer from "../components/Footer";
+import SuccessBanner from "../components/SuccessBanner";
+import ErrorBanner from "../components/ErrorBanner";
 import NewPartForm from "../components/NewPartForm";
 import axiosInstance from "../utils/axiosInstance";
+import { useData } from "../contexts/DataContext";
 import { useNavigate } from "react-router-dom";
-import AlertBanner from "../components/AlertBanner";
 
 const INITIAL_FORM_STATE = {
   partId: "",
@@ -25,32 +27,12 @@ const INITIAL_FORM_STATE = {
 
 const PartSaleForm = () => {
   const navigate = useNavigate();
-  const [parts, setParts] = useState([]);
+  const { parts, refreshSingle } = useData();
   const [formData, setFormData] = useState(INITIAL_FORM_STATE);
   const [loading, setLoading] = useState(false);
-  const [alertState, setAlertState] = useState({
-    open: false,
-    message: "",
-    severity: "success",
-  });
+  const [success, setSuccess] = useState(false);
+  const [error, setError] = useState("");
   const [isNewPartFormOpen, setIsNewPartFormOpen] = useState(false);
-
-  useEffect(() => {
-    fetchParts();
-  }, []);
-  const fetchParts = async () => {
-    try {
-      const { data } = await axiosInstance.get("/parts/");
-      setParts(data);
-    } catch (error) {
-      setAlertState({
-        open: true,
-        message: "Failed to fetch parts list",
-        severity: "error",
-      });
-      console.error("Error fetching parts:", error);
-    }
-  };
 
   const handleInputChange = (event) => {
     const { name, value } = event.target;
@@ -62,7 +44,7 @@ const PartSaleForm = () => {
     if (!formData.partId || !formData.condition) return;
 
     setLoading(true);
-    setAlertState({ open: false, message: "", severity: "success" });
+    setError("");
 
     try {
       const saleData = {
@@ -74,44 +56,31 @@ const PartSaleForm = () => {
       };
 
       await axiosInstance.post("/sales/", saleData);
-      setAlertState({
-        open: true,
-        message:
-          "Part listed for sale successfully. Navigating to sales page...",
-        severity: "success",
-      });
+      setSuccess(true);
       setFormData(INITIAL_FORM_STATE);
-      setTimeout(() => navigate("/sales"), 3000);
+      refreshSingle("sales");
+      setTimeout(() => navigate('/sales'), 3000);
     } catch (error) {
-      setAlertState({
-        open: true,
-        message: "Failed to submit sale listing. Please try again.",
-        severity: "error",
-      });
+      setError("Failed to submit sale listing. Please try again.");
     } finally {
       setLoading(false);
     }
   };
 
   const handleNewPartSuccess = async (newPart) => {
-    if (newPart) {
-      await fetchParts();
-      setFormData((prev) => ({ ...prev, partId: newPart.id }));
-      setAlertState({
-        open: true,
-        message: "Part created successfully!",
-        severity: "success",
-      });
-    }
-    setIsNewPartFormOpen(false);
+    await fetchParts();
+    setFormData((prev) => ({ ...prev, partId: newPart.id }));
   };
 
   return (
     <div className="min-h-screen flex flex-col">
-      <AlertBanner
-        {...alertState}
-        onClose={() => setAlertState({ ...alertState, open: false })}
-      />
+      {success && (
+        <SuccessBanner
+          message="Part listed for sale successfully. Navigating to sales page..."
+          onClose={() => setSuccess(false)}
+        />
+      )}
+      {error && <ErrorBanner message={error} onClose={() => setError("")} />}
 
       <TopBar />
       <div className="w-screen flex-grow flex flex-col place-items-center bg-white relative">
@@ -126,20 +95,16 @@ const PartSaleForm = () => {
               <Autocomplete
                 id="part-select"
                 options={parts}
-                value={
-                  parts.find((part) => part.id === formData.partId) || null
-                }
+                value={parts.find(part => part.id === formData.partId) || null}
                 onChange={(_, newValue) => {
                   handleInputChange({
                     target: {
-                      name: "partId",
-                      value: newValue ? newValue.id : "",
-                    },
+                      name: 'partId',
+                      value: newValue ? newValue.id : ''
+                    }
                   });
                 }}
-                getOptionLabel={(option) =>
-                  `${option.name} - ${option.manufacturer.name}`
-                }
+                getOptionLabel={(option) => `${option.name} - ${option.manufacturer.name}`}
                 renderOption={(props, option) => (
                   <MenuItem {...props}>
                     <div className="flex flex-row w-full items-center justify-between">
@@ -163,7 +128,11 @@ const PartSaleForm = () => {
                   </MenuItem>
                 )}
                 renderInput={(params) => (
-                  <TextField {...params} label="Part" required />
+                  <TextField
+                    {...params}
+                    label="Part"
+                    required
+                  />
                 )}
                 isOptionEqualToValue={(option, value) => option.id === value.id}
                 noOptionsText="No parts found"
@@ -243,12 +212,11 @@ const PartSaleForm = () => {
 
           <NewPartForm
             open={isNewPartFormOpen}
-            onClose={() => {
+            onClose={(newPart) => {
               setIsNewPartFormOpen(false);
+              if (newPart) handleNewPartSuccess(newPart);
             }}
-            onSuccess={(newPart) => {
-              handleNewPartSuccess(newPart);
-            }}
+            onSubmit={handleNewPartSuccess}
           />
         </div>
       </div>

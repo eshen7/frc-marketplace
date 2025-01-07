@@ -16,7 +16,7 @@ function getCookie(name) {
 }
 
 const axiosInstance = axios.create({
-  baseURL: "https://millenniummarket.net/api",
+  baseURL: "http://127.0.0.1:8000/api",
   headers: {
     "Content-Type": "application/json",
     Accept: "application/json",

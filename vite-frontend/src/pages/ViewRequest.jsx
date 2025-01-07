@@ -9,12 +9,13 @@ import { getDaysUntil } from '../utils/utils.jsx'
 import { Skeleton } from "@mui/material";
 import { LuSave } from 'react-icons/lu'
 import { MdDelete, MdOutlineEdit } from 'react-icons/md'
+import ErrorBanner from '../components/ErrorBanner.jsx'
+import SuccessBanner from '../components/SuccessBanner.jsx'
 import ItemScrollBar from '../components/ItemScrollBar.jsx'
 import DropdownButton from '../components/DropdownButton.jsx'
 import ItemProfileSection from '../components/ItemProfileSection.jsx'
 import { useUser } from '../contexts/UserContext.jsx'
 import { useData } from '../contexts/DataContext.jsx'
-import AlertBanner from '../components/AlertBanner';
 
 export default function FulfillRequest() {
   const { request_id } = useParams();
@@ -46,12 +47,6 @@ export default function FulfillRequest() {
     quantity: { val: 0, edited: false },
     needed_date: { val: "", edited: false },
     additional_info: { val: "", edited: false },
-  });
-
-  const [alertState, setAlertState] = useState({
-    open: false,
-    message: '',
-    severity: 'success'
   });
 
   useEffect(() => {
@@ -156,18 +151,10 @@ export default function FulfillRequest() {
 
         setRequest(response.data);
         setIsEditing(false);
-        setAlertState({
-          open: true,
-          message: "Request Updated Successfully.",
-          severity: 'success'
-        });
+        setRequestChange("Request Updated Successfully.");
       } catch (error) {
         console.error("Error saving request:", error);
-        setAlertState({
-          open: true,
-          message: "Error saving request, please try again.",
-          severity: 'error'
-        });
+        setRequestChange("Error saving request, please try again.");
       }
     } else {
       setIsEditing(false);
@@ -177,20 +164,12 @@ export default function FulfillRequest() {
   const handleDeleteConfirm = async () => {
     try {
       await axiosInstance.delete(`/requests/id/${request_id}/delete/`);
-      setAlertState({
-        open: true,
-        message: "Request deleted successfully. Navigating to requests page...",
-        severity: 'success'
-      });
+      setRequestChange("Request deleted successfully. Navigating to requests page...");
       refreshSingle("requests");
       setTimeout(() => navigate('/requests'), 3000);
     } catch (error) {
       console.error("Error deleting request:", error);
-      setAlertState({
-        open: true,
-        message: "Error deleting request, please try again.",
-        severity: 'error'
-      });
+      setRequestChange("Error deleting request, please try again.");
     } finally {
       setDeleteConfirmOpen(false);
     }
@@ -206,10 +185,20 @@ export default function FulfillRequest() {
 
   return (
     <div className='flex flex-col min-h-screen'>
-      <AlertBanner
-        {...alertState}
-        onClose={() => setAlertState({ ...alertState, open: false })}
-      />
+      {/* Success / Failure Banners */}
+      {requestChange == "Request deleted successfully. Navigating to requests page..." ? (
+        <SuccessBanner
+          message={requestChange}
+          onClose={closeRequestChangeBanner}
+        />
+      ) : requestChange != "" ? (
+        <ErrorBanner
+          message={requestChange}
+          onClose={closeRequestChangeBanner}
+        />
+      ) : (
+        <></>
+      )}
       {/* Delete Confirmation */}
       {deleteConfirmOpen && (
         <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full flex items-center justify-center z-50">

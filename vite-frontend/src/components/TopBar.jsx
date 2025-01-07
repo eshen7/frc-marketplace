@@ -224,7 +224,7 @@ const TopBar = () => {
                   />
                   <DropdownButton
                     Logo={FaWpforms}
-                    name={"Register Team"}
+                    name={"Register"}
                     buttonLink={"/signup"}
                     navigate={navigate}
                     hoverColor="hover:bg-gray-200"
@@ -306,7 +306,7 @@ const TopBar = () => {
                   navigate={navigate}
                 />
                 <InsideHamburgerButton
-                  name={"Register Team"}
+                  name={"Register"}
                   Logo={FaWpforms}
                   link={"/signup"}
                   navigate={navigate}
