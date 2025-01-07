@@ -21,7 +21,7 @@ from django.conf import settings
 from django.conf.urls.static import static
 
 urlpatterns = [
-    path("admin/", admin.site.urls),
+    path("api/admin/", admin.site.urls),
     # include api urls
     path("api/", include("api.urls")),
 ] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)

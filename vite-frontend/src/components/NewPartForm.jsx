@@ -23,12 +23,11 @@ import CloseIcon from "@mui/icons-material/Close";
 import axiosInstance from "../utils/axiosInstance";
 import NewCategoryForm from "./NewCategoryForm";
 import NewManufacturerForm from "./NewManufacturerForm";
-import SuccessBanner from "./SuccessBanner";
-import ErrorBanner from "./ErrorBanner";
-import { useData } from '../contexts/DataContext';
+import AlertBanner from "./AlertBanner";
 
-const NewPartForm = ({ open, onClose }) => {
-  const { categories, manufacturers, refreshData } = useData();
+const NewPartForm = ({ open, onClose, onSuccess }) => {
+  const [categories, setCategories] = useState([]);
+  const [manufacturers, setManufacturers] = useState([]);
   const [manufacturerDialogOpen, setManufacturerDialogOpen] = useState(false);
   const [categoryDialogOpen, setCategoryDialogOpen] = useState(false);
   const [partData, setPartData] = useState({
@@ -40,19 +39,52 @@ const NewPartForm = ({ open, onClose }) => {
     imageFile: null,
     part_link: "",
   });
-  const [success, setSuccess] = useState(false);
-  const [error, setError] = useState("");
   const [imageError, setImageError] = useState(false);
   const [preview, setPreview] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [alertState, setAlertState] = useState({
+    open: false,
+    message: '',
+    severity: 'success'
+  });
 
+  const fetchCategories = async () => {
+    try {
+      const response = await axiosInstance.get("parts/categories/");
+      setCategories(response.data);
+    } catch (error) {
+      setAlertState({
+        open: true,
+        message: "Failed to fetch categories. Please try again.",
+        severity: 'error'
+      });
+      setCategories([]);
+    }
+  };
+  const fetchManufacturers = async () => {
+    try {
+      const response = await axiosInstance.get("parts/manufacturers/");
+      setManufacturers(response.data);
+    } catch (error) {
+      setAlertState({
+        open: true,
+        message: "Failed to fetch manufacturers. Please try again.",
+        severity: 'error'
+      });
+      setManufacturers([]);
+    }
+  };
+  useEffect(() => {
+    fetchCategories();
+    fetchManufacturers();
+  }, []);
   const handleChange = (field) => (event) => {
-    if (field === "manufacturer" && event.target.value === "create") {
+    if (field === "manufacturer_id" && event.target.value === "create") {
       setManufacturerDialogOpen(true);
       return;
     }
 
-    if (field === "category" && event.target.value === "create") {
+    if (field === "category_id" && event.target.value === "create") {
       setCategoryDialogOpen(true);
       return;
     }
@@ -117,7 +149,11 @@ const NewPartForm = ({ open, onClose }) => {
         },
       });
       setLoading(false);
-      setSuccess(true);
+      setAlertState({
+        open: true,
+        message: "Part created successfully!",
+        severity: 'success'
+      });
       setPartData({
         name: "",
         description: "",
@@ -128,32 +164,54 @@ const NewPartForm = ({ open, onClose }) => {
         part_link: "",
       });
       setPreview(null);
-      onClose(response.data);
+      onSuccess(response.data);
+      onClose();
     } catch (error) {
-      if (
-        error.response &&
-        error.response.data &&
-        error.response.data.error.includes("Integrity Error")
-      ) {
-        setError("A part with this name and manufacturer already exists!");
-        setLoading(false);
-      } else {
-        setError("Failed to create part. Please try again.");
-        setLoading(false);
-      }
+      setAlertState({
+        open: true,
+        message: error.response?.data?.error?.includes("Integrity Error") 
+          ? "A part with this name and manufacturer already exists!"
+          : "Failed to create part. Please try again.",
+        severity: 'error'
+      });
+      setLoading(false);
     }
   };
 
-  const handleManufacturerSuccess = (newManufacturer) => {
-    setPartData((prev) => ({ ...prev, manufacturer_id: newManufacturer.id }));
-    setManufacturerDialogOpen(false);
-    refreshData('manufacturers');
+  const handleManufacturerSuccess = (newManufacturer, message, isError = false) => {
+    setAlertState({
+      open: true,
+      message: message,
+      severity: isError ? 'error' : 'success'
+    });
+    
+    if (newManufacturer) {
+      fetchManufacturers();
+      handleChange("manufacturer_id")({
+        target: {
+          value: newManufacturer.id,
+        },
+      });
+      setManufacturerDialogOpen(false);
+    }
   };
 
-  const handleCategorySuccess = (newCategory) => {
-    setPartData((prev) => ({ ...prev, category_id: newCategory.id }));
-    setCategoryDialogOpen(false);
-    refreshData('categories');
+  const handleCategorySuccess = (newCategory, message, isError = false) => {
+    setAlertState({
+      open: true,
+      message: message,
+      severity: isError ? 'error' : 'success'
+    });
+    
+    if (newCategory) {
+      fetchCategories();
+      handleChange("category_id")({
+        target: {
+          value: newCategory.id,
+        },
+      });
+      setCategoryDialogOpen(false);
+    }
   };
 
   const isFormValid = () => {
@@ -167,13 +225,10 @@ const NewPartForm = ({ open, onClose }) => {
 
   return (
     <div className={`${open ? "block" : "hidden"} min-h-screen flex flex-col`}>
-      {success && (
-        <SuccessBanner
-          message="Part created successfully!"
-          onClose={() => setSuccess(false)}
-        />
-      )}
-      {error && <ErrorBanner message={error} onClose={() => setError("")} />}
+      <AlertBanner
+        {...alertState}
+        onClose={() => setAlertState({ ...alertState, open: false })}
+      />
 
       <Dialog open={open} onClose={onClose} fullWidth maxWidth="sm">
         <DialogTitle>Create New Part</DialogTitle>
@@ -198,17 +253,18 @@ const NewPartForm = ({ open, onClose }) => {
               if (newValue === "create") {
                 setManufacturerDialogOpen(true);
               } else {
-                setPartData(prev => ({
-                  ...prev,
-                  manufacturer_id: newValue ? newValue.id : ""
-                }));
+                handleChange("manufacturer_id")({
+                  target: {
+                    value: newValue ? newValue.id : "",
+                  },
+                });
               }
             }}
             getOptionLabel={(option) => {
               if (option === "create") return "➕ ADD NEW MANUFACTURER";
               return option.name;
             }}
-            renderOption={(props, option, state) => {
+            renderOption={(props, option) => {
               const { key, ...otherProps } = props;
               return (
                 <MenuItem key={key} {...otherProps}>
@@ -256,17 +312,18 @@ const NewPartForm = ({ open, onClose }) => {
               if (newValue === "create") {
                 setCategoryDialogOpen(true);
               } else {
-                setPartData(prev => ({
-                  ...prev,
-                  category_id: newValue ? newValue.id : ""
-                }));
+                handleChange("category_id")({
+                  target: {
+                    value: newValue ? newValue.id : "",
+                  },
+                });
               }
             }}
             getOptionLabel={(option) => {
               if (option === "create") return "➕ ADD NEW CATEGORY";
               return option.name;
             }}
-            renderOption={(props, option, state) => {
+            renderOption={(props, option) => {
               const { key, ...otherProps } = props;
               return (
                 <MenuItem key={key} {...otherProps}>

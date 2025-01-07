@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import TopBar from "./../components/TopBar.jsx";
 import Footer from "../components/Footer.jsx";
 import axiosInstance from "../utils/axiosInstance.js";
-import ErrorBanner from "../components/ErrorBanner.jsx";
+import AlertBanner from "../components/AlertBanner";
 
 const Signup = () => {
   const [formData, setFormData] = useState({
@@ -18,7 +18,11 @@ const Signup = () => {
   });
 
   const [passwordError, setPasswordError] = useState("");
-  const [error, setError] = useState("");
+  const [alertState, setAlertState] = useState({
+    open: false,
+    message: '',
+    severity: 'error'
+  });
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
 
@@ -86,9 +90,13 @@ const Signup = () => {
     const emptyFields = Object.entries(formData).filter(([key, value]) => value === "");
 
     if (emptyFields.length > 1) {
-      setError(`Please fill in all required fields: ${emptyFields
-        .map(([key]) => key.replace(/_/g, " "))
-        .join(", ")}`);
+      setAlertState({
+        open: true,
+        message: `Please fill in all required fields: ${emptyFields
+          .map(([key]) => key.replace(/_/g, " "))
+          .join(", ")}`,
+        severity: 'error'
+      });
       setIsLoading(false);
       return;
     }
@@ -103,22 +111,28 @@ const Signup = () => {
       if (response.status === 201 || response.status === 200) {
         navigate("/landingPage");
       } else {
-        setError("An unexpected error occurred. Please try again.");
+        setAlertState({
+          open: true,
+          message: "An unexpected error occurred. Please try again.",
+          severity: 'error'
+        });
       }
     } catch (err) {
+      let errorMessage = 'Network error. Please check your connection and try again.';
       if (err.response?.data) {
         if (err.response.data.team_number) {
-          setError("This team number is already registered");
+          errorMessage = "This team number is already registered";
         } else if (err.response.data.email) {
-          setError("This email is already registered");
+          errorMessage = "This email is already registered";
         } else if (err.response.data.phone) {
-          setError("This phone number is already registered");
-        } else {
-          setError(err.response.data.message || "An error occurred during registration. Please try again.");
+          errorMessage = "This phone number is already registered";
         }
-      } else {
-        setError("Network error. Please check your connection and try again.");
       }
+      setAlertState({
+        open: true,
+        message: errorMessage,
+        severity: 'error'
+      });
     } finally {
       setIsLoading(false);
     }
@@ -126,7 +140,10 @@ const Signup = () => {
 
   return (
     <>
-      {error && <ErrorBanner message={error} onClose={() => setError("")} />}
+      <AlertBanner
+        {...alertState}
+        onClose={() => setAlertState({ ...alertState, open: false })}
+      />
       <div className="flex flex-col max-h-screen h-screen">
         <TopBar />
         <div className="flex flex-row">

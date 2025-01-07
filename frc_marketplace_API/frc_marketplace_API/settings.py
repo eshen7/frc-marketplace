@@ -23,15 +23,13 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
 
-# SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = "django-insecure-vaj&&)r(b638*t&z5l+0cuz*)dkh)3sslmwrzr!br&m^uel$mf"
+# Get SECRET_KEY from environment variable
+SECRET_KEY = config('DJANGO_SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
-FRONTEND_URL = "http://127.0.0.1:5173"
-
-ALLOWED_HOSTS = ['localhost', '127.0.0.1']
+ALLOWED_HOSTS = ['localhost', '127.0.0.1', 'millenniummarket.net', 'http://millenniummarket.net', 'https://millenniummarket.net']
 
 # Application definition
 
@@ -132,8 +130,6 @@ DATABASES = {
     }
 }
 
-SESSION_COOKIE_DOMAIN = "127.0.0.1"
-SESSION_COOKIE_PATH = "/"
 SESSION_COOKIE_SAMESITE = None  # Allows cross-site usage
 SESSION_COOKIE_SECURE = False  # Allow insecure for local development
 
@@ -143,14 +139,18 @@ CORS_ALLOW_ALL_ORIGINS = True  # Only for development!
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:5173",
     "http://127.0.0.1:5173",
-    "http://127.0.0.1:5174",
+    "https://millenniummarket.net",
+    "http://millenniummarket.net",
 ]
 
 CSRF_TRUSTED_ORIGINS = [
     "http://localhost:5173",
     "http://127.0.0.1:5173",
     "http://127.0.0.1:5174",
+    "https://millenniummarket.net",
 ]
+
+FRONTEND_URL = "https://millenniummarket.net"
 
 # Allow credentials if you're using cookies/sessions
 CORS_ALLOW_CREDENTIALS = True
@@ -219,9 +219,7 @@ STATIC_ROOT = os.path.join(BASE_DIR, "static")
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 # Email Stuff
-EMAIL_BACKEND = config(
-    "EMAIL_BACKEND", default="django.core.mail.backends.smtp.EmailBackend"
-)
+EMAIL_BACKEND = config("EMAIL_BACKEND", default="django.core.mail.backends.smtp.EmailBackend")
 EMAIL_HOST = config("EMAIL_HOST", default="localhost")
 EMAIL_PORT = config("EMAIL_PORT", cast=int, default=587)
 EMAIL_USE_TLS = config("EMAIL_USE_TLS", cast=bool, default=True)
@@ -231,6 +229,7 @@ DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 
 CELERY_ACCEPT_CONTENT = ["json"]
 CELERY_TASK_SERIALIZER = "json"
+CELERY_RESULT_SERIALIZER = "json"
 
 
 # AWS Configuration
@@ -299,3 +298,16 @@ LOGGING = {
 
 # Password reset token timeout in seconds
 PASSWORD_RESET_TIMEOUT = 60 * 30  # 30 minutes
+
+# For WebSocket support
+CORS_ALLOWED_ORIGIN_REGEXES = [
+    r"^https?://(localhost|127\.0\.0\.1)(:\d+)?$",
+    r"^https?://millenniummarket\.net$",
+]
+
+# Celery Configuration
+CELERY_BROKER_URL = f"redis://redis:{config('REDIS_PORT_CONTAINER', default=6379)}/0"
+CELERY_RESULT_BACKEND = CELERY_BROKER_URL
+CELERY_ACCEPT_CONTENT = ["json"]
+CELERY_TASK_SERIALIZER = "json"
+CELERY_RESULT_SERIALIZER = "json"
