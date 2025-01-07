@@ -150,6 +150,8 @@ CSRF_TRUSTED_ORIGINS = [
     "https://millenniummarket.net",
 ]
 
+FRONTEND_URL = "https://millenniummarket.net"
+
 # Allow credentials if you're using cookies/sessions
 CORS_ALLOW_CREDENTIALS = True
 CORS_ALLOW_METHODS = [
