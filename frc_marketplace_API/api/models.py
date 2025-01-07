@@ -56,6 +56,7 @@ class UserManager(BaseUserManager):
 
         extra_fields.setdefault("is_staff", True)
         extra_fields.setdefault("is_superuser", True)
+        extra_fields.setdefault("is_active", True)
 
         # Set default random phone number for superusers
         import random
