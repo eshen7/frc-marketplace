@@ -133,7 +133,7 @@ DATABASES = {
 SESSION_COOKIE_SAMESITE = None  # Allows cross-site usage
 SESSION_COOKIE_SECURE = False  # Allow insecure for local development
 
-CORS_ALLOW_ALL_ORIGINS = True  # Only for development!
+CORS_ALLOW_ALL_ORIGINS = False # Only for development!
 
 # For production, you should specify allowed origins:
 CORS_ALLOWED_ORIGINS = [

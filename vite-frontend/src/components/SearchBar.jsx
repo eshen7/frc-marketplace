@@ -60,7 +60,7 @@ const SearchBar = () => {
 
   const handleSearch = (value) => {
     setSearchTerm(value);
-    if (!value || value.length < 2) {
+    if (!value || value.length < 1) {
       setSearchResults([]);
       setShowDropdown(false);
       return;
@@ -160,10 +160,10 @@ const SearchBar = () => {
         InputProps={{
           endAdornment: <SearchRounded sx={{ color: 'text.secondary' }} />
         }}
-        sx={{ bgcolor: 'white',borderRadius:2 }}
+        sx={{ bgcolor: 'white', borderRadius: 2 }}
       />
 
-      {showDropdown && searchResults.length > 0 && (
+      {showDropdown && searchTerm.length > 0 && (
         <Paper
           elevation={3}
           sx={{
@@ -175,32 +175,40 @@ const SearchBar = () => {
             zIndex: 1000
           }}
         >
-          {Object.entries(groupResultsByType(searchResults)).map(([type, results]) => (
-            <List key={type} sx={{ p: 0 }}>
-              <ListSubheader
-                sx={{
-                  bgcolor: 'grey.100',
-                  lineHeight: '2rem'
-                }}
-              >
-                {type.charAt(0).toUpperCase() + type.slice(1)}s
-              </ListSubheader>
-              {results.map((result, index) => (
-                <ListItem
-                  key={`${result.type}-${result.id || result.team_number}-${index}`}
-                  onClick={() => handleResultClick(result)}
+          {searchResults.length > 0 ? (
+            Object.entries(groupResultsByType(searchResults)).map(([type, results]) => (
+              <List key={type} sx={{ p: 0 }}>
+                <ListSubheader
                   sx={{
-                    cursor: 'pointer',
-                    '&:hover': {
-                      bgcolor: 'grey.100'
-                    }
+                    bgcolor: 'grey.100',
+                    lineHeight: '2rem'
                   }}
                 >
-                  {renderResultItem(result)}
-                </ListItem>
-              ))}
+                  {type.charAt(0).toUpperCase() + type.slice(1)}s
+                </ListSubheader>
+                {results.map((result, index) => (
+                  <ListItem
+                    key={`${result.type}-${result.id || result.team_number}-${index}`}
+                    onClick={() => handleResultClick(result)}
+                    sx={{
+                      cursor: 'pointer',
+                      '&:hover': {
+                        bgcolor: 'grey.100'
+                      }
+                    }}
+                  >
+                    {renderResultItem(result)}
+                  </ListItem>
+                ))}
+              </List>
+            ))
+          ) : (
+            <List>
+              <ListItem sx={{ justifyContent: 'center' }}>
+                <Typography color="text.secondary">Nothing Found</Typography>
+              </ListItem>
             </List>
-          ))}
+          )}
         </Paper>
       )}
     </Box>
