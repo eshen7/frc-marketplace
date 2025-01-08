@@ -128,7 +128,14 @@ def get_logged_in_user_view(request):
             serializer = UserSerializer(user)
             if isinstance(user, User):
                 return Response(serializer.data, status=status.HTTP_200_OK)
-            return Response("User not found", status=status.HTTP_404_NOT_FOUND)
+            else: 
+                logout(request)
+                response = JsonResponse({"message": "User not found, logging out."}, status=status.HTTP_404_NOT_FOUND)
+                response.delete_cookie(
+                        "user_id",
+                        path="/",
+                    )
+                return response
         if request.method == "PUT":
             serializer = UserSerializer(user, data=request.data, partial=True)
             if serializer.is_valid():
@@ -245,7 +252,12 @@ def login_view(request):
 def logout_view(request):
     if request.method == "POST":
         logout(request)
-        return JsonResponse({"message": "Successfully logged out"}, status=200)
+        response = JsonResponse({"message": "Successfully logged out"}, status=200)
+        response.delete_cookie(
+                "user_id",
+                path="/",
+            )
+        return response
     return JsonResponse({"error": "Only POST requests are allowed"}, status=405)
 
 
