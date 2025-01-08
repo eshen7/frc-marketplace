@@ -12,6 +12,40 @@ import ProfilePhoto from "../components/ProfilePhoto";
 import { useWebSocket } from '../contexts/WebSocketContext';
 import { useData } from "../contexts/DataContext";
 
+const convertUrlsToLinks = (text, isSentMessage = false) => {
+  // Regex to match URLs
+  const urlRegex = /(https?:\/\/[^\s]+)|(www\.[^\s]+)/g;
+  
+  // Split the text into parts (URLs and non-URLs)
+  const parts = text.split(urlRegex);
+  
+  return parts.map((part, index) => {
+    if (!part) return null;
+    
+    // Check if this part is a URL
+    if (urlRegex.test(part)) {
+      const href = part.startsWith('www.') ? `https://${part}` : part;
+      return (
+        <a
+          key={index}
+          href={href}
+          target="_blank"
+          rel="noopener noreferrer"
+          className={`hover:underline ${
+            isSentMessage 
+              ? 'text-white font-medium underline' 
+              : 'text-blue-500'
+          }`}
+          onClick={(e) => e.stopPropagation()}
+        >
+          {part}
+        </a>
+      );
+    }
+    return part;
+  });
+};
+
 const MessageSent = ({ message, allTeams }) => {
   const senderTeam = allTeams.find(
     (team) => team.team_number === message.sender
@@ -21,8 +55,10 @@ const MessageSent = ({ message, allTeams }) => {
       <p className="text-xs px-[2px]">
         {senderTeam ? senderTeam.full_name : "Unknown Team"}
       </p>
-      <div className="bg-[#2A9EFC] rounded-3xl text-left w-fit shadow-md max-w-[50%] overflow-hidden break-words">
-        <p className="text-white px-[20px]">{message.message}</p>
+      <div className="bg-[#2A9EFC] rounded-3xl text-left w-fit shadow-md max-w-[50%]">
+        <p className="text-white px-[20px] py-1 break-all whitespace-pre-wrap">
+          {convertUrlsToLinks(message.message, true)}
+        </p>
       </div>
       <p className="text-xs text-gray-500">
         {message.timestamp ? formatTimestamp(message.timestamp) : "..."}
@@ -40,8 +76,10 @@ const MessageReceived = ({ message, allTeams }) => {
       <p className="text-xs px-[2px]">
         {senderTeam ? senderTeam.full_name : "Unknown Team"}
       </p>
-      <div className="bg-gray-200 rounded-3xl text-left w-fit shadow-md max-w-[50%] overflow-hidden break-words">
-        <p className="text-gray-600 px-[20px]">{message.message}</p>
+      <div className="bg-gray-200 rounded-3xl text-left w-fit shadow-md max-w-[50%]">
+        <p className="text-gray-600 px-[20px] py-1 break-all whitespace-pre-wrap">
+          {convertUrlsToLinks(message.message, false)}
+        </p>
       </div>
       <p className="text-xs text-gray-500">
         {message.timestamp ? formatTimestamp(message.timestamp) : "..."}
@@ -535,7 +573,7 @@ const Chat = () => {
             </div>
 
             {/* Right Panel with messages */}
-            <div className={`${!isLargerThanSmall && !isOnMessagePage ? "hidden" : "flex"} w-full flex-col p-5`}>
+            <div className={`${!isLargerThanSmall && !isOnMessagePage ? "hidden" : "flex"} w-full max-w-full flex-col p-5`}>
               <div>
                 <h1 className="text-3xl text-center">
                   {roomName ? roomName : "Select a user to chat with!"}
@@ -572,7 +610,7 @@ const Chat = () => {
               </div>
 
               {/* Input Section */}
-              <div className="flex flex-row w-full justify-end">
+              <div className="flex flex-row w-full max-w-full justify-end">
                 <input
                   type="text"
                   value={newMessage}
@@ -584,7 +622,7 @@ const Chat = () => {
                     }
                   }}
                   className="mr-3 border border-gray-300 
-                                focus:shadow-md focus:border-b-2 focus:ring-0 px-3 py-1 bg-inherit w-[87%] rounded-md"
+                                focus:shadow-md focus:border-b-2 focus:ring-0 px-3 py-1 bg-inherit w-[87%] flex-shrink-0 rounded-md"
                 />
                 <button
                   disabled={!newMessage || !roomName}

@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import TopBar from "../components/TopBar";
 import Footer from "../components/Footer";
 import Map from "../components/Map";
-import SuccessBanner from "../components/SuccessBanner";
+import AlertBanner from "../components/AlertBanner";
 import ItemScrollBar from "../components/ItemScrollBar";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useUser } from "../contexts/UserContext";
@@ -44,7 +44,12 @@ const Home = () => {
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-50 to-gray-100">
       {showLoginSuccessBanner && (
-        <SuccessBanner message={bannerMessage} onClose={handleCloseBanner} />
+        <AlertBanner 
+          message={bannerMessage}
+          severity="success"
+          open={showLoginSuccessBanner}
+          onClose={handleCloseBanner}
+        />
       )}
       <TopBar />
       <div className="px-5 md:px-10 lg:px-20">
