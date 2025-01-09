@@ -195,7 +195,12 @@ const Signup = () => {
                 <p>Market</p>
               </div>
             </div>
-            <h2 className="text-black font-semibold text-[24px] my-8 text-center">Sign Up</h2>
+            <div className="flex flex-col items-center my-8">
+              <h2 className="text-black font-semibold text-[24px] my-4 text-center">Sign Up</h2>
+              <p className="text-black text-[16px] w-[80%] mx-auto text-center">
+                Add your team to the marketplace and start connecting with nearby teams. <span className="font-bold">One account per team.</span>
+              </p>
+            </div>
             <form onSubmit={handleSubmit}>
               <div className="flex flex-col gap-4">
                 <div className="w-10/12 mx-auto">
@@ -265,7 +270,27 @@ const Signup = () => {
                     <p className="text-red-500 text-sm mt-1">{passwordError}</p>
                   )}
                 </div>
-                <div className="flex flex-col w-10/12 mx-auto justify-center">
+                <div className="w-10/12 mx-auto text-sm text-gray-600">
+                  By signing up, you agree to our{" "}
+                  <a 
+                    href="/footer/terms" 
+                    className="text-blue-600 hover:text-blue-800 underline"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    Terms of Service
+                  </a>{" "}
+                  and{" "}
+                  <a 
+                    href="/footer/privacy" 
+                    className="text-blue-600 hover:text-blue-800 underline"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    Privacy Policy
+                  </a>
+                </div>
+                <div className="w-10/12 mx-auto">
                   <button
                     type="submit"
                     className="w-full whitespace-nowrap bg-black text-white p-3 rounded-sm hover:bg-gray-900 hover:cursor-pointer disabled:bg-gray-400 disabled:cursor-not-allowed relative"
@@ -280,16 +305,15 @@ const Signup = () => {
                       "Sign Up"
                     )}
                   </button>
-                  <div className="text-center flex flex-row justify-center mt-4">
-                    <p className="text-gray-500 mr-1">Already have an account?</p>
-                    <button
-                      type="button"
-                      onClick={() => navigate("/login")}
-                      className="text-blue-600 hover:text-blue-800 hover:underline"
-                    >
-                      Log In Instead
-                    </button>
-                  </div>
+                </div>
+                <div className="flex flex-col w-10/12 mx-auto justify-center">
+                  <button
+                    type="button"
+                    onClick={() => navigate("/login")}
+                    className="text-blue-600 hover:text-blue-800 hover:underline"
+                  >
+                    Log In Instead
+                  </button>
                 </div>
               </div>
             </form>
