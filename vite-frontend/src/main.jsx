@@ -100,27 +100,27 @@ const router = createBrowserRouter(
           element: <Chat />,
         },
         {
-          path: "footer/about",
+          path: "/footer/about",
           element: <FooterAbout />,
         },
         {
-          path: "footer/FAQ",
+          path: "/footer/FAQ",
           element: <FooterFAQ />,
         },
         {
-          path: "footer/help",
+          path: "/footer/help",
           element: <FooterHelp />,
         },
         {
-          path: "footer/privacy",
+          path: "/footer/privacy",
           element: <FooterPrivacy />,
         },
         {
-          path: "footer/terms",
+          path: "/footer/terms",
           element: <FooterTerms />,
         },
         {
-          path: "/ourteam",
+          path: "/footer/ourteam",
           element: <OurTeamPage />,
         },
         {

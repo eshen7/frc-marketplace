@@ -144,7 +144,7 @@ const PublicProfileComponent = ({ user }) => {
             {/* Main Profile Content */}
             <div className="p-6 space-y-6">
               <div className="flex items-center justify-center">
-                <img
+                <ProfilePhoto
                   src={user.profile_photo}
                   className="w-[64px] h-[64px] rounded-full bg-gray-400 p-1"
                   alt="Team Logo"

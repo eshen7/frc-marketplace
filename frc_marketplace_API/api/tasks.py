@@ -163,6 +163,14 @@ def send_welcome_email(email):
             html_message=html_content
         )
 
+        send_email_task.delay(
+            subject=f'Team {user.team_number} - {user.team_name} needs to be verified!',
+            message=text_content,
+            from_email=settings.DEFAULT_FROM_EMAIL,
+            recipient_list=[settings.DEFAULT_FROM_EMAIL, settings.DEFAULT_NOTIFICATION_EMAIL],
+            html_message=html_content
+        )
+
     except User.DoesNotExist:
         logger.error("User not found when trying to send welcome email")
     except Exception as e:
@@ -192,3 +200,29 @@ def send_activation_email(user_id):
         logger.error(f"User {user_id} not found when trying to send activation email")
     except Exception as e:
         logger.error(f"Error sending activation email: {str(e)}")
+
+@shared_task
+def send_password_reset_email(user_id, reset_url):
+    try:
+        user = User.objects.get(id=user_id)
+        context = {
+            'user': user,
+            'reset_url': reset_url,
+            'frontend_url': settings.FRONTEND_URL
+        }
+
+        html_content = render_to_string('emails/reset_password.html', context)
+        text_content = render_to_string('emails/reset_password.txt', context)
+
+        send_email_task.delay(
+            subject=f'Reset Your Millennium Market Password - Team {user.team_number}',
+            message=text_content,
+            from_email=settings.DEFAULT_FROM_EMAIL,
+            recipient_list=[user.email],
+            html_message=html_content
+        )
+
+    except User.DoesNotExist:
+        logger.error(f"User {user_id} not found when trying to send password reset email")
+    except Exception as e:
+        logger.error(f"Error sending password reset email: {str(e)}")
