@@ -188,7 +188,7 @@ const Signup = () => {
               <img
                 src="/millenniumMarket_Black.svg"
                 alt="Millennium Market"
-                className="w-[80px] h-[80px] sm:w-[120px] sm:h-[120px] z-50"
+                className="w-[80px] h-[80px] sm:w-[120px] sm:h-[120px]"
               />
               <div className="flex flex-col text-black font-semibold text-4xl sm:text-5xl">
                 <p>Millennium</p>

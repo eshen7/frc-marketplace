@@ -44,7 +44,7 @@ INSTALLED_APPS = [
     "phone_field",  # For model support
     "address",  # For model support
     "rest_framework",  # For rest api framework
-    "api",  # django app
+    "api.apps.ApiConfig",  # Make sure it's using the AppConfig
     "corsheaders",  # For cross-origin requests
     "channels",
     "storages",
@@ -96,19 +96,34 @@ CHANNEL_LAYERS = {
 LOGGING = {
     "version": 1,
     "disable_existing_loggers": False,
+    "formatters": {
+        "verbose": {
+            "format": "{levelname} {asctime} {module} {process:d} {thread:d} {message}",
+            "style": "{",
+        },
+    },
     "handlers": {
         "console": {
             "class": "logging.StreamHandler",
+            "formatter": "verbose",
+            "level": "DEBUG",
         },
     },
     "loggers": {
-        "channels": {
+        "api": {
             "handlers": ["console"],
             "level": "DEBUG",
+            "propagate": True,
         },
-        "channels_redis": {
+        "django.db.backends": {
+            "handlers": ["console"],
+            "level": "INFO",
+            "propagate": True,
+        },
+        "django.signals": {
             "handlers": ["console"],
             "level": "DEBUG",
+            "propagate": True,
         },
     },
 }
@@ -311,3 +326,11 @@ CELERY_RESULT_BACKEND = CELERY_BROKER_URL
 CELERY_ACCEPT_CONTENT = ["json"]
 CELERY_TASK_SERIALIZER = "json"
 CELERY_RESULT_SERIALIZER = "json"
+
+# Add retry settings
+CELERY_TASK_ACKS_LATE = True
+CELERY_TASK_REJECT_ON_WORKER_LOST = True
+CELERY_TASK_TRACK_STARTED = True
+CELERY_BROKER_CONNECTION_RETRY = True
+CELERY_BROKER_CONNECTION_RETRY_ON_STARTUP = True
+CELERY_BROKER_CONNECTION_MAX_RETRIES = 10

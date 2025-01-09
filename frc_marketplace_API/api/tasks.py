@@ -7,11 +7,12 @@ from django.template.loader import render_to_string
 from django.utils import timezone
 from datetime import timedelta
 from utils.utils import haversine
+from celery.exceptions import MaxRetriesExceededError
 
 logger = logging.getLogger(__name__)
 
-@shared_task
-def send_email_task(subject, message, from_email, recipient_list, html_message=None):
+@shared_task(bind=True, max_retries=3, default_retry_delay=5)
+def send_email_task(self, subject, message, from_email, recipient_list, html_message=None):
     try:
         logger.info(f"Attempting to send email from {from_email} to {recipient_list}")
         result = send_mail(
@@ -26,7 +27,13 @@ def send_email_task(subject, message, from_email, recipient_list, html_message=N
         return f"Email sent successfully to {recipient_list}"
     except Exception as e:
         logger.error(f"Failed to send email: {str(e)}")
-        return f"Failed to send email: {str(e)}"
+        try:
+            # Exponential backoff: 5s, 25s, 125s
+            countdown = 5 * (self.request.retries + 1) ** 2
+            raise self.retry(exc=e, countdown=countdown)
+        except MaxRetriesExceededError as max_retries_error:
+            logger.error(f"Max retries exceeded for email to {recipient_list}: {str(e)}")
+            return f"Failed to send email after {self.max_retries} retries: {str(e)}"
 
 @shared_task
 def send_daily_requests_digest():
@@ -128,3 +135,55 @@ def send_dm_notification(sender_id, recipient_id, message_content):
         logger.error("User not found when trying to send DM notification")
     except Exception as e:
         logger.error(f"Error sending DM notification: {str(e)}")
+
+@shared_task
+def send_welcome_email(email):
+    try:
+        user = User.objects.get(email=email)
+        context = {
+            'user': user,
+            'frontend_url': settings.FRONTEND_URL
+        }
+
+        # Render both HTML and text versions
+        html_content = render_to_string('emails/welcome_email.html', context)
+        text_content = render_to_string('emails/welcome_email.txt', context)
+
+        # Send email with both HTML and text versions
+        send_email_task.delay(
+            subject=f'Millennium Market Registration',
+            message=text_content,
+            from_email=settings.DEFAULT_FROM_EMAIL,
+            recipient_list=[user.email],
+            html_message=html_content
+        )
+
+    except User.DoesNotExist:
+        logger.error("User not found when trying to send welcome email")
+    except Exception as e:
+        logger.error(f"Error sending welcome email: {str(e)}")
+
+@shared_task
+def send_activation_email(user_id):
+    try:
+        user = User.objects.get(id=user_id)
+        context = {
+            'user': user,
+            'frontend_url': settings.FRONTEND_URL
+        }
+
+        html_content = render_to_string('emails/account_activated.html', context)
+        text_content = render_to_string('emails/account_activated.txt', context)
+
+        send_email_task.delay(
+            subject=f'Your Millennium Market Account is Now Active!',
+            message=text_content,
+            from_email=settings.DEFAULT_FROM_EMAIL,
+            recipient_list=[user.email],
+            html_message=html_content
+        )
+
+    except User.DoesNotExist:
+        logger.error(f"User {user_id} not found when trying to send activation email")
+    except Exception as e:
+        logger.error(f"Error sending activation email: {str(e)}")

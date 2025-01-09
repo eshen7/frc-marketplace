@@ -31,7 +31,7 @@ from django.db import models
 from django.core.paginator import Paginator, EmptyPage
 from django.conf import settings
 from django.shortcuts import get_object_or_404
-from .tasks import send_email_task, send_dm_notification, send_daily_requests_digest
+from .tasks import send_email_task, send_dm_notification, send_daily_requests_digest, send_welcome_email
 from django.contrib.auth.tokens import default_token_generator
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from django.utils.encoding import force_bytes, force_str  # use force_str instead of force_text in newer Django versions
@@ -79,6 +79,7 @@ def user_views(request):
             serializer = UserSerializer(data=request.data)
             if serializer.is_valid():
                 serializer.save()
+                send_welcome_email.delay(serializer.data.get("email"))
                 return Response(serializer.data, status=status.HTTP_201_CREATED)
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         except ValidationError as e:
