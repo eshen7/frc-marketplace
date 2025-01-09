@@ -74,11 +74,11 @@ export default function OurTeamPage() {
           />
           <CreatorCard
             name={"Andrew Chen"}
-            image={"/IMG_6769.jpg"}
-            title={"bigback"}
-            description={"eater"}
-            linkedin={"https://www.linkedin.com/in/ericg4"}
-            insta={"https://www.instagram.com/eric.g4/"}
+            image={"/chen.jpg"}
+            title={"CS @ Wisconsin"}
+            description={"bludclat"}
+            linkedin={"https://www.linkedin.com/in/andrewkkchen"}
+            insta={"https://www.instagram.com/andrew._.chen/"}
           />
           <CreatorCard
             name={"Ethan Lemke"}
