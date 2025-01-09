@@ -19,6 +19,11 @@ import LandingPage from "./pages/LandingPage.jsx";
 import UserProfile from "./pages/ProfileEditPage.jsx";
 import PublicProfilePage from "./pages/PublicProfile.jsx";
 import Chat from "./pages/Messaging.jsx";
+import FooterAbout from "./pages/FooterLinks/FooterAbout";
+import FooterFAQ from "./pages/FooterLinks/FooterFAQ";
+import FooterHelp from "./pages/FooterLinks/FooterHelp";
+import FooterPrivacy from "./pages/FooterLinks/FooterPrivacy";
+import FooterTerms from "./pages/FooterLinks/FooterTerms";
 import PartDetails from "./pages/Part.jsx";
 import OurTeamPage from "./pages/OurTeam.jsx";
 import AllParts from "./pages/AllParts.jsx";
@@ -93,6 +98,26 @@ const router = createBrowserRouter(
         {
           path: "/chat/:roomName",
           element: <Chat />,
+        },
+        {
+          path: "footer/about",
+          element: <FooterAbout />,
+        },
+        {
+          path: "footer/FAQ",
+          element: <FooterFAQ />,
+        },
+        {
+          path: "footer/help",
+          element: <FooterHelp />,
+        },
+        {
+          path: "footer/privacy",
+          element: <FooterPrivacy />,
+        },
+        {
+          path: "footer/terms",
+          element: <FooterTerms />,
         },
         {
           path: "/ourteam",
