@@ -76,27 +76,21 @@ export default function OurTeamPage() {
             name={"Andrew Chen"}
             image={"/chen.jpeg"}
             title={"CS @ Wisconsin"}
-            description={"bludclat"}
+            description={"3647 alum"}
             linkedin={"https://www.linkedin.com/in/andrewkkchen"}
             insta={"https://www.instagram.com/andrew._.chen/"}
           />
           <CreatorCard
             name={"Ethan Lemke"}
-<<<<<<< HEAD:vite-frontend/src/pages/OurTeam.jsx
             image={"/ethanbutt.jpg"}
             title={"Fullstack Dev, 3647 Mentor"}
             description={" geeked off the flizzy "}
-=======
-            image={"/IMG_6769.jpg"}
-            title={"bigback"}
-            description={"my name is andrew but you can call me any time"}
->>>>>>> 499f402738844310c82788269fa9f85cffc908cc:vite-frontend/src/pages/FooterLinks/OurTeam.jsx
-            linkedin={"https://www.linkedin.com/in/ericg4"}
+            linkedin={"https://www.linkedin.com/in/ethan-lemke-492838254/"}
             insta={"https://www.instagram.com/_ethanlemke_/"}
           />
           <CreatorCard
             name={"Alexus Lee"}
-            image={"/IMG_6769.jpg"}
+            image={"/default.png"}
             title={"Design - Economics @ Rice"}
             description={"sigma sigma on the wall, who's the skibidiest of them all?"}
             linkedin={"https://www.linkedin.com/in/alexus-lee-5b695a210/"}

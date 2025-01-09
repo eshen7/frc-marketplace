@@ -14,7 +14,11 @@ const PartItemCard = ({ part, navigate}) => {
     <Card sx={{ maxWidth: 345, height: "100%" }}>
       <CardMedia
         component="img"
-        image={part.image || "/IMG_6769.jpg"}
+        image={part.image || "/default.png"}
+        onError={(e) => {
+          e.target.onerror = null;
+          e.target.src = "/default.png";
+        }}
         alt={part.name}
         sx={{
           aspectRatio: "1/1",
