@@ -14,7 +14,7 @@ const PrivacyStatement = () => {
               Privacy <span className="text-blue-600">Statement</span>
             </h1>
             <p className="text-lg text-gray-600 leading-relaxed">
-              Effective Date: [put date of publishing here ong]
+              Effective Date: January 10, 2024
             </p>
           </div>
 
@@ -183,9 +183,8 @@ const PrivacyStatement = () => {
             </p>
             </section>
 
+            {/* section 9 */}
 
-
-            {/* Additional sections for Sharing Information, Cookies, Data Security, etc. */}
             <section>
               <h2 className="text-4xl font-semibold text-blue-900 mb-4">
                 9. Contact Us
@@ -195,9 +194,10 @@ const PrivacyStatement = () => {
                 practices, please contact us at:
               </p>
               <address className="text-gray-600 leading-relaxed">
-                <p>    millenniummarket.team@gmail.com</p>
+                <p>millenniummarket.team@gmail.com</p>
               </address>
             </section>
+
           </div>
         </div>
       </div>

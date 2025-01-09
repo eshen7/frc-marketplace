@@ -14,7 +14,7 @@ const TermsAndConditions = () => {
               Website <span className="text-blue-600">Terms and Conditions</span>
             </h1>
             <p className="text-lg text-gray-600 leading-relaxed">
-              Last Updated: (CHANGE THIS DATE WHEN WE PUBLSIH ONGONGONG)
+              Last Updated: January 10, 2024
             </p>
           </div>
 
@@ -80,12 +80,11 @@ const TermsAndConditions = () => {
             </section>
 
             <section>
-              <h2 className="text-4xl font-semibold text-blue-900 mb-4">5. Intellectual Property</h2>
+              <h2 className="text-4xl font-semibold text-blue-900 mb-4">5. Location Sharing and Visibility</h2>
               <p className="text-gray-600 leading-relaxed">
-                All content on the Website, including text, graphics, logos, and software, is the
-                property of Millennium Marketplace or its licensors and is protected by copyright,
-                trademark, and other intellectual property laws. You may not use, reproduce, or
-                distribute any content without prior written permission.
+              By using this service, you acknowledge and consent that your location may be visible 
+              to other users and may be displayed on the map. This information is shared in accordance 
+              with our service features and is intended for interaction with other users.
               </p>
             </section>
 
@@ -133,7 +132,7 @@ const TermsAndConditions = () => {
             <section>
               <h2 className="text-4xl font-semibold text-blue-900 mb-4">10. Termination</h2>
               <p className="text-gray-600 leading-relaxed">
-                We reserve the right to suspend or terminate your access to the Website at our
+                We reserve the right to suspend or terminate your access to the Marketplace at our
                 discretion, without notice, for any violation of these Terms or for other reasons
                 deemed appropriate.
               </p>
