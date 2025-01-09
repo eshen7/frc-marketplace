@@ -1,6 +1,6 @@
 import React from "react";
-import TopBar from "../components/TopBar";
-import Footer from "../components/Footer";
+import TopBar from "../../components/TopBar";
+import Footer from "../../components/Footer";
 
 const CreatorCard = ({ image, name, title, description, linkedin, insta }) => {
   return (
@@ -60,7 +60,7 @@ export default function OurTeamPage() {
             name={"Eric Grun"}
             image={"/grun.jpeg"}
             title={"Fullstack dev - CS @ Rice"}
-            description={"skibidi sigma sigma"}
+            description={"click my linkedin for free vbucks"}
             linkedin={"https://www.linkedin.com/in/ericg4"}
             insta={"https://www.instagram.com/eric.g4/"}
           />
@@ -68,23 +68,29 @@ export default function OurTeamPage() {
             name={"Edison Shen"}
             image={"/edward.jpg"}
             title={"CS @ Michigan"}
-            description={"biggest bench in 3647 history."}
+            description={"biggest bench in 3647 history"}
             linkedin={"https://www.linkedin.com/in/edison-shen7/"}
             insta={"https://www.instagram.com/edisonshen91/"}
           />
           <CreatorCard
             name={"Andrew Chen"}
-            image={"/IMG_6769.jpg"}
-            title={"bigback"}
-            description={"eater"}
-            linkedin={"https://www.linkedin.com/in/ericg4"}
-            insta={"https://www.instagram.com/eric.g4/"}
+            image={"/chen.jpeg"}
+            title={"CS @ Wisconsin"}
+            description={"bludclat"}
+            linkedin={"https://www.linkedin.com/in/andrewkkchen"}
+            insta={"https://www.instagram.com/andrew._.chen/"}
           />
           <CreatorCard
             name={"Ethan Lemke"}
+<<<<<<< HEAD:vite-frontend/src/pages/OurTeam.jsx
             image={"/ethanbutt.jpg"}
             title={"Fullstack Dev, 3647 Mentor"}
             description={" geeked off the flizzy "}
+=======
+            image={"/IMG_6769.jpg"}
+            title={"bigback"}
+            description={"my name is andrew but you can call me any time"}
+>>>>>>> 499f402738844310c82788269fa9f85cffc908cc:vite-frontend/src/pages/FooterLinks/OurTeam.jsx
             linkedin={"https://www.linkedin.com/in/ericg4"}
             insta={"https://www.instagram.com/_ethanlemke_/"}
           />

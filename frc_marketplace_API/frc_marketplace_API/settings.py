@@ -24,12 +24,18 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
 
 # Get SECRET_KEY from environment variable
-SECRET_KEY = config('DJANGO_SECRET_KEY')
+SECRET_KEY = config("DJANGO_SECRET_KEY")
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = True
 
-ALLOWED_HOSTS = ['localhost', '127.0.0.1', 'millenniummarket.net', 'http://millenniummarket.net', 'https://millenniummarket.net']
+ALLOWED_HOSTS = [
+    "localhost",
+    "127.0.0.1",
+    "millenniummarket.net",
+    "http://millenniummarket.net",
+    "https://millenniummarket.net",
+]
 
 # Application definition
 
@@ -44,7 +50,7 @@ INSTALLED_APPS = [
     "phone_field",  # For model support
     "address",  # For model support
     "rest_framework",  # For rest api framework
-    "api",  # django app
+    "api.apps.ApiConfig",  # Make sure it's using the AppConfig
     "corsheaders",  # For cross-origin requests
     "channels",
     "storages",
@@ -67,7 +73,7 @@ TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
         "DIRS": [
-            os.path.join(BASE_DIR, 'api/templates'),
+            os.path.join(BASE_DIR, "api/templates"),
         ],
         "APP_DIRS": True,
         "OPTIONS": {
@@ -96,19 +102,34 @@ CHANNEL_LAYERS = {
 LOGGING = {
     "version": 1,
     "disable_existing_loggers": False,
+    "formatters": {
+        "verbose": {
+            "format": "{levelname} {asctime} {module} {process:d} {thread:d} {message}",
+            "style": "{",
+        },
+    },
     "handlers": {
         "console": {
             "class": "logging.StreamHandler",
+            "formatter": "verbose",
+            "level": "DEBUG",
         },
     },
     "loggers": {
-        "channels": {
+        "api": {
             "handlers": ["console"],
             "level": "DEBUG",
+            "propagate": True,
         },
-        "channels_redis": {
+        "django.db.backends": {
+            "handlers": ["console"],
+            "level": "INFO",
+            "propagate": True,
+        },
+        "django.signals": {
             "handlers": ["console"],
             "level": "DEBUG",
+            "propagate": True,
         },
     },
 }
@@ -133,7 +154,7 @@ DATABASES = {
 SESSION_COOKIE_SAMESITE = None  # Allows cross-site usage
 SESSION_COOKIE_SECURE = False  # Allow insecure for local development
 
-CORS_ALLOW_ALL_ORIGINS = False # Only for development!
+CORS_ALLOW_ALL_ORIGINS = True  # Only for development!
 
 # For production, you should specify allowed origins:
 CORS_ALLOWED_ORIGINS = [
@@ -219,13 +240,16 @@ STATIC_ROOT = os.path.join(BASE_DIR, "static")
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 # Email Stuff
-EMAIL_BACKEND = config("EMAIL_BACKEND", default="django.core.mail.backends.smtp.EmailBackend")
+EMAIL_BACKEND = config(
+    "EMAIL_BACKEND", default="django.core.mail.backends.smtp.EmailBackend"
+)
 EMAIL_HOST = config("EMAIL_HOST", default="localhost")
 EMAIL_PORT = config("EMAIL_PORT", cast=int, default=587)
 EMAIL_USE_TLS = config("EMAIL_USE_TLS", cast=bool, default=True)
 EMAIL_HOST_USER = config("EMAIL_HOST_USER")
 EMAIL_HOST_PASSWORD = config("EMAIL_HOST_PASSWORD")
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
+DEFAULT_NOTIFICATION_EMAIL = config("DEFAULT_NOTIFICATION_EMAIL")
 
 CELERY_ACCEPT_CONTENT = ["json"]
 CELERY_TASK_SERIALIZER = "json"
@@ -253,6 +277,8 @@ STORAGES = {
 AWS_S3_OBJECT_PARAMETERS = {
     "CacheControl": "max-age=86400",  # 24 hour cache
 }
+
+GOOGLE_API_KEY = config("GOOGLE_API_KEY")
 
 # File Upload Settings
 MAX_UPLOAD_SIZE = 5 * 1024 * 1024  # 5MB
@@ -311,3 +337,11 @@ CELERY_RESULT_BACKEND = CELERY_BROKER_URL
 CELERY_ACCEPT_CONTENT = ["json"]
 CELERY_TASK_SERIALIZER = "json"
 CELERY_RESULT_SERIALIZER = "json"
+
+# Add retry settings
+CELERY_TASK_ACKS_LATE = True
+CELERY_TASK_REJECT_ON_WORKER_LOST = True
+CELERY_TASK_TRACK_STARTED = True
+CELERY_BROKER_CONNECTION_RETRY = True
+CELERY_BROKER_CONNECTION_RETRY_ON_STARTUP = True
+CELERY_BROKER_CONNECTION_MAX_RETRIES = 10

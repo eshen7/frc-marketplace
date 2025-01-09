@@ -25,7 +25,7 @@ import FooterHelp from "./pages/FooterLinks/FooterHelp";
 import FooterPrivacy from "./pages/FooterLinks/FooterPrivacy";
 import FooterTerms from "./pages/FooterLinks/FooterTerms";
 import PartDetails from "./pages/Part.jsx";
-import OurTeamPage from "./pages/OurTeam.jsx";
+import OurTeamPage from "./pages/FooterLinks/OurTeam.jsx";
 import AllParts from "./pages/AllParts.jsx";
 import ResetPassword from "./pages/ResetPassword.jsx";
 import ForgotPassword from "./pages/ForgotPassword.jsx";
@@ -100,27 +100,27 @@ const router = createBrowserRouter(
           element: <Chat />,
         },
         {
-          path: "footer/about",
+          path: "/footer/about",
           element: <FooterAbout />,
         },
         {
-          path: "footer/FAQ",
+          path: "/footer/FAQ",
           element: <FooterFAQ />,
         },
         {
-          path: "footer/help",
+          path: "/footer/help",
           element: <FooterHelp />,
         },
         {
-          path: "footer/privacy",
+          path: "/footer/privacy",
           element: <FooterPrivacy />,
         },
         {
-          path: "footer/terms",
+          path: "/footer/terms",
           element: <FooterTerms />,
         },
         {
-          path: "/ourteam",
+          path: "/footer/ourteam",
           element: <OurTeamPage />,
         },
         {

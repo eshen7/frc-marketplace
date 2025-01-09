@@ -76,9 +76,9 @@ const TopBar = () => {
       }
     };
 
-    document.addEventListener('mousedown', handleClickOutside);
+    document.addEventListener("mousedown", handleClickOutside);
     return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener("mousedown", handleClickOutside);
     };
   }, []);
 
@@ -121,13 +121,13 @@ const TopBar = () => {
       {/* Left Buttons */}
       <div className="flex flex-row">
         {/* Logo */}
-        <button className="w-[50px] mx-5" onClick={() => navigate("/")}>
+        <a href="/" className="w-[50px] mx-5">
           <img
             className="hover:cursor-pointer hover:scale-105 transition-translate duration-100 text-white"
             src="/millenniumMarket.svg"
             alt="3647 logo"
           />
-        </button>
+        </a>
 
         {/* Nav Buttons */}
         <div
