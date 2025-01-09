@@ -124,7 +124,7 @@ const SearchBar = () => {
         return (
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
             <Avatar
-              src={item.image != undefined ? item.image : "/IMG_6769.jpg"}
+              src={item.image != undefined ? item.image : "/default.png"}
               alt="Part Photo"
               sx={{ width: 24, height: 24 }}
             />

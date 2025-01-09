@@ -76,13 +76,13 @@ export default function OurTeamPage() {
             name={"Andrew Chen"}
             image={"/chen.jpeg"}
             title={"CS @ Wisconsin"}
-            description={"bludclat"}
+            description={"3647 alum"}
             linkedin={"https://www.linkedin.com/in/andrewkkchen"}
             insta={"https://www.instagram.com/andrew._.chen/"}
           />
           <CreatorCard
             name={"Ethan Lemke"}
-            image={"/IMG_6769.jpg"}
+            image={"/default.png"}
             title={"bigback"}
             description={"eater"}
             linkedin={"https://www.linkedin.com/in/ericg4"}
@@ -90,7 +90,7 @@ export default function OurTeamPage() {
           />
           <CreatorCard
             name={"Alexus Lee"}
-            image={"/IMG_6769.jpg"}
+            image={"/default.png"}
             title={"Design - Economics @ Rice"}
             description={"sigma sigma on the wall, who's the skibidiest of them all?"}
             linkedin={"https://www.linkedin.com/in/alexus-lee-5b695a210/"}

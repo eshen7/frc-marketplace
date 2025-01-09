@@ -159,8 +159,8 @@ const PartRequestForm = () => {
                           />
                         ) : (
                           <img
-                            src="/IMG_6769.jpg"
-                            alt="IMG_6769.jpg"
+                            src="/default.png"
+                            alt="default.png"
                             className="w-[30px] h-[30px] ml-[10px]"
                           />
                         )}

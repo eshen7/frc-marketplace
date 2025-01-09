@@ -17,10 +17,6 @@ const ItemCard = ({ item, currentUser, type, itemDistance }) => {
     setImageLoaded(true);
   };
 
-  const handleImageError = () => {
-    setImageError(true);
-    setImageLoaded(true);
-  };
 
   return (
     <div className="max-w-[345px] h-full bg-white rounded-lg shadow-md overflow-hidden">
@@ -39,10 +35,13 @@ const ItemCard = ({ item, currentUser, type, itemDistance }) => {
           />
         )}
         <img
-          src={item.part.image || "/IMG_6769.jpg"}
+          src={item.part.image || "/default.png"}
           alt={item.part.name}
           onLoad={handleImageLoad}
-          onError={handleImageError}
+          onError={(e) => {
+            e.target.onerror = null;
+            e.target.src = "/default.png";
+          }}
           className="absolute top-0 left-0 w-full h-full object-cover"
           style={{
             display: imageLoaded ? "block" : "none"
