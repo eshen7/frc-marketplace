@@ -1,14 +1,14 @@
-import React, { useEffect, useState, useCallback, useRef } from 'react'
+import React, { useEffect, useState, useCallback, useRef } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import axiosInstance from "../utils/axiosInstance";
-import TopBar from '../components/TopBar';
-import Footer from '../components/Footer';
-import { FaRobot, FaUser, FaExternalLinkAlt, FaComments } from 'react-icons/fa';
-import ItemCard from '../components/ItemCard';
+import TopBar from "../components/TopBar";
+import Footer from "../components/Footer";
+import { FaRobot, FaUser, FaExternalLinkAlt, FaComments } from "react-icons/fa";
+import ItemCard from "../components/ItemCard";
 import { MdOutlineEdit } from "react-icons/md";
-import { useUser } from '../contexts/UserContext';
-import ProfilePhoto from '../components/ProfilePhoto';
-import { haversine } from '../utils/utils';
+import { useUser } from "../contexts/UserContext";
+import ProfilePhoto from "../components/ProfilePhoto";
+import { haversine } from "../utils/utils";
 
 const PublicProfileComponent = ({ user }) => {
   const navigate = useNavigate();
@@ -31,7 +31,7 @@ const PublicProfileComponent = ({ user }) => {
     (entries) => {
       const [entry] = entries;
       if (entry.isIntersecting && sales.length > salesDisplayLimit) {
-        setSalesDisplayLimit(prev => prev + 12);
+        setSalesDisplayLimit((prev) => prev + 12);
       }
     },
     [sales.length, salesDisplayLimit]
@@ -41,7 +41,7 @@ const PublicProfileComponent = ({ user }) => {
     (entries) => {
       const [entry] = entries;
       if (entry.isIntersecting && requests.length > requestsDisplayLimit) {
-        setRequestsDisplayLimit(prev => prev + 12);
+        setRequestsDisplayLimit((prev) => prev + 12);
       }
     },
     [requests.length, requestsDisplayLimit]
@@ -50,15 +50,18 @@ const PublicProfileComponent = ({ user }) => {
   useEffect(() => {
     const salesObserver = new IntersectionObserver(salesObserverCallback, {
       root: null,
-      rootMargin: '20px',
-      threshold: 1.0
+      rootMargin: "20px",
+      threshold: 1.0,
     });
 
-    const requestsObserver = new IntersectionObserver(requestsObserverCallback, {
-      root: null,
-      rootMargin: '20px',
-      threshold: 1.0
-    });
+    const requestsObserver = new IntersectionObserver(
+      requestsObserverCallback,
+      {
+        root: null,
+        rootMargin: "20px",
+        threshold: 1.0,
+      }
+    );
 
     if (salesObserverTarget.current) {
       salesObserver.observe(salesObserverTarget.current);
@@ -81,7 +84,9 @@ const PublicProfileComponent = ({ user }) => {
   useEffect(() => {
     const fetchRequests = async () => {
       try {
-        const response = await axiosInstance.get(`/requests/user/${user.team_number}`)
+        const response = await axiosInstance.get(
+          `/requests/user/${user.team_number}`
+        );
         const data = response.data;
 
         setRequests(data);
@@ -94,7 +99,9 @@ const PublicProfileComponent = ({ user }) => {
 
     const fetchSales = async () => {
       try {
-        const response = await axiosInstance.get(`/sales/user/${user.team_number}`)
+        const response = await axiosInstance.get(
+          `/sales/user/${user.team_number}`
+        );
         const data = response.data;
 
         setSales(data);
@@ -120,13 +127,15 @@ const PublicProfileComponent = ({ user }) => {
   return (
     <>
       <div className="h-full bg-gray-100 flex flex-col p-4">
-        <div className='flex items-center justify-center'>
+        <div className="flex items-center justify-center">
           <div className="rounded-lg w-full max-w-2xl relative">
             {/* Edit Button */}
             {currentUser?.team_number === user.team_number && (
               <button onClick={() => navigate("/profile")}>
-                <div className='absolute top-[15px] right-[15px] rounded-full bg-gray-100 text-blue-500 text-[30px] w-fit p-2
-                                        hover:scale-105 transition duration-100 hover:cursor-pointer'>
+                <div
+                  className="absolute top-[15px] right-[15px] rounded-full bg-gray-100 text-blue-500 text-[30px] w-fit p-2
+                                        hover:scale-105 transition duration-100 hover:cursor-pointer"
+                >
                   <MdOutlineEdit />
                 </div>
               </button>
@@ -135,11 +144,10 @@ const PublicProfileComponent = ({ user }) => {
             {/* Main Profile Content */}
             <div className="p-6 space-y-6">
               <div className="flex items-center justify-center">
-                <ProfilePhoto 
-                  src={user.profile_photo} 
-                  teamNumber={user.team_number}
+                <img
+                  src={user.profile_photo}
                   className="w-[64px] h-[64px] rounded-full bg-gray-400 p-1"
-                  alt={"Team Logo"}
+                  alt="Team Logo"
                 />
               </div>
 
@@ -167,7 +175,9 @@ const PublicProfileComponent = ({ user }) => {
               {currentUser?.team_number !== user.team_number && (
                 <div className="mt-4 flex justify-center">
                   <button
-                    onClick={() => { navigate(`/chat/${user.team_number}`) }}
+                    onClick={() => {
+                      navigate(`/chat/${user.team_number}`);
+                    }}
                     className="inline-flex items-center px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors duration-200"
                   >
                     <FaComments className="mr-2" />
@@ -179,14 +189,24 @@ const PublicProfileComponent = ({ user }) => {
           </div>
         </div>
 
-        <div className='pt-5'>
+        <div className="pt-5">
           {/* Part Requests Section */}
           <div className="flex-grow mx-6 mb-10">
             <div className="flex flex-row justify-between">
-              <button className={`text-xl font-semibold text-gray-700 mb-4 py-2 px-4 rounded-md hover:bg-gray-300 ${onRequests ? "bg-gray-200" : ""}`} onClick={handleClickRequests}>
+              <button
+                className={`text-xl font-semibold text-gray-700 mb-4 py-2 px-4 rounded-md hover:bg-gray-300 ${
+                  onRequests ? "bg-gray-200" : ""
+                }`}
+                onClick={handleClickRequests}
+              >
                 Requests
               </button>
-              <button className={`text-xl font-semibold text-gray-700 mb-4 py-2 px-4 rounded-md hover:bg-gray-300 ${onRequests ? "" : "bg-gray-200"}`} onClick={handleClickSales}>
+              <button
+                className={`text-xl font-semibold text-gray-700 mb-4 py-2 px-4 rounded-md hover:bg-gray-300 ${
+                  onRequests ? "" : "bg-gray-200"
+                }`}
+                onClick={handleClickSales}
+              >
                 Sales
               </button>
             </div>
@@ -200,16 +220,20 @@ const PublicProfileComponent = ({ user }) => {
                         item={request}
                         currentUser={user}
                         type="request"
-                        itemDistance={isAuthenticated ? haversine(
-                          user.formatted_address.latitude,
-                          user.formatted_address.longitude,
-                          request.user.formatted_address.latitude,
-                          request.user.formatted_address.longitude
-                        ).toFixed(1) : null}
+                        itemDistance={
+                          isAuthenticated
+                            ? haversine(
+                                user.formatted_address.latitude,
+                                user.formatted_address.longitude,
+                                request.user.formatted_address.latitude,
+                                request.user.formatted_address.longitude
+                              ).toFixed(1)
+                            : null
+                        }
                       />
                     ))}
                     {requests.length > requestsDisplayLimit && (
-                      <div 
+                      <div
                         ref={requestsObserverTarget}
                         className="col-span-full flex justify-center p-4"
                       >
@@ -220,7 +244,9 @@ const PublicProfileComponent = ({ user }) => {
                 ) : loadingRequests ? (
                   <p>Loading Requests...</p>
                 ) : (
-                  <p className="text-gray-500">This user hasn't made any requests yet.</p>
+                  <p className="text-gray-500">
+                    This user hasn't made any requests yet.
+                  </p>
                 )}
               </div>
             ) : (
@@ -233,16 +259,20 @@ const PublicProfileComponent = ({ user }) => {
                         item={sale}
                         currentUser={user}
                         type="sale"
-                        itemDistance={isAuthenticated ? haversine(
-                          user.formatted_address.latitude,
-                          user.formatted_address.longitude,
-                          sale.user.formatted_address.latitude,
-                          sale.user.formatted_address.longitude
-                        ).toFixed(1) : null}
+                        itemDistance={
+                          isAuthenticated
+                            ? haversine(
+                                user.formatted_address.latitude,
+                                user.formatted_address.longitude,
+                                sale.user.formatted_address.latitude,
+                                sale.user.formatted_address.longitude
+                              ).toFixed(1)
+                            : null
+                        }
                       />
                     ))}
                     {sales.length > salesDisplayLimit && (
-                      <div 
+                      <div
                         ref={salesObserverTarget}
                         className="col-span-full flex justify-center p-4"
                       >
@@ -253,7 +283,9 @@ const PublicProfileComponent = ({ user }) => {
                 ) : loadingSales ? (
                   <p>Loading Sales...</p>
                 ) : (
-                  <p className="text-gray-500">This user hasn't made any sales yet.</p>
+                  <p className="text-gray-500">
+                    This user hasn't made any sales yet.
+                  </p>
                 )}
               </div>
             )}
@@ -284,12 +316,12 @@ const PublicProfilePage = () => {
     };
 
     fetchUser();
-  }, [teamNumber])
+  }, [teamNumber]);
 
   return (
-    <div className='min-h-screen flex flex-col'>
+    <div className="min-h-screen flex flex-col">
       <TopBar />
-      <div className='flex-grow bg-gray-100'>
+      <div className="flex-grow bg-gray-100">
         {!error && user ? (
           <PublicProfileComponent user={user} />
         ) : loadingUser ? (
