@@ -60,7 +60,7 @@ const FAQPage = () => {
                 Q. How do I update my profile information?
               </h3>
               <p className="text-gray-600 leading-relaxed mb-4">
-                A. Log in, navigate to your profile page, and edit your details, including your team’s name, team number, and profile picture.
+                A. Log in, navigate to your profile page, and edit your details, including your coach's name, address, phone number, and email.
               </p>
 
               <h3 className="text-2xl font-semibold text-blue-800 mb-4">
@@ -94,7 +94,7 @@ const FAQPage = () => {
                 Q. Can I trade parts instead of selling or buying?
               </h3>
               <p className="text-gray-600 leading-relaxed mb-4">
-                A. Yes! You can list parts as available for trade by setting the price to “Trade Only.”
+                A. Yes! You can explain in the description that you are looking for a part exchange rather than a cash transaction.
               </p>
 
               <h3 className="text-2xl font-semibold text-blue-800 mb-4">
@@ -118,70 +118,17 @@ const FAQPage = () => {
               </p>
             </section>
 
-            {/* Safety & Security Section */}
-            <section>
-              <h2 className="text-4xl font-semibold text-blue-900 mb-4">
-                Safety & Security
-              </h2>
-              <h3 className="text-2xl font-semibold text-blue-800 mb-4">
-                Q. Is my team’s information safe on Millennium Marketplace?
-              </h3>
-              <p className="text-gray-600 leading-relaxed mb-4">
-                A. Yes, we take your privacy seriously. Only essential team details, like your team name and number, are publicly visible. Sensitive data is securely stored.
-              </p>
-
-              <h3 className="text-2xl font-semibold text-blue-800 mb-4">
-                Q. How do I report inappropriate behavior?
-              </h3>
-              <p className="text-gray-600 leading-relaxed mb-4">
-                A. If you encounter any issues, you can report a user or message by clicking the “Report” button in their profile or chat.
-              </p>
-
-              <h3 className="text-2xl font-semibold text-blue-800 mb-4">
-                Q. Can I block another team?
-              </h3>
-              <p className="text-gray-600 leading-relaxed mb-4">
-                A. Yes, blocking a team will prevent them from contacting you. You can manage blocked teams in your account settings.
-              </p>
-            </section>
-
-            {/* Shipping & Logistics Section */}
-            <section>
-              <h2 className="text-4xl font-semibold text-blue-900 mb-4">
-                Shipping & Logistics
-              </h2>
-              <h3 className="text-2xl font-semibold text-blue-800 mb-4">
-                Q. How does shipping work?
-              </h3>
-              <p className="text-gray-600 leading-relaxed mb-4">
-                A. Shipping arrangements are managed directly between the buyer and seller. We recommend using reliable services and providing tracking information.
-              </p>
-
-              <h3 className="text-2xl font-semibold text-blue-800 mb-4">
-                Q. Can I specify local pickup instead of shipping?
-              </h3>
-              <p className="text-gray-600 leading-relaxed mb-4">
-                A. Yes, you can arrange for local pickup through the chat feature when finalizing the transaction details.
-              </p>
-            </section>
-
             {/* Troubleshooting Section */}
             <section>
               <h2 className="text-4xl font-semibold text-blue-900 mb-4">
                 Troubleshooting
               </h2>
-              <h3 className="text-2xl font-semibold text-blue-800 mb-4">
-                Q. Why isn’t my profile photo showing?
-              </h3>
-              <p className="text-gray-600 leading-relaxed mb-4">
-                A. Ensure your profile photo URL is correctly formatted (e.g., https://www.thebluealliance.com/avatar/2024/frc3647.png). Update it in your profile settings.
-              </p>
 
               <h3 className="text-2xl font-semibold text-blue-800 mb-4">
                 Q. What if I encounter a technical issue?
               </h3>
               <p className="text-gray-600 leading-relaxed">
-                A. If you experience a problem, contact our support team via the “Help” section or email us at millenniummarket.team@gmail.com.
+                A. If you experience a problem, contact our support team at millenniummarket.team@gmail.com.
               </p>
             </section>
 

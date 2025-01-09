@@ -91,7 +91,7 @@ export default function OurTeamPage() {
           <CreatorCard
             name={"Alexus Lee"}
             image={"/Alexus.jpg"}
-            title={"Design - Economics @ Rice"}
+            title={"Design - Economics & Neuroscience @ Rice"}
             description={""}
             linkedin={"https://www.linkedin.com/in/alexus-lee-5b695a210/"}
             insta={"https://www.instagram.com/alexuss.27/"}
