@@ -1,6 +1,7 @@
 import React from "react";
 import TopBar from "../../components/TopBar.jsx";
 import Footer from "../../components/Footer.jsx";
+import dinglebob from '../../assets/dinglebob.jpg';
 
 const About = () => {
     console.log("footerabout page rendered succasessfullay")
@@ -39,14 +40,14 @@ const About = () => {
             </div>
             <div className="w-full md:w-1/2 px-4">
               <img
-                src="/assets/who-we-are.svg"
+                src= {dinglebob}
                 alt="Who We Are"
                 className="rounded-lg shadow-lg"
               />
             </div>
           </div>
 
-          {/* Section 2 */}
+          {/*2nd section */}
           <div className="flex flex-wrap items-center justify-between">
             <div className="w-full md:w-1/2 px-4 order-last md:order-first">
               <img
@@ -78,7 +79,7 @@ const About = () => {
             </div>
           </div>
 
-          {/* Section 3 */}
+          {/*3rd scetion */}
           <div className="text-center">
             <h2 className="text-4xl font-semibold text-blue-900 mb-4">
               Join Us
