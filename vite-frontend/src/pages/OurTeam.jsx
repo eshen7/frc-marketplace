@@ -74,7 +74,7 @@ export default function OurTeamPage() {
           />
           <CreatorCard
             name={"Andrew Chen"}
-            image={"/chen.jpg"}
+            image={"/chen.jpeg"}
             title={"CS @ Wisconsin"}
             description={"bludclat"}
             linkedin={"https://www.linkedin.com/in/andrewkkchen"}
