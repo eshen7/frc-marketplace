@@ -1,6 +1,6 @@
 import React from "react";
-import TopBar from "../components/TopBar";
-import Footer from "../components/Footer";
+import TopBar from "../../components/TopBar";
+import Footer from "../../components/Footer";
 
 const CreatorCard = ({ image, name, title, description, linkedin, insta }) => {
   return (
@@ -60,7 +60,7 @@ export default function OurTeamPage() {
             name={"Eric Grun"}
             image={"/grun.jpeg"}
             title={"Fullstack dev - CS @ Rice"}
-            description={"skibidi sigma sigma"}
+            description={"click my linkedin for free vbucks"}
             linkedin={"https://www.linkedin.com/in/ericg4"}
             insta={"https://www.instagram.com/eric.g4/"}
           />
@@ -68,7 +68,7 @@ export default function OurTeamPage() {
             name={"Edison Shen"}
             image={"/edward.jpg"}
             title={"CS @ Michigan"}
-            description={"biggest bench in 3647 history."}
+            description={"biggest bench in 3647 history"}
             linkedin={"https://www.linkedin.com/in/edison-shen7/"}
             insta={"https://www.instagram.com/edisonshen91/"}
           />
@@ -84,7 +84,7 @@ export default function OurTeamPage() {
             name={"Ethan Lemke"}
             image={"/default.png"}
             title={"bigback"}
-            description={"eater"}
+            description={"my name is andrew but you can call me any time"}
             linkedin={"https://www.linkedin.com/in/ericg4"}
             insta={"https://www.instagram.com/eric.g4/"}
           />
