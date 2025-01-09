@@ -25,7 +25,7 @@ const Footer = () => {
                         <img src="/github-mark-white.svg" alt="GitHub" className="w-8 h-8" />
                     </a>
                     <a href="https://www.instagram.com/millenniummarkett" target="_blank" rel="noopener noreferrer" className="w-12 h-12 flex justify-center items-center rounded-full hover:scale-105 transition duration-200">
-                        <img src="/Instagram_logo_2016.svg" alt="Instagram" className="w-10 h-10" />
+                        <img src="/instagram-white-icon.svg" alt="Instagram" className="w-8 h-8" />
                     </a>
                 </div>
             </div>
