@@ -1,0 +1,19 @@
+Welcome to Millennium Market, Team {{ user.team_number }}!
+
+IMPORTANT: Your account is currently pending approval. You will receive another email once your account has been activated.
+
+Thank you for joining our community! We're excited to have Team {{ user.team_name }} on board.
+
+Millennium Market is a platform designed to help FRC teams connect and share resources. Once your account is activated, you'll be able to:
+
+• Post parts you have available for sale
+• Request parts you need
+• Message other teams directly
+• Get notified about parts available in your area
+
+Visit us at: {{ frontend_url }}
+
+If you have any questions or need assistance, please don't hesitate to reach out.
+
+Best regards,
+The Millennium Market Team 

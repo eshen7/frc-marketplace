@@ -11,7 +11,11 @@ export const UserProvider = ({ children }) => {
   useEffect(() => {
     const checkAuthStatus = () => {
       const token = localStorage.getItem("authToken");
-      setIsAuthenticated(!!token);
+      const userID = document.cookie
+        .split("; ")
+        .find((row) => row.startsWith("user_id="))
+        ?.split("=")[1];
+      setIsAuthenticated(!!(token && userID));
     };
 
     checkAuthStatus(); // Check on mount
@@ -40,6 +44,12 @@ export const UserProvider = ({ children }) => {
         setUser(response.data);
       } catch (err) {
         console.error("Error fetching user:", err);
+        // Check the error response status
+        if (err.response && err.response.status === 404) {
+          localStorage.removeItem("authToken");
+          setIsAuthenticated(false);
+          window.location.reload();
+        }
       } finally {
         setLoadingUser(false);
       }

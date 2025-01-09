@@ -1,0 +1,15 @@
+Congratulations Team {{ user.team_number }}!
+
+Your Millennium Market account has been approved and activated. You now have full access to all features on the platform.
+
+You can now:
+• Post parts for sale
+• Make part requests
+• Message other teams
+
+Get started at: {{ frontend_url }}
+
+Welcome to the community!
+
+Best regards,
+The Millennium Market Team 

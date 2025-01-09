@@ -18,7 +18,7 @@ export const WebSocketProvider = ({ children }) => {
       ? 'wss:' 
       : 'ws:';
     const host = window.location.hostname;
-    const port = import.meta.env.PROD ? '' : ':80';
+    const port = import.meta.env.PROD ? '' : ':8000';
     const wsUrl = `${protocol}//${host}${port}`;
 
     // console.log('Connecting to WebSocket URL:', `${wsUrl}/ws/user/${user.team_number}/`);

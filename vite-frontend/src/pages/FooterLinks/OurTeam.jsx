@@ -1,6 +1,6 @@
 import React from "react";
-import TopBar from "../components/TopBar";
-import Footer from "../components/Footer";
+import TopBar from "../../components/TopBar";
+import Footer from "../../components/Footer";
 
 const CreatorCard = ({ image, name, title, description, linkedin, insta }) => {
   return (
@@ -48,7 +48,7 @@ export default function OurTeamPage() {
       <div className="flex-grow py-16 px-12 flex flex-col">
         {/* Title Section */}
         <div className="">
-          <h1 className="text-[40px] font-[500]">Our team</h1>
+          <h1 className="text-[40px] font-[500]">Our Team</h1>
           <p className="mt-5">
             Created by FIRST alumni.
           </p>
@@ -60,7 +60,7 @@ export default function OurTeamPage() {
             name={"Eric Grun"}
             image={"/grun.jpeg"}
             title={"Fullstack dev - CS @ Rice"}
-            description={"skibidi sigma sigma"}
+            description={"click my linkedin for free vbucks"}
             linkedin={"https://www.linkedin.com/in/ericg4"}
             insta={"https://www.instagram.com/eric.g4/"}
           />
@@ -68,7 +68,7 @@ export default function OurTeamPage() {
             name={"Edison Shen"}
             image={"/edward.jpg"}
             title={"CS @ Michigan"}
-            description={"biggest bench in 3647 history."}
+            description={"biggest bench in 3647 history"}
             linkedin={"https://www.linkedin.com/in/edison-shen7/"}
             insta={"https://www.instagram.com/edisonshen91/"}
           />
@@ -76,23 +76,23 @@ export default function OurTeamPage() {
             name={"Andrew Chen"}
             image={"/chen.jpeg"}
             title={"CS @ Wisconsin"}
-            description={"Go badgers"}
+            description={"3647 alum"}
             linkedin={"https://www.linkedin.com/in/andrewkkchen"}
             insta={"https://www.instagram.com/andrew._.chen/"}
           />
           <CreatorCard
             name={"Ethan Lemke"}
-            image={"/default.png"}
-            title={"bigback"}
-            description={"eater"}
-            linkedin={"https://www.linkedin.com/in/ericg4"}
-            insta={"https://www.instagram.com/eric.g4/"}
+            image={"/ethanbutt.jpg"}
+            title={"Fullstack Dev, 3647 Mentor"}
+            description={" geeked off the flizzy "}
+            linkedin={"https://www.linkedin.com/in/ethan-lemke-492838254/"}
+            insta={"https://www.instagram.com/_ethanlemke_/"}
           />
           <CreatorCard
             name={"Alexus Lee"}
-            image={"/default.png"}
-            title={"Design - Economics @ Rice"}
-            description={"sigma sigma on the wall, who's the skibidiest of them all?"}
+            image={"/Alexus.jpg"}
+            title={"Design - Economics & Neuroscience @ Rice"}
+            description={""}
             linkedin={"https://www.linkedin.com/in/alexus-lee-5b695a210/"}
             insta={"https://www.instagram.com/alexuss.27/"}
           />

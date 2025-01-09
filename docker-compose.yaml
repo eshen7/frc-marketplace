@@ -9,9 +9,6 @@ services:
       - "${POSTGRES_PORT_HOST}:${POSTGRES_PORT_CONTAINER}" # expose psql ports
     volumes:
       - pgdata:/var/lib/postgresql/data # for persistent data
-    restart: always
-    networks:
-      - backend_network
 
   pgadmin:
     image: dpage/pgadmin4:latest
@@ -22,9 +19,6 @@ services:
       - "${PGADMIN_PORT_HOST}:${PGADMIN_PORT_CONTAINER}"
     volumes:
       - pgadmin_data:/var/lib/pgadmin # for persistent pgadmin configs
-    restart: always
-    networks:
-      - backend_network
 
   backend_app:
     build: frc_marketplace_API
@@ -44,24 +38,17 @@ services:
     volumes:
       - django_migrations:/usr/local/app/api/migrations # for persistent migrations
       - staticfiles_volume:/usr/local/app/static
-    restart: always
-    networks:
-      - backend_network
-
+  
   frontend_app:
-    build:
-      context: ./vite-frontend
-      dockerfile: Dockerfile
+    build: vite-frontend
     container_name: vite_frontend
-    networks:
-      - frontend_network
-    volumes:
-      - ./vite-frontend/dist:/usr/share/nginx/html
-    command: []
+    ports:
+      - "${VITE_PORT_HOST}:${VITE_PORT_CONTAINER}" # expose vite ports
+    command: >
+      sh -c "npm run dev -- --host"
     env_file:
       - .env
-    restart: on-failure
-
+  
   redis:
     image: redis:latest
     container_name: redis-server
@@ -69,12 +56,10 @@ services:
       - "${REDIS_PORT_HOST}:${REDIS_PORT_CONTAINER}"
     volumes:
       - redis-data:/data # Persist Redis data
-    command: [ "redis-server" ]
+    command: ["redis-server", "--loglevel", "verbose"]
     env_file:
       - .env
     restart: always # Restart automatically if the container stops
-    networks:
-      - backend_network
 
   celery:
     build: frc_marketplace_API
@@ -89,12 +74,6 @@ services:
     environment:
       - DJANGO_SETTINGS_MODULE=frc_marketplace_API.settings
       - CELERY_BROKER_URL=redis://redis:${REDIS_PORT_CONTAINER}/0
-      - EMAIL_HOST_PASSWORD=${EMAIL_HOST_PASSWORD}
-      - EMAIL_HOST_USER=${EMAIL_HOST_USER}
-    restart: always
-    networks:
-      - backend_network
-
   celery_beat:
     build: frc_marketplace_API
     container_name: celery_beat
@@ -108,29 +87,6 @@ services:
     environment:
       - DJANGO_SETTINGS_MODULE=frc_marketplace_API.settings
       - CELERY_BROKER_URL=redis://redis:${REDIS_PORT_CONTAINER}/0
-    restart: always
-    networks:
-      - backend_network
-
-  nginx:
-    image: nginx:latest
-    container_name: nginx_proxy
-    ports:
-      - "80:80"
-      - "443:443"
-    volumes:
-      - ./nginx:/etc/nginx/conf.d
-      - staticfiles_volume:/usr/local/app/static
-      - ./vite-frontend/dist:/usr/share/nginx/html
-      - /etc/letsencrypt:/etc/letsencrypt:ro
-      - /etc/ssl/certs:/etc/ssl/certs:ro
-    depends_on:
-      - backend_app
-      - frontend_app
-    restart: always
-    networks:
-      - frontend_network
-      - backend_network
 
 volumes:
   pgdata:
@@ -138,8 +94,3 @@ volumes:
   redis-data:
   django_migrations:
   staticfiles_volume:
-
-
-networks:
-  backend_network:
-  frontend_network:
