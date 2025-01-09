@@ -31,7 +31,7 @@ from django.db import models
 from django.core.paginator import Paginator, EmptyPage
 from django.conf import settings
 from django.shortcuts import get_object_or_404
-from .tasks import send_email_task, send_dm_notification, send_daily_requests_digest, send_welcome_email
+from .tasks import send_email_task, send_dm_notification, send_daily_requests_digest, send_welcome_email, send_password_reset_email
 from django.contrib.auth.tokens import default_token_generator
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from django.utils.encoding import force_bytes, force_str  # use force_str instead of force_text in newer Django versions
@@ -828,12 +828,9 @@ def password_reset_request(request):
         uidb64 = urlsafe_base64_encode(force_bytes(user.pk))
         reset_url = f"{settings.FRONTEND_URL}/reset-password/{uidb64}/{token}"
         
-        send_email_task.delay(
-            subject='Password Reset Request',
-            message=f'Click the following link to reset your password: {reset_url}',
-            from_email=settings.DEFAULT_FROM_EMAIL,
-            recipient_list=[email]
-        )
+        # Use the new password reset email task
+        send_password_reset_email.delay(user.id, reset_url)
+        
         return Response({'message': 'Password reset email sent'})
     except User.DoesNotExist:
         # Still return success to prevent email enumeration
