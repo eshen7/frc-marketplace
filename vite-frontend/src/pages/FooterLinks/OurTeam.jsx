@@ -76,7 +76,7 @@ export default function OurTeamPage() {
             name={"Andrew Chen"}
             image={"/chen.jpeg"}
             title={"CS @ Wisconsin"}
-            description={"3647 alum"}
+            description={"Go badgers"}
             linkedin={"https://www.linkedin.com/in/andrewkkchen"}
             insta={"https://www.instagram.com/andrew._.chen/"}
           />
