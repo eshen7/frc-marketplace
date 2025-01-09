@@ -48,7 +48,7 @@ export default function OurTeamPage() {
       <div className="flex-grow py-16 px-12 flex flex-col">
         {/* Title Section */}
         <div className="">
-          <h1 className="text-[40px] font-[500]">Our team</h1>
+          <h1 className="text-[40px] font-[500]">Our Team</h1>
           <p className="mt-5">
             Created by FIRST alumni.
           </p>
@@ -82,11 +82,11 @@ export default function OurTeamPage() {
           />
           <CreatorCard
             name={"Ethan Lemke"}
-            image={"/IMG_6769.jpg"}
-            title={"bigback"}
-            description={"eater"}
+            image={"/ethanbutt.jpg"}
+            title={"Fullstack Dev, 3647 Mentor"}
+            description={" geeked off the flizzy "}
             linkedin={"https://www.linkedin.com/in/ericg4"}
-            insta={"https://www.instagram.com/eric.g4/"}
+            insta={"https://www.instagram.com/_ethanlemke_/"}
           />
           <CreatorCard
             name={"Alexus Lee"}
