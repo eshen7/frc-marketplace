@@ -11,7 +11,7 @@ const TermsAndConditions = () => {
         <div className="px-5 md:px-10 lg:px-20 py-16">
           <div className="max-w-4xl mx-auto text-center">
             <h1 className="text-6xl font-bold text-blue-900 mb-8">
-              Website <span className="text-blue-600">Terms and Conditions</span>
+              <span className="text-blue-600">Terms and Conditions</span>
             </h1>
             <p className="text-lg text-gray-600 leading-relaxed">
               Last Updated: January 10, 2024

@@ -56,7 +56,7 @@ const MessageSent = ({ message, allTeams }) => {
         {senderTeam ? senderTeam.full_name : "Unknown Team"}
       </p>
       <div className="bg-[#2A9EFC] rounded-3xl text-left w-fit shadow-md max-w-[50%]">
-        <p className="text-white px-[20px] py-1 break-all whitespace-pre-wrap">
+        <p className="text-white px-[20px] py-1 break-words whitespace-pre-wrap">
           {convertUrlsToLinks(message.message, true)}
         </p>
       </div>
@@ -77,7 +77,7 @@ const MessageReceived = ({ message, allTeams }) => {
         {senderTeam ? senderTeam.full_name : "Unknown Team"}
       </p>
       <div className="bg-gray-200 rounded-3xl text-left w-fit shadow-md max-w-[50%]">
-        <p className="text-gray-600 px-[20px] py-1 break-all whitespace-pre-wrap">
+        <p className="text-gray-600 px-[20px] py-1 break-words whitespace-pre-wrap">
           {convertUrlsToLinks(message.message, false)}
         </p>
       </div>
