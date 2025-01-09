@@ -2,6 +2,7 @@ import React from "react";
 import TopBar from "../../components/TopBar.jsx";
 import Footer from "../../components/Footer.jsx";
 import dinglebob from '../../assets/dinglebob.jpg';
+import replaceasap from '../../assets/replaceasap.jpg';
 
 const About = () => {
     console.log("footerabout page rendered succasessfullay")
@@ -51,7 +52,7 @@ const About = () => {
           <div className="flex flex-wrap items-center justify-between">
             <div className="w-full md:w-1/2 px-4 order-last md:order-first">
               <img
-                src="/assets/our-goals.svg"
+                src= {replaceasap}
                 alt="Our Goals"
                 className="rounded-lg shadow-lg"
               />
@@ -91,9 +92,9 @@ const About = () => {
               and build a brighter future.
             </p>
             <div className="mt-8">
-              <button className="px-8 py-4 bg-blue-600 text-white rounded-lg font-semibold shadow-lg hover:bg-blue-700 transition-all">
+              {/*<button className="px-8 py-4 bg-blue-600 text-white rounded-lg font-semibold shadow-lg hover:bg-blue-700 transition-all">
                 Learn More
-              </button>
+              </button> */}
             </div>
           </div>
         </div>

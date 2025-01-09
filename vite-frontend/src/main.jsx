@@ -118,6 +118,8 @@ const router = createBrowserRouter(
         {
           path: "footer/terms",
           element: <FooterTerms />,
+        },
+        {
           path: "/ourteam",
           element: <OurTeamPage />,
         },
