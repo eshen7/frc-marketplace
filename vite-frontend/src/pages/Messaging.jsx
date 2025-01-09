@@ -56,7 +56,7 @@ const MessageSent = ({ message, allTeams }) => {
         {senderTeam ? senderTeam.full_name : "Unknown Team"}
       </p>
       <div className="bg-[#2A9EFC] rounded-3xl text-left w-fit shadow-md max-w-[50%]">
-        <p className="text-white px-[20px] py-1 break-words whitespace-pre-wrap">
+        <p className="text-white px-[20px] py-1 break-words whitespace-pre-line">
           {convertUrlsToLinks(message.message, true)}
         </p>
       </div>
@@ -77,7 +77,7 @@ const MessageReceived = ({ message, allTeams }) => {
         {senderTeam ? senderTeam.full_name : "Unknown Team"}
       </p>
       <div className="bg-gray-200 rounded-3xl text-left w-fit shadow-md max-w-[50%]">
-        <p className="text-gray-600 px-[20px] py-1 break-words whitespace-pre-wrap">
+        <p className="text-gray-600 px-[20px] py-1 break-words whitespace-pre-line">
           {convertUrlsToLinks(message.message, false)}
         </p>
       </div>
@@ -503,7 +503,7 @@ const Chat = () => {
   return (
     <div className="h-screen flex flex-col">
       <TopBar />
-      <div className="messages-section flex flex-grow flex-row bg-gray-100 relative">
+      <div className="messages-section flex flex-grow justify-center flex-row bg-gray-100 relative">
         {!loadingUser && user ? (
           <>
             {/* Back Button */}
@@ -516,7 +516,7 @@ const Chat = () => {
             </button>
 
             {/* Left Nav Bar */}
-            <div className={`${!isLargerThanSmall && isOnMessagePage ? "hidden" : "overflow-y-auto w-full sm:w-4/6 lg:w-1/2 bg-white"}`}>
+            <div className={`${!isLargerThanSmall && isOnMessagePage ? "hidden" : "overflow-y-auto w-full sm:w-1/2 lg:w-1/3 bg-white"}`}>
               <h1 className="text-3xl text-center p-3">Chats</h1>
 
               {/* Add search bar */}
@@ -573,7 +573,7 @@ const Chat = () => {
             </div>
 
             {/* Right Panel with messages */}
-            <div className={`${!isLargerThanSmall && !isOnMessagePage ? "hidden" : "flex"} w-full max-w-full flex-col p-5`}>
+            <div className={`${!isLargerThanSmall && !isOnMessagePage ? "hidden" : "flex"} w-full sm:w-1/2 lg:w-2/3 flex-col p-5`}>
               <div>
                 <h1 className="text-3xl text-center">
                   {roomName ? roomName : "Select a user to chat with!"}

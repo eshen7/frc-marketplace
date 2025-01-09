@@ -188,9 +188,10 @@ const PartRequestForm = () => {
               fullWidth
               name="quantity"
               margin="normal"
-              label="Quantity*"
+              label="Quantity"
               value={formData.quantity}
               onChange={handleInputChange}
+              required
             />
 
             <div className="grid grid-cols-1 gap-4 mt-4">
@@ -215,6 +216,8 @@ const PartRequestForm = () => {
               name="additionalInfo"
               label="Any other additional info"
               multiline
+              required
+              placeholder="e.g. want to trade, willing to ship, need in good condition, willing to pay $X for it, etc..."
               rows={4}
               value={formData.additionalInfo}
               onChange={handleInputChange}

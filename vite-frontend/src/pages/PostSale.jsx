@@ -222,6 +222,8 @@ const PartSaleForm = () => {
               name="description"
               label="Additional Info"
               multiline
+              required
+              placeholder="e.g. want to trade, willing to ship, want to sell locally, etc..."
               rows={4}
               value={formData.description}
               onChange={handleInputChange}
