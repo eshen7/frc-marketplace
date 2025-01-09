@@ -24,12 +24,18 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
 
 # Get SECRET_KEY from environment variable
-SECRET_KEY = config('DJANGO_SECRET_KEY')
+SECRET_KEY = config("DJANGO_SECRET_KEY")
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = True
 
-ALLOWED_HOSTS = ['localhost', '127.0.0.1', 'millenniummarket.net', 'http://millenniummarket.net', 'https://millenniummarket.net']
+ALLOWED_HOSTS = [
+    "localhost",
+    "127.0.0.1",
+    "millenniummarket.net",
+    "http://millenniummarket.net",
+    "https://millenniummarket.net",
+]
 
 # Application definition
 
@@ -67,7 +73,7 @@ TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
         "DIRS": [
-            os.path.join(BASE_DIR, 'api/templates'),
+            os.path.join(BASE_DIR, "api/templates"),
         ],
         "APP_DIRS": True,
         "OPTIONS": {
@@ -148,7 +154,7 @@ DATABASES = {
 SESSION_COOKIE_SAMESITE = None  # Allows cross-site usage
 SESSION_COOKIE_SECURE = False  # Allow insecure for local development
 
-CORS_ALLOW_ALL_ORIGINS = False # Only for development!
+CORS_ALLOW_ALL_ORIGINS = True  # Only for development!
 
 # For production, you should specify allowed origins:
 CORS_ALLOWED_ORIGINS = [
@@ -234,7 +240,9 @@ STATIC_ROOT = os.path.join(BASE_DIR, "static")
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 # Email Stuff
-EMAIL_BACKEND = config("EMAIL_BACKEND", default="django.core.mail.backends.smtp.EmailBackend")
+EMAIL_BACKEND = config(
+    "EMAIL_BACKEND", default="django.core.mail.backends.smtp.EmailBackend"
+)
 EMAIL_HOST = config("EMAIL_HOST", default="localhost")
 EMAIL_PORT = config("EMAIL_PORT", cast=int, default=587)
 EMAIL_USE_TLS = config("EMAIL_USE_TLS", cast=bool, default=True)
@@ -268,6 +276,8 @@ STORAGES = {
 AWS_S3_OBJECT_PARAMETERS = {
     "CacheControl": "max-age=86400",  # 24 hour cache
 }
+
+GOOGLE_API_KEY = config("GOOGLE_API_KEY")
 
 # File Upload Settings
 MAX_UPLOAD_SIZE = 5 * 1024 * 1024  # 5MB

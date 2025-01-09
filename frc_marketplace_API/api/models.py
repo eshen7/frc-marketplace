@@ -2,6 +2,8 @@ import uuid
 from django.contrib.auth.base_user import BaseUserManager, AbstractBaseUser
 from django.contrib.auth.models import PermissionsMixin
 from django.conf import settings
+from django.db.models.signals import post_save
+from django.dispatch import receiver
 from django.db import models
 from phone_field import PhoneField
 from address.models import AddressField, Address, Locality
@@ -60,6 +62,7 @@ class UserManager(BaseUserManager):
 
         # Set default random phone number for superusers
         import random
+
         extra_fields.setdefault("phone", f"+1{random.randint(1000000000, 9999999999)}")
 
         return self.create_user(email, password, **extra_fields)
@@ -94,7 +97,6 @@ class User(AbstractBaseUser, PermissionsMixin):
     def set_password(self, raw_password):
         """Hashes password and stores it."""
         super().set_password(raw_password=raw_password)
-
 
 class Part(models.Model):
     """Part Model."""
@@ -157,6 +159,7 @@ class PartRequest(models.Model):
     )  # -1 if they are willing to trade, 0 for donation
     # is_open = models.BooleanField(default=True) ADD IN V2
 
+
 class PartSale(models.Model):
     """Part Sale Model."""
 
@@ -172,12 +175,19 @@ class PartSale(models.Model):
     condition = models.CharField(max_length=255, null=True, blank=True)
     # is_listed = models.BooleanField(default=True) ADD IN V2
 
+
 class Message(models.Model):
     """Message Model."""
 
-    id = models.UUIDField(primary_key=True, unique=True,default=uuid.uuid4, editable=False)
-    sender = models.ForeignKey(User, related_name="sent_messages", on_delete=models.CASCADE)
-    receiver = models.ForeignKey(User, related_name="received_messages", on_delete=models.CASCADE)
+    id = models.UUIDField(
+        primary_key=True, unique=True, default=uuid.uuid4, editable=False
+    )
+    sender = models.ForeignKey(
+        User, related_name="sent_messages", on_delete=models.CASCADE
+    )
+    receiver = models.ForeignKey(
+        User, related_name="received_messages", on_delete=models.CASCADE
+    )
     message = models.TextField()
     timestamp = models.DateTimeField(auto_now_add=True)
     is_read = models.BooleanField(default=False)
