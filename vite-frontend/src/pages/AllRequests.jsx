@@ -18,7 +18,7 @@ const fuseOptions = {
 
 const AllRequests = () => {
   const [searchTerm, setSearchTerm] = useState("");
-  const [distance, setDistance] = useState(50);
+  const [distance, setDistance] = useState(Infinity);
   const [sortBy, setSortBy] = useState("urgent");
   const [selectedCategories, setSelectedCategories] = useState([]);
   const [displayLimit, setDisplayLimit] = useState(12);

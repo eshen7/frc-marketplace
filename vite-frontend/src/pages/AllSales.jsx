@@ -22,7 +22,7 @@ const SalesPage = () => {
   const { sales, categories, loadingStates } = useData();
 
   const [searchTerm, setSearchTerm] = useState("");
-  const [distance, setDistance] = useState(50);
+  const [distance, setDistance] = useState(Infinity);
   const [sortBy, setSortBy] = useState("newest");
   const [selectedCategories, setSelectedCategories] = useState([]);
   const [displayLimit, setDisplayLimit] = useState(12);
