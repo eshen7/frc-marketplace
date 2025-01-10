@@ -3,9 +3,10 @@ import TopBar from "../../components/TopBar.jsx";
 import Footer from "../../components/Footer.jsx";
 import dinglebob from "../../assets/dinglebob.jpg";
 import replaceasap from "../../assets/replaceasap.jpg";
+import FIRST from "../../assets/FIRST.png";
 
 const About = () => {
-  console.log("footerabout page rendered succasessfullay");
+
   return (
     <>
       <TopBar />
@@ -14,10 +15,10 @@ const About = () => {
           <div className="max-w-4xl mx-auto text-center">
             <h1 className="text-6xl font-bold text-blue-900 mb-8">
               About{" "}
-              <span className="text-blue-600">Millennium Marketplace</span>
+              <span className="text-blue-600">Millennium Market</span>
             </h1>
             <p className="text-lg text-gray-600 leading-relaxed">
-              Welcome to Millennium Marketplace, your go-to platform for
+              Welcome to Millennium Market, your go-to platform for
               fostering collaboration and innovation within the FIRST Robotics
               community. Our mission is to empower teams, students, mentors, and
               enthusiasts by providing a centralized hub for sharing resources
@@ -33,7 +34,7 @@ const About = () => {
                   Who We Are
                 </h2>
                 <p className="text-gray-600 leading-relaxed">
-                  Millennium Marketplace was created by passionate members of
+                  Millennium Market was created by passionate members of
                   the FIRST Robotics community who recognized the need for a
                   space where collaboration can thrive. Whether you are a rookie
                   team looking for parts or a seasoned team ready to pass on
@@ -41,7 +42,7 @@ const About = () => {
                   connect and share resources.
                 </p>
               </div>
-              <div className="w-full md:w-1/2 px-4">
+              <div className="w-full md:w-1/2 px-4 mt-4">
                 <img
                   src={dinglebob}
                   alt="Who We Are"
@@ -52,11 +53,11 @@ const About = () => {
 
             {/*2nd section */}
             <div className="flex flex-wrap items-center justify-between">
-              <div className="w-full md:w-1/2 px-4 order-last md:order-first">
+              <div className="w-full md:w-1/2 px-4 order-last md:order-first mt-4">
                 <img
-                  src={replaceasap}
+                  src={FIRST}
                   alt="Our Goals"
-                  className="rounded-lg shadow-lg"
+                  className="rounded-lg shadow-lg py-5 px-3"
                 />
               </div>
               <div className="w-full md:w-1/2 px-4">
@@ -83,13 +84,13 @@ const About = () => {
               </div>
             </div>
 
-            {/*3rd scetion */}
+            {/*3rd section */}
             <div className="text-center">
               <h2 className="text-4xl font-semibold text-blue-900 mb-4">
                 Join Us
               </h2>
               <p className="text-lg text-gray-600 leading-relaxed">
-                Millennium Marketplace thrives on the contributions of its
+                Millennium Market thrives on the contributions of its
                 community. Whether you are here to learn, share, or connect,
                 we are excited to have you on board. Together, we can continue to
                 inspire innovation and build a brighter future.

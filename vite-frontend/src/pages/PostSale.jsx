@@ -140,28 +140,34 @@ const PartSaleForm = () => {
                 getOptionLabel={(option) =>
                   `${option.name} - ${option.manufacturer.name}`
                 }
-                renderOption={(props, option) => (
-                  <MenuItem {...props}>
-                    <div className="flex flex-row w-full items-center justify-between">
-                      <span>
-                        {option.name} - <em>{option.manufacturer.name}</em>
-                      </span>
-                      {option.image ? (
-                        <img
-                          src={option.image}
-                          alt={option.name}
-                          className="w-[30px] h-[30px] ml-[10px]"
-                        />
-                      ) : (
-                        <img
-                          src="/default.png"
-                          alt="default.png"
-                          className="w-[30px] h-[30px] ml-[10px]"
-                        />
-                      )}
-                    </div>
-                  </MenuItem>
-                )}
+                renderOption={(props, option) => {
+                  const { key, ...otherProps } = props;
+                  return (
+                    <MenuItem key={key} {...otherProps}>
+                      <div className="flex flex-row w-full items-center justify-between">
+                        <span>
+                          {option.name} - <em>{option.manufacturer.name}</em>
+                        </span>
+                        {option.image ? (
+                          <img
+                            src={option.image}
+                            alt={option.name}
+                            onError={(e) => {
+                              e.target.src = "/default.png";
+                            }}
+                            className="w-[30px] h-[30px] ml-[10px]"
+                          />
+                        ) : (
+                          <img
+                            src="/default.png"
+                            alt="default.png"
+                            className="w-[30px] h-[30px] ml-[10px]"
+                          />
+                        )}
+                      </div>
+                    </MenuItem>
+                  );
+                }}
                 renderInput={(params) => (
                   <TextField {...params} label="Part" required />
                 )}
@@ -222,6 +228,8 @@ const PartSaleForm = () => {
               name="description"
               label="Additional Info"
               multiline
+              required
+              placeholder="e.g. want to trade, willing to ship, want to sell locally, etc..."
               rows={4}
               value={formData.description}
               onChange={handleInputChange}
@@ -231,7 +239,7 @@ const PartSaleForm = () => {
             <button
               type="submit"
               className="w-full mt-2 mb-4 bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded disabled:opacity-50 disabled:cursor-not-allowed"
-              disabled={loading}
+              disabled={loading || formData.quantity === 0 || formData.price === "" || formData.condition === "" || formData.description === "" || !formData.partId}
             >
               {loading ? (
                 <CircularProgress size={24} className="text-white" />

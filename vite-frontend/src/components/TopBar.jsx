@@ -131,9 +131,8 @@ const TopBar = () => {
 
         {/* Nav Buttons */}
         <div
-          className={`hidden ${
-            isAuthenticated ? "lg:flex lg:flex-row" : "md:flex md:flex-row"
-          }`}
+          className={`hidden ${isAuthenticated ? "lg:flex lg:flex-row" : "md:flex md:flex-row"
+            }`}
         >
           <NavButton name={"Requests"} link={"/requests"} navigate={navigate} />
           <NavButton name={"Sales"} link={"/sales"} navigate={navigate} />
@@ -174,43 +173,43 @@ const TopBar = () => {
 
         {/* Right Buttons */}
         <div
-          className={`hidden ${
-            isAuthenticated ? "lg:flex lg:flex-row" : "md:flex md:flex-row"
-          } relative`}
+          className={`hidden ${isAuthenticated ? "lg:flex lg:flex-row" : "md:flex md:flex-row"}`}
         >
-          {/* Chat Button if Logged In */}
-          {isAuthenticated && (
-            <button
-              onClick={() => navigate("/chat")}
-              className="p-2 rounded-full bg-black hover:bg-gray-900 transition duration-200 mx-3"
-            >
-              <LuMessageCircle className="text-white text-[24px]" />
-            </button>
-          )}
-
           {/* Drop Down */}
-          <div ref={dropdownRef}>
-            <button onClick={handleProfileDropdown} className="mx-4">
-              {/* Logo vs Profile Photo */}
-              {isAuthenticated && user ? (
-                <div className="p-1 rounded-lg bg-gray-100 hover:bg-gray-300 transition duration-100">
-                  <ProfilePhoto
-                    src={user.profile_photo}
-                    teamNumber={user.team_number}
-                    alt={"Team Logo"}
-                    className="w-[32px] h-[32px] rounded-sm"
-                  />
-                </div>
-              ) : (
-                <div className="p-2 rounded-full bg-black hover:bg-gray-900 transition duration-200">
-                  <CgProfile className="text-white text-[24px]" />
-                </div>
+          <div className="" ref={dropdownRef}>
+            <div className="flex flex-row">
+              {/* Chat Button if Logged In */}
+              {isAuthenticated && (
+                <button
+                  onClick={() => navigate("/chat")}
+                  className="p-1 rounded-full bg-black hover:bg-gray-900 transition duration-200 mx-3"
+                >
+                  <LuMessageCircle className="text-white text-[24px]" />
+                </button>
               )}
-            </button>
+              <button onClick={handleProfileDropdown} className="mx-4">
+                {/* Logo vs Profile Photo */}
+                {isAuthenticated && user ? (
+                  <>
+                    <ProfilePhoto
+                      src={user.profile_photo}
+                      teamNumber={user.team_number}
+                      alt={"Team Logo"}
+                      className="w-[32px] h-[32px] rounded-sm"
+                      containerClassName="p-1 min-w-[40px] rounded-lg bg-gray-100 hover:bg-gray-300 transition duration-100"
+                    />
+                  </>
+                ) : (
+                  <div className="p-2 rounded-full bg-black hover:bg-gray-900 transition duration-200">
+                    <CgProfile className="text-white text-[24px]" />
+                  </div>
+                )}
+              </button>
+            </div>
 
             {/* Profile Dropdown */}
             {profileDropdownIsOpen && (
-              <div className="absolute top-[50px] right-[16px] bg-gray-100 whitespace-nowrap z-50 rounded-lg px-1 border border-gray-300 shadow-lg">
+              <div className="absolute top-[60px] right-[40px] bg-gray-100 whitespace-nowrap z-50 rounded-lg px-1 border border-gray-300 shadow-lg">
                 {isAuthenticated && user ? (
                   <>
                     <DropdownButton

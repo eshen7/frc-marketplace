@@ -4,6 +4,51 @@ import { Skeleton } from "@mui/material";
 import { getDaysUntil, haversine, isDate } from "../utils/utils";
 import { useNavigate } from "react-router-dom";
 
+export const ItemLoadingCard = ({ index }) => {
+  return (
+    <div key={index} className="flex-none w-[272px]">
+      <div className="bg-white rounded-lg shadow-md p-4">
+        {/* Image skeleton */}
+        <Skeleton
+          variant="rectangular"
+          width="100%"
+          height={200}
+          className="rounded-lg"
+        />
+
+        {/* Title skeleton */}
+        <Skeleton
+          variant="text"
+          width="70%"
+          height={32}
+          className="mt-4"
+        />
+
+        {/* Team info skeleton */}
+        <div className="flex items-center mt-2">
+          <Skeleton
+            variant="circular"
+            width={24}
+            height={24}
+          />
+          <Skeleton
+            variant="text"
+            width="40%"
+            height={24}
+            className="ml-2"
+          />
+        </div>
+
+        {/* Additional info skeletons */}
+        <div className="mt-4">
+          <Skeleton variant="text" width="60%" />
+          <Skeleton variant="text" width="40%" />
+        </div>
+      </div>
+    </div>
+  );
+}
+
 const ItemCard = ({ item, currentUser, type, itemDistance }) => {
   const navigate = useNavigate();
   const [imageLoaded, setImageLoaded] = useState(false);
@@ -53,12 +98,12 @@ const ItemCard = ({ item, currentUser, type, itemDistance }) => {
         <p className="text-xs text-gray-500 text-right">
           {isRequest ? (new Date(item.request_date)).toLocaleDateString() : (new Date(item.sale_creation_date)).toLocaleDateString()}
         </p>
-        <h2 className="text-xl font-semibold mb-2 truncate">
+        <h1 className="text-xl font-semibold mb-2 truncate">
           {item.part.name}
-        </h2>
+        </h1>
 
         <div onClick={() => navigate(`/profile/frc/${item.user.team_number}`)} className="text-gray-600 text-sm mb-2 truncate hover:underline cursor-pointer">
-          {`Team ${item.user.team_number} - ${item.user.team_name}`}
+          <h2>{`Team ${item.user.team_number} - ${item.user.team_name}`}</h2>
         </div>
 
         {isRequest ? (
