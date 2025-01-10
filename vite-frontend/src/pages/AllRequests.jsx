@@ -18,7 +18,7 @@ const fuseOptions = {
 
 const AllRequests = () => {
   const [searchTerm, setSearchTerm] = useState("");
-  const [distance, setDistance] = useState(Infinity);
+  const [filterDistance, setFilterDistance] = useState(Infinity);
   const [sortBy, setSortBy] = useState("urgent");
   const [selectedCategories, setSelectedCategories] = useState([]);
   const [displayLimit, setDisplayLimit] = useState(12);
@@ -34,7 +34,7 @@ const AllRequests = () => {
         !item.user.formatted_address.latitude ||
         !item.user.formatted_address.longitude
       ) {
-        return { ...item, distance: Infinity };
+        return {};
       }
 
       const user_latitude = user.formatted_address.latitude;
@@ -47,8 +47,8 @@ const AllRequests = () => {
         user_longitude,
         item_latitude,
         item_longitude
-      );
-      item.distance = Math.round(distance);
+      ).toFixed(1);
+      item.distance = distance;
     });
   };
 
@@ -58,15 +58,20 @@ const AllRequests = () => {
       !item.user.formatted_address.latitude ||
       !item.user.formatted_address.longitude
     ) {
-      return { ...item, distance: Infinity };
+      return {};
     }
     const user_latitude = user.formatted_address.latitude;
     const user_longitude = user.formatted_address.longitude;
     const item_latitude = item.user.formatted_address.latitude;
     const item_longitude = item.user.formatted_address.longitude;
 
-    const distance = haversine(user_latitude, user_longitude, item_latitude, item_longitude);
-    return { ...item, distance: Math.round(distance) };
+    const distance = haversine(
+      user_latitude,
+      user_longitude,
+      item_latitude,
+      item_longitude
+    ).toFixed(1);
+    return { ...item, distance: distance };
   };
 
   useEffect(() => {
@@ -92,10 +97,10 @@ const AllRequests = () => {
       results = fuse.search(searchTerm).map((result) => result.item);
     }
 
-    if (distance && user) {
+    if (filterDistance && user) {
       results = results.filter((request) => {
         const item = calculateDistanceForSingle(request);
-        return item.distance <= distance;
+        return item.distance <= filterDistance;
       });
     }
 
@@ -103,8 +108,8 @@ const AllRequests = () => {
       results = results.filter((request) =>
         request.part && request.part.category
           ? selectedCategories.some(
-            (category) => category.id === request.part.category.id
-          )
+              (category) => category.id === request.part.category.id
+            )
           : false
       );
     }
@@ -116,7 +121,9 @@ const AllRequests = () => {
         case "newest":
           return new Date(b.request_date) - new Date(a.request_date);
         case "closest":
-          return (a.distance || Infinity) - (b.distance || Infinity);
+          const distanceA = parseFloat(a.distance) || Infinity;
+          const distanceB = parseFloat(b.distance) || Infinity;
+          return distanceA - distanceB;
         default:
           return 0;
       }
@@ -127,7 +134,7 @@ const AllRequests = () => {
 
   const filteredRequests = useMemo(
     () => getFilteredResults(),
-    [requests, searchTerm, distance, selectedCategories, sortBy, fuse]
+    [requests, searchTerm, filterDistance, selectedCategories, sortBy, fuse]
   );
 
   // Create intersection observer
@@ -135,7 +142,7 @@ const AllRequests = () => {
     (entries) => {
       const [entry] = entries;
       if (entry.isIntersecting && filteredRequests.length > displayLimit) {
-        setDisplayLimit(prev => prev + 12);
+        setDisplayLimit((prev) => prev + 12);
       }
     },
     [filteredRequests.length, displayLimit]
@@ -145,8 +152,8 @@ const AllRequests = () => {
   useEffect(() => {
     const observer = new IntersectionObserver(observerCallback, {
       root: null,
-      rootMargin: '20px',
-      threshold: 1.0
+      rootMargin: "20px",
+      threshold: 1.0,
     });
 
     if (observerTarget.current) {
@@ -165,14 +172,20 @@ const AllRequests = () => {
       <TopBar />
       <SearchAndFilter
         onSearchChange={setSearchTerm}
-        onDistanceChange={setDistance}
+        onDistanceChange={setFilterDistance}
         onSortChange={setSortBy}
         onCategoriesChange={setSelectedCategories}
         allCategories={allCategories}
         implementationType={"request"}
       />
       <div className="flex flex-col flex-grow bg-gray-100 font-sans p-8">
-        <div className={`${loadingStates.requests ? "flex items-center justify-center" : "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 auto-rows-fr"}`}>
+        <div
+          className={`${
+            loadingStates.requests
+              ? "flex items-center justify-center"
+              : "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 auto-rows-fr"
+          }`}
+        >
           {loadingStates.requests ? (
             <div className="flex items-center justify-center">
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
@@ -181,12 +194,14 @@ const AllRequests = () => {
           ) : filteredRequests.length > 0 ? (
             <>
               {filteredRequests.slice(0, displayLimit).map((request) => {
-                const distanceTemp = isAuthenticated ? haversine(
-                  user.formatted_address.latitude,
-                  user.formatted_address.longitude,
-                  request.user.formatted_address.latitude,
-                  request.user.formatted_address.longitude
-                ).toFixed(1) : null;
+                const distanceTemp = isAuthenticated
+                  ? haversine(
+                      user.formatted_address.latitude,
+                      user.formatted_address.longitude,
+                      request.user.formatted_address.latitude,
+                      request.user.formatted_address.longitude
+                    ).toFixed(1)
+                  : null;
 
                 return (
                   <ItemCard
