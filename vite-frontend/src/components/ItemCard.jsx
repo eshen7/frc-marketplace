@@ -4,6 +4,51 @@ import { Skeleton } from "@mui/material";
 import { getDaysUntil, haversine, isDate } from "../utils/utils";
 import { useNavigate } from "react-router-dom";
 
+export const ItemLoadingCard = ({ index }) => {
+  return (
+    <div key={index} className="flex-none w-[272px]">
+      <div className="bg-white rounded-lg shadow-md p-4">
+        {/* Image skeleton */}
+        <Skeleton
+          variant="rectangular"
+          width="100%"
+          height={200}
+          className="rounded-lg"
+        />
+
+        {/* Title skeleton */}
+        <Skeleton
+          variant="text"
+          width="70%"
+          height={32}
+          className="mt-4"
+        />
+
+        {/* Team info skeleton */}
+        <div className="flex items-center mt-2">
+          <Skeleton
+            variant="circular"
+            width={24}
+            height={24}
+          />
+          <Skeleton
+            variant="text"
+            width="40%"
+            height={24}
+            className="ml-2"
+          />
+        </div>
+
+        {/* Additional info skeletons */}
+        <div className="mt-4">
+          <Skeleton variant="text" width="60%" />
+          <Skeleton variant="text" width="40%" />
+        </div>
+      </div>
+    </div>
+  );
+}
+
 const ItemCard = ({ item, currentUser, type, itemDistance }) => {
   const navigate = useNavigate();
   const [imageLoaded, setImageLoaded] = useState(false);

@@ -219,7 +219,8 @@ const NewPartForm = ({ open, onClose, onSuccess }) => {
       partData.name &&
       partData.category_id &&
       partData.manufacturer_id &&
-      partData.imageFile
+      partData.imageFile &&
+      partData.part_link
     );
   };
 
@@ -238,6 +239,7 @@ const NewPartForm = ({ open, onClose, onSuccess }) => {
             margin="dense"
             label="Part Name"
             fullWidth
+            placeholder="Name + acronyms if applicable"
             required
             value={partData.name}
             onChange={handleChange("name")}
@@ -292,12 +294,14 @@ const NewPartForm = ({ open, onClose, onSuccess }) => {
             label="Part ID"
             fullWidth
             value={partData.partID}
+            placeholder="Item ID from manufacturer's website"
             onChange={handleChange("partID")}
           />
           <TextField
             margin="dense"
             label="Part Link"
             fullWidth
+            required
             placeholder="https://..."
             value={partData.part_link}
             onChange={handleChange("part_link")}
@@ -393,6 +397,7 @@ const NewPartForm = ({ open, onClose, onSuccess }) => {
             label="Description"
             fullWidth
             multiline
+            placeholder="Part Details as found on manufacturer's website"
             rows={4}
             value={partData.description}
             onChange={handleChange("description")}
