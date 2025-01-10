@@ -54,7 +54,7 @@ const SalesPage = () => {
       !item.user.formatted_address.latitude ||
       !item.user.formatted_address.longitude
     ) {
-      return { ...item, distance: Infinity };
+      return { ...item, distance: 0 };
     }
     const distance = haversine(
       user.formatted_address.latitude,
@@ -96,7 +96,9 @@ const SalesPage = () => {
     if (selectedCategories.length > 0) {
       results = results.filter((sale) =>
         sale.part && sale.part.category
-          ? selectedCategories.some(category => category.id === sale.part.category.id)
+          ? selectedCategories.some(
+              (category) => category.id === sale.part.category.id
+            )
           : false
       );
     }
@@ -108,9 +110,11 @@ const SalesPage = () => {
         case "price-high":
           return b.ask_price - a.ask_price;
         case "newest":
-          return new Date(b.created_at) - new Date(a.created_at);
+          return new Date(b.request_date) - new Date(a.request_date);
         case "closest":
-          return (a.distance || Infinity) - (b.distance || Infinity);
+          const distanceA = parseFloat(a.distance) || Infinity;
+          const distanceB = parseFloat(b.distance) || Infinity;
+          return distanceA - distanceB;
         default:
           return 0;
       }
@@ -129,7 +133,7 @@ const SalesPage = () => {
     (entries) => {
       const [entry] = entries;
       if (entry.isIntersecting && filteredSales.length > displayLimit) {
-        setDisplayLimit(prev => prev + 12);
+        setDisplayLimit((prev) => prev + 12);
       }
     },
     [filteredSales.length, displayLimit]
@@ -139,8 +143,8 @@ const SalesPage = () => {
   useEffect(() => {
     const observer = new IntersectionObserver(observerCallback, {
       root: null,
-      rootMargin: '20px',
-      threshold: 1.0
+      rootMargin: "20px",
+      threshold: 1.0,
     });
 
     if (observerTarget.current) {
@@ -166,8 +170,14 @@ const SalesPage = () => {
         implementationType={"sale"}
       />
       <div className="flex flex-col flex-grow bg-gray-100 font-sans p-8">
-        <div className={`${loadingStates.sales ? "flex items-center justify-center" : "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 auto-rows-fr"}`}>
-      {loadingStates.sales ? (
+        <div
+          className={`${
+            loadingStates.sales
+              ? "flex items-center justify-center"
+              : "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 auto-rows-fr"
+          }`}
+        >
+          {loadingStates.sales ? (
             <div className="flex items-center justify-center">
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
               <p className="ml-2">Loading Sales...</p>
@@ -175,12 +185,14 @@ const SalesPage = () => {
           ) : filteredSales.length > 0 ? (
             <>
               {filteredSales.slice(0, displayLimit).map((sale) => {
-                const distanceTemp = isAuthenticated ? haversine(
-                  user.formatted_address.latitude,
-                  user.formatted_address.longitude,
-                  sale.user.formatted_address.latitude,
-                  sale.user.formatted_address.longitude
-                ).toFixed(1) : null;
+                const distanceTemp = isAuthenticated
+                  ? haversine(
+                      user.formatted_address.latitude,
+                      user.formatted_address.longitude,
+                      sale.user.formatted_address.latitude,
+                      sale.user.formatted_address.longitude
+                    ).toFixed(1)
+                  : null;
 
                 return (
                   <ItemCard
@@ -194,7 +206,7 @@ const SalesPage = () => {
               })}
               {/* Observer target */}
               {filteredSales.length > displayLimit && (
-                <div 
+                <div
                   ref={observerTarget}
                   className="col-span-full flex justify-center p-4"
                 >
