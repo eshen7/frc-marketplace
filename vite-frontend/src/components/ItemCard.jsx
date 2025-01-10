@@ -98,12 +98,12 @@ const ItemCard = ({ item, currentUser, type, itemDistance }) => {
         <p className="text-xs text-gray-500 text-right">
           {isRequest ? (new Date(item.request_date)).toLocaleDateString() : (new Date(item.sale_creation_date)).toLocaleDateString()}
         </p>
-        <h2 className="text-xl font-semibold mb-2 truncate">
+        <h1 className="text-xl font-semibold mb-2 truncate">
           {item.part.name}
-        </h2>
+        </h1>
 
         <div onClick={() => navigate(`/profile/frc/${item.user.team_number}`)} className="text-gray-600 text-sm mb-2 truncate hover:underline cursor-pointer">
-          {`Team ${item.user.team_number} - ${item.user.team_name}`}
+          <h2>{`Team ${item.user.team_number} - ${item.user.team_name}`}</h2>
         </div>
 
         {isRequest ? (
