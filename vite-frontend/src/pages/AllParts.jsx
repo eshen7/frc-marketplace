@@ -20,7 +20,7 @@ const AllParts = () => {
   const { parts, categories, manufacturers, loadingStates } = useData();
 
   const navigate = useNavigate();
-  
+
   const [searchTerm, setSearchTerm] = useState("");
   const [sortBy, setSortBy] = useState("name");
   const [selectedCategories, setSelectedCategories] = useState([]);
@@ -41,8 +41,8 @@ const AllParts = () => {
       results = results.filter((part) =>
         part.category
           ? selectedCategories.some(
-              (category) => category.id === part.category.id
-            )
+            (category) => category.id === part.category.id
+          )
           : false
       );
     }
@@ -52,8 +52,8 @@ const AllParts = () => {
       results = results.filter((part) =>
         part.manufacturer
           ? selectedManufacturers.some(
-              (manufacturer) => manufacturer.id === part.manufacturer.id
-            )
+            (manufacturer) => manufacturer.id === part.manufacturer.id
+          )
           : false
       );
     }
@@ -116,15 +116,15 @@ const AllParts = () => {
           allManufacturers={manufacturers}
         />
         <div className="p-8">
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+          <div className={`${loadingStates.parts ? "flex items-center justify-center" : "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"}`}>
             {!loadingStates.parts ? (
               filteredParts.length > 0 ? (
                 <>
                   {filteredParts.slice(0, displayLimit).map((part) => (
-                    <PartItemCard key={part.id} part={part} navigate={navigate}/>
+                    <PartItemCard key={part.id} part={part} navigate={navigate} />
                   ))}
                   {filteredParts.length > displayLimit && (
-                    <div 
+                    <div
                       ref={observerTarget}
                       className="col-span-full flex justify-center p-4"
                     >
@@ -138,7 +138,10 @@ const AllParts = () => {
                 </div>
               )
             ) : (
-              <div className="col-span-full text-center">Loading...</div>
+              <div className="flex items-center justify-center">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
+                <p className="ml-2">Loading Parts...</p>
+              </div>
             )}
           </div>
         </div>

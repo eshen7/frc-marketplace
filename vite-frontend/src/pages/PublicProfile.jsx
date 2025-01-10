@@ -194,17 +194,15 @@ const PublicProfileComponent = ({ user }) => {
           <div className="flex-grow mx-6 mb-10">
             <div className="flex flex-row justify-between">
               <button
-                className={`text-xl font-semibold text-gray-700 mb-4 py-2 px-4 rounded-md hover:bg-gray-300 ${
-                  onRequests ? "bg-gray-200" : ""
-                }`}
+                className={`text-xl font-semibold text-gray-700 mb-4 py-2 px-4 rounded-md hover:bg-gray-300 ${onRequests ? "bg-gray-200" : ""
+                  }`}
                 onClick={handleClickRequests}
               >
                 Requests
               </button>
               <button
-                className={`text-xl font-semibold text-gray-700 mb-4 py-2 px-4 rounded-md hover:bg-gray-300 ${
-                  onRequests ? "" : "bg-gray-200"
-                }`}
+                className={`text-xl font-semibold text-gray-700 mb-4 py-2 px-4 rounded-md hover:bg-gray-300 ${onRequests ? "" : "bg-gray-200"
+                  }`}
                 onClick={handleClickSales}
               >
                 Sales
@@ -223,11 +221,11 @@ const PublicProfileComponent = ({ user }) => {
                         itemDistance={
                           isAuthenticated
                             ? haversine(
-                                user.formatted_address.latitude,
-                                user.formatted_address.longitude,
-                                request.user.formatted_address.latitude,
-                                request.user.formatted_address.longitude
-                              ).toFixed(1)
+                              user.formatted_address.latitude,
+                              user.formatted_address.longitude,
+                              request.user.formatted_address.latitude,
+                              request.user.formatted_address.longitude
+                            ).toFixed(1)
                             : null
                         }
                       />
@@ -265,11 +263,11 @@ const PublicProfileComponent = ({ user }) => {
                         itemDistance={
                           isAuthenticated
                             ? haversine(
-                                user.formatted_address.latitude,
-                                user.formatted_address.longitude,
-                                sale.user.formatted_address.latitude,
-                                sale.user.formatted_address.longitude
-                              ).toFixed(1)
+                              user.formatted_address.latitude,
+                              user.formatted_address.longitude,
+                              sale.user.formatted_address.latitude,
+                              sale.user.formatted_address.longitude
+                            ).toFixed(1)
                             : null
                         }
                       />
@@ -284,7 +282,10 @@ const PublicProfileComponent = ({ user }) => {
                     )}
                   </div>
                 ) : loadingSales ? (
-                  <p>Loading Sales...</p>
+                  <div className="flex items-center justify-center">
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
+                    <p className="ml-2">Loading Sales...</p>
+                  </div>
                 ) : (
                   <p className="text-gray-500">
                     This user hasn't made any sales yet.
