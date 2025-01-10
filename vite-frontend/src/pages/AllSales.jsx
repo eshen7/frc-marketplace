@@ -166,7 +166,7 @@ const SalesPage = () => {
         implementationType={"sale"}
       />
       <div className="flex flex-col flex-grow bg-gray-100 font-sans p-8">
-      <div className={`${loadingStates.sales ? "flex items-center justify-center" : "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"}`}>
+        <div className={`${loadingStates.sales ? "flex items-center justify-center" : "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 auto-rows-fr"}`}>
       {loadingStates.sales ? (
             <div className="flex items-center justify-center">
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
