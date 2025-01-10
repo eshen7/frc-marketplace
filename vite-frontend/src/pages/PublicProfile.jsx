@@ -242,7 +242,10 @@ const PublicProfileComponent = ({ user }) => {
                     )}
                   </div>
                 ) : loadingRequests ? (
-                  <p>Loading Requests...</p>
+                  <div className="flex items-center justify-center">
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
+                    <p className="ml-2">Loading Requests...</p>
+                  </div>
                 ) : (
                   <p className="text-gray-500">
                     This user hasn't made any requests yet.
@@ -321,13 +324,14 @@ const PublicProfilePage = () => {
   return (
     <div className="min-h-screen flex flex-col">
       <TopBar />
-      <div className="flex-grow bg-gray-100">
+      <div className="flex-grow bg-gray-100 flex flex-col justify-center">
         {!error && user ? (
           <PublicProfileComponent user={user} />
         ) : loadingUser ? (
-          <>
-            <p>Loading...</p>
-          </>
+          <div className="flex items-center justify-center">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
+            <p className="ml-2">Loading User...</p>
+          </div>
         ) : (
           <>
             <p>Error: {error}</p>

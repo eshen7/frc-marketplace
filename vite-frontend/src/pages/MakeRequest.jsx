@@ -26,7 +26,6 @@ import { useNavigate } from "react-router-dom";
 
 const INITIAL_FORM_STATE = {
   quantity: 1,
-  neededFor: "",
   additionalInfo: "",
 };
 
@@ -76,7 +75,6 @@ const PartRequestForm = () => {
       const requestData = {
         part_id: selectedPart,
         quantity: formData.quantity,
-        needed_for: formData.neededFor,
         additional_info: formData.additionalInfo,
         needed_date: new Date(dateNeeded).toISOString().split("T")[0],
       };
@@ -155,6 +153,9 @@ const PartRequestForm = () => {
                           <img
                             src={option.image}
                             alt={option.name}
+                            onError={(e) => {
+                              e.target.src = "/default.png";
+                            }}
                             className="w-[30px] h-[30px] ml-[10px]"
                           />
                         ) : (
@@ -227,7 +228,7 @@ const PartRequestForm = () => {
             <button
               type="submit"
               className="w-full mt-2 mb-4 bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded disabled:opacity-50 disabled:cursor-not-allowed"
-              disabled={loading}
+              disabled={loading || formData.additionalInfo === "" || formData.quantity === 0 || !selectedPart || !dateNeeded}
             >
               {loading ? <CircularProgress size={24} /> : "Submit Request"}
             </button>
