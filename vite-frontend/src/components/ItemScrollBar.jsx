@@ -1,5 +1,5 @@
 import React, { useRef } from 'react';
-import ItemCard from './ItemCard';
+import ItemCard, { ItemLoadingCard } from './ItemCard';
 import { Skeleton } from "@mui/material";
 import { haversine } from '../utils/utils';
 
@@ -27,46 +27,7 @@ const ItemScrollBar = ({ items, loadingItems, user, loadingUser, type, isAuthent
   const renderContent = () => {
     if (loadingItems) {
       return [...Array(4)].map((_, index) => (
-        <div key={index} className="flex-none w-[272px]">
-          <div className="bg-white rounded-lg shadow-md p-4">
-            {/* Image skeleton */}
-            <Skeleton 
-              variant="rectangular" 
-              width="100%" 
-              height={200} 
-              className="rounded-lg"
-            />
-            
-            {/* Title skeleton */}
-            <Skeleton 
-              variant="text" 
-              width="70%" 
-              height={32} 
-              className="mt-4"
-            />
-            
-            {/* Team info skeleton */}
-            <div className="flex items-center mt-2">
-              <Skeleton 
-                variant="circular" 
-                width={24} 
-                height={24} 
-              />
-              <Skeleton 
-                variant="text" 
-                width="40%" 
-                height={24} 
-                className="ml-2"
-              />
-            </div>
-            
-            {/* Additional info skeletons */}
-            <div className="mt-4">
-              <Skeleton variant="text" width="60%" />
-              <Skeleton variant="text" width="40%" />
-            </div>
-          </div>
-        </div>
+        <ItemLoadingCard key={index} index={index} />
       ));
     }
 

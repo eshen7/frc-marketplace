@@ -347,7 +347,7 @@ const PartDetailsPage = () => {
 
           <Box sx={{ mt: 3 }}>
             {onRequests ? (
-              <Grid container spacing={2}>
+              <Grid container spacing={2} className={`${loadingStates.requests ? "justify-center items-center" : ""}`}>
                 {filteredRequests.length > 0 ? (
                   <>
                     {filteredRequests.slice(0, requestsDisplayLimit).map((request) => (
@@ -375,13 +375,16 @@ const PartDetailsPage = () => {
                     )}
                   </>
                 ) : loadingStates.requests ? (
-                  <Typography color="text.secondary">Loading requests...</Typography>
+                  <div className="flex items-center justify-center">
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
+                    <p className="ml-2">Loading Requests...</p>
+                  </div>
                 ) : (
                   <Typography color="text.secondary">No requests found for this part.</Typography>
                 )}
               </Grid>
             ) : (
-              <Grid container spacing={2}>
+              <Grid container spacing={2} className={`${loadingStates.sales ? "justify-center items-center" : ""}`}>
                 {filteredSales.length > 0 ? (
                   <>
                     {filteredSales.slice(0, salesDisplayLimit).map((sale) => (
@@ -409,7 +412,10 @@ const PartDetailsPage = () => {
                     )}
                   </>
                 ) : loadingStates.sales ? (
-                  <Typography color="text.secondary">Loading sales...</Typography>
+                  <div className="flex items-center justify-center">
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
+                    <p className="ml-2">Loading Sales...</p>
+                  </div>
                 ) : (
                   <Typography color="text.secondary">No sales found for this part.</Typography>
                 )}

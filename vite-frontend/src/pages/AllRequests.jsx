@@ -103,8 +103,8 @@ const AllRequests = () => {
       results = results.filter((request) =>
         request.part && request.part.category
           ? selectedCategories.some(
-              (category) => category.id === request.part.category.id
-            )
+            (category) => category.id === request.part.category.id
+          )
           : false
       );
     }
@@ -172,9 +172,12 @@ const AllRequests = () => {
         implementationType={"request"}
       />
       <div className="flex flex-col flex-grow bg-gray-100 font-sans p-8">
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+        <div className={`${loadingStates.requests ? "flex items-center justify-center" : "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"}`}>
           {loadingStates.requests ? (
-            <div className="col-span-full text-center">Loading...</div>
+            <div className="flex items-center justify-center">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
+              <p className="ml-2">Loading Requests...</p>
+            </div>
           ) : filteredRequests.length > 0 ? (
             <>
               {filteredRequests.slice(0, displayLimit).map((request) => {
@@ -197,7 +200,7 @@ const AllRequests = () => {
               })}
               {/* Observer target */}
               {filteredRequests.length > displayLimit && (
-                <div 
+                <div
                   ref={observerTarget}
                   className="col-span-full flex justify-center p-4"
                 >

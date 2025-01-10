@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Skeleton } from '@mui/material';
 
-const ProfilePhoto = ({ src, alt, className, containerClassName="", teamNumber = 3647 }) => {
+const ProfilePhoto = ({ src, alt, className, containerClassName = "", teamNumber = 3647 }) => {
   const [imageLoaded, setImageLoaded] = useState(false);
   const [imageError, setImageError] = useState(false);
   const defaultImage = `https://www.thebluealliance.com/avatar/2024/frc${teamNumber}.png`;
@@ -19,16 +19,18 @@ const ProfilePhoto = ({ src, alt, className, containerClassName="", teamNumber =
   return (
     <div className={`relative ${containerClassName}`}>
       {!imageLoaded && (
-        <Skeleton
-          variant="rectangular"
-          animation="wave"
-          className="absolute top-0 left-0 w-full h-full"
-        />
+        <>
+          <Skeleton
+            variant="rectangular"
+            animation="wave"
+            className="absolute top-0 left-0 w-full h-full"
+          />
+        </>
       )}
       <img
         src={imageError ? defaultImage : src}
         alt={alt || 'Profile Photo'}
-        className={className}
+        className={`${className} object-cover`}
         style={{ display: imageLoaded ? 'block' : 'none' }}
         {...(!imageError && {
           onError: handleError,

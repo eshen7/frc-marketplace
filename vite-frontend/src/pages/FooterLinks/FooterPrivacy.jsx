@@ -18,19 +18,18 @@ const PrivacyStatement = () => {
             </p>
           </div>
 
-        {/* intro section */}
+          {/* intro section */}
           <div className="mt-16 space-y-8">
             <section>
               <h2 className="text-4xl font-semibold text-blue-900 mb-4">
                 Introduction
               </h2>
               <p className="text-gray-600 leading-relaxed">
-                Millennium Marketplace is committed to
-                protecting your privacy. This Privacy Statement explains how
-                we collect, use, disclose, and safeguard your information when
-                you visit our website (website url and site name). By using
-                the site, you consent to the practices described in this
-                Privacy Statement.
+                Millennium Marketplace is committed to protecting your privacy.
+                This Privacy Statement explains how we collect, use, disclose,
+                and safeguard your information when you visit our website
+                (website url and site name). By using the site, you consent to
+                the practices described in this Privacy Statement.
               </p>
             </section>
 
@@ -43,9 +42,9 @@ const PrivacyStatement = () => {
                 1.1 Personal Information
               </h3>
               <p className="text-gray-600 leading-relaxed">
-                We may collect personal information that you provide directly
-                to us, such as your name, email address, phone number, and
-                other contact details when you:
+                We may collect personal information that you provide directly to
+                us, such as your name, email address, phone number, and other
+                contact details when you:
               </p>
               <ul className="list-disc list-inside text-gray-600 leading-relaxed">
                 <li>Sign up for our services.</li>
@@ -58,14 +57,16 @@ const PrivacyStatement = () => {
                 1.2 Non-Personal Information
               </h3>
               <p className="text-gray-600 leading-relaxed">
-                We may automatically collect non-personal information about
-                you, such as:
+                We may automatically collect non-personal information about you,
+                such as:
               </p>
               <ul className="list-disc list-inside text-gray-600 leading-relaxed">
-                <li>Your IP address.</li>
-                <li>Browser type and version.</li>
-                <li>Operating system.</li>
-                <li>Pages you visit and the time spent on them.</li>
+                <li>Basic usage data to improve website functionality.</li>
+                <li>Browser type and general device information.</li>
+                <li>
+                  Aggregate data about how users interact with the site (e.g.,
+                  pages visited).
+                </li>
                 <li>Referring website addresses.</li>
               </ul>
             </section>
@@ -82,105 +83,132 @@ const PrivacyStatement = () => {
               <ul className="list-disc list-inside text-gray-600 leading-relaxed">
                 <li>To provide, operate, and maintain our Site.</li>
                 <li>To improve, personalize, and expand our Site.</li>
-                <li>To communicate with you, including responding to your inquiries.</li>
+                <li>
+                  To communicate with you, including responding to your
+                  inquiries.
+                </li>
                 <li>
                   To send newsletters, marketing materials, or other information
                   you consent to receive.
                 </li>
-                <li>To detect and prevent fraudulent or unauthorized activity.</li>
+                <li>
+                  To detect and prevent fraudulent or unauthorized activity.
+                </li>
                 <li>To comply with legal obligations.</li>
               </ul>
             </section>
-            
+
             {/* section 3 */}
 
             <section>
-                <h2 className="text-4xl font-semibold text-blue-900 mb-4">
-                    3. Sharing Your Information
-                </h2>
-                <p className="text-gray-600 leading-relaxed">
-                We do not sell, trade, or rent your personal information to others. However, we may share your information with:
+              <h2 className="text-4xl font-semibold text-blue-900 mb-4">
+                3. Sharing Your Information
+              </h2>
+              <p className="text-gray-600 leading-relaxed">
+                We do not sell, trade, or rent your personal information to
+                others. However, we may share your information with:
               </p>
               <ul className="list-disc list-inside text-gray-600 leading-relaxed">
-                <li>Service Providers: Third-Party vendors who help us operate our Site and provide services (e.g., hosting providers, analytics services).</li>
-                <li>Legal Obligations: When required by law or to respond to legal processes.</li>
-                <li>Business Transfers: In the event of a merger, acquisition, or sale of assets, your information may be transferred.</li>
+                <li>
+                  Service Providers: Third-Party vendors who help us operate our
+                  Site and provide services (e.g., hosting providers, analytics
+                  services).
+                </li>
+                <li>
+                  Legal Obligations: When required by law or to respond to legal
+                  processes.
+                </li>
+                <li>
+                  Business Transfers: In the event of a merger, acquisition, or
+                  sale of assets, your information may be transferred.
+                </li>
               </ul>
             </section>
 
             {/* section 4 */}
 
             <section>
-             <h2 className="text-4xl font-semibold text-blue-900 mb-4">
-                 4. Cookies and Tracking Technologies
-             </h2>
-             <p className="text-gray-600 leading-relaxed">
-             We use cookies and similar tracking technologies to enhance your experience on our Site. Cookies are small files stored on your device that help us:
-            </p>
-            <ul className="list-disc list-inside text-gray-600 leading-relaxed">
-             <li>Remember your preferences.</li>
-             <li>Understand how you interact with our Site.</li>
-             <li>Deliver personalized content.</li>
-            </ul>
-             <p className="text-gray-600 leading-relaxed mt-4">You can manage cookie preferences 
-                through your browser settings. Please note that disabling cookies may affect the 
-                functionality of our Site.</p>
+              <h2 className="text-4xl font-semibold text-blue-900 mb-4">
+                4. Cookies and Tracking Technologies
+              </h2>
+              <p className="text-gray-600 leading-relaxed">
+                We use cookies and similar tracking technologies to enhance your
+                experience on our Site. Cookies are small files stored on your
+                device that help us:
+              </p>
+              <ul className="list-disc list-inside text-gray-600 leading-relaxed">
+                <li>Remember your preferences.</li>
+                <li>Understand how you interact with our Site.</li>
+                <li>Deliver personalized content.</li>
+              </ul>
+              <p className="text-gray-600 leading-relaxed mt-4">
+                You can manage cookie preferences through your browser settings.
+                Please note that disabling cookies may affect the functionality
+                of our Site.
+              </p>
             </section>
 
             {/* section 5 */}
 
             <section>
-                <h2 className="text-4xl font-semibold text-blue-900 mb-4">
-                    5. Data Security
-                </h2>
-                <p className="text-gray-600 leading-relaxed">
-                We implement reasonable security measures to protect your information. 
-                However, no method of transmission over the internet or electronic storage 
-                is completely secure. While we strive to protect your data, we cannot guarantee
-                its absolute security.
-            </p>
+              <h2 className="text-4xl font-semibold text-blue-900 mb-4">
+                5. Data Security
+              </h2>
+              <p className="text-gray-600 leading-relaxed">
+                We implement reasonable security measures to protect your
+                information. However, no method of transmission over the
+                internet or electronic storage is completely secure. While we
+                strive to protect your data, we cannot guarantee its absolute
+                security.
+              </p>
             </section>
 
             {/* section 6 */}
 
             <section>
-                <h2 className="text-4xl font-semibold text-blue-900 mb-4">
-                    6. Your Rights
-                </h2>
-                <p className="text-gray-600 leading-relaxed">Depending on your location, you may have the following rights:</p>
-                <ul className="list-disc list-inside text-gray-600 leading-relaxed">
-                    <li>Access and obtain a copy of your data.</li>
-                    <li>Request correction or deletion of your information.</li>
-                    <li>Object to or restrict processing of your data.</li>
-                    <li>Withdraw consent where processing is based on consent.</li>
-                </ul>
-                <p className="text-gray-600 leading-relaxed">To exercise these rights, please contact us at millenniummarket.team@gmail.com</p>
+              <h2 className="text-4xl font-semibold text-blue-900 mb-4">
+                6. Your Rights
+              </h2>
+              <p className="text-gray-600 leading-relaxed">
+                Depending on your location, you may have the following rights:
+              </p>
+              <ul className="list-disc list-inside text-gray-600 leading-relaxed">
+                <li>Access and obtain a copy of your data.</li>
+                <li>Request correction or deletion of your information.</li>
+                <li>Object to or restrict processing of your data.</li>
+                <li>Withdraw consent where processing is based on consent.</li>
+              </ul>
+              <p className="text-gray-600 leading-relaxed">
+                To exercise these rights, please contact us at
+                millenniummarket.team@gmail.com
+              </p>
             </section>
 
             {/* section 7 */}
 
             <section>
-            <h2 className="text-4xl font-semibold text-blue-900 mb-4">
-                    7. Third-Party Links
-                </h2>
-                <p className="text-gray-600 leading-relaxed">
-                Our Site may contain links to third-party websites. We are not responsible 
-                for the privacy practices or content of those websites. We encourage you
-                to review their privacy policies.
-            </p>
+              <h2 className="text-4xl font-semibold text-blue-900 mb-4">
+                7. Third-Party Links
+              </h2>
+              <p className="text-gray-600 leading-relaxed">
+                Our Site may contain links to third-party websites. We are not
+                responsible for the privacy practices or content of those
+                websites. We encourage you to review their privacy policies.
+              </p>
             </section>
 
             {/* section 8 */}
 
             <section>
-            <h2 className="text-4xl font-semibold text-blue-900 mb-4">
-                    8. Updates to This Privacy Statement
-                </h2>
-                <p className="text-gray-600 leading-relaxed">
-                We may update this Privacy Statement from time to time. Any changes will 
-                be posted on this page with an updated "Effective Date." We encourage you 
-                to review this Privacy Statement periodically.
-            </p>
+              <h2 className="text-4xl font-semibold text-blue-900 mb-4">
+                8. Updates to This Privacy Statement
+              </h2>
+              <p className="text-gray-600 leading-relaxed">
+                We may update this Privacy Statement from time to time. Any
+                changes will be posted on this page with an updated "Effective
+                Date." We encourage you to review this Privacy Statement
+                periodically.
+              </p>
             </section>
 
             {/* section 9 */}
@@ -197,7 +225,6 @@ const PrivacyStatement = () => {
                 <p>millenniummarket.team@gmail.com</p>
               </address>
             </section>
-
           </div>
         </div>
       </div>

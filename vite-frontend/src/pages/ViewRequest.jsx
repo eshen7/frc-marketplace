@@ -275,7 +275,7 @@ export default function FulfillRequest() {
                       onClick={() => navigate(`/part/${request.part.id}`)}
                       className="text-[30px] font-roboto hover:underline hover:cursor-pointer text-left"
                     >
-                      {request.part.name}
+                      <h1>{request.part.name}</h1>
                     </button>
                     {/* Edit Button */}
                     {isRequestOwner && (
@@ -401,7 +401,7 @@ export default function FulfillRequest() {
                   {/* Additional Info */}
                   <div className="flex flex-col mt-6">
                     <p className="font-semibold">Part Link</p>
-                    <p className="text-gray-500">
+                    <h3 className="text-gray-500">
                       <a
                         href={request.part.link ? request.part.link : ""}
                         className="truncate block max-w-full"
@@ -410,7 +410,7 @@ export default function FulfillRequest() {
                       >
                         {request.part.link ? request.part.link : "No link provided"}
                       </a>
-                    </p>
+                    </h3>
                     <p className="font-semibold mt-4">Part Description</p>
                     <p className="text-gray-500">
                       {request.part.description

@@ -76,7 +76,7 @@ export default function OurTeamPage() {
             name={"Andrew Chen"}
             image={"/chen.jpeg"}
             title={"CS @ Wisconsin"}
-            description={"3647 alum"}
+            description={"Go badgers"}
             linkedin={"https://www.linkedin.com/in/andrewkkchen"}
             insta={"https://www.instagram.com/andrew._.chen/"}
           />
@@ -84,7 +84,7 @@ export default function OurTeamPage() {
             name={"Ethan Lemke"}
             image={"/ethanbutt.jpg"}
             title={"Fullstack Dev, 3647 Mentor"}
-            description={" geeked off the flizzy "}
+            description={"3647 alum also "}
             linkedin={"https://www.linkedin.com/in/ethan-lemke-492838254/"}
             insta={"https://www.instagram.com/_ethanlemke_/"}
           />
