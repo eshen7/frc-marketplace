@@ -225,9 +225,8 @@ const NewPartForm = ({ open, onClose, onSuccess }) => {
     return (
       partData.name &&
       partData.category_id &&
-      partData.manufacturer_id &&
       partData.imageFile &&
-      partData.part_link
+      partData.manufacturer_id
     );
   };
 
@@ -308,7 +307,6 @@ const NewPartForm = ({ open, onClose, onSuccess }) => {
             margin="dense"
             label="Part Link"
             fullWidth
-            required
             placeholder="https://..."
             value={partData.part_link}
             onChange={handleChange("part_link")}
