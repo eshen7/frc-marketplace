@@ -361,7 +361,7 @@ export default function ViewSale() {
                       <p className="text-green-700 text-[24px]">
                         {sale.ask_price > 0
                           ? `$${sale.ask_price}`
-                          : sale.ask_price === 0
+                          : sale.ask_price == 0
                           ? "FREE"
                           : "Trade Wanted"}
                       </p>
