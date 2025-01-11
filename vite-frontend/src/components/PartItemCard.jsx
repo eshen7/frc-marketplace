@@ -11,7 +11,7 @@ import {
 
 const PartItemCard = ({ part, navigate}) => {
   return (
-    <Card sx={{ maxWidth: 345, height: "100%" }}>
+    <Card sx={{ height: "100%" }}>
       <CardMedia
         component="img"
         image={part.image || "/default.png"}

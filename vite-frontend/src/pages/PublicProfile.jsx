@@ -208,10 +208,11 @@ const PublicProfileComponent = ({ user }) => {
                 Sales
               </button>
             </div>
+            {/* Show Requests */}
             {onRequests ? (
               <div className="flex flex-col">
                 {!loadingRequests && requests.length > 0 ? (
-                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 min-w-[300px]">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4 min-w-[300px]">
                     {requests.slice(0, requestsDisplayLimit).map((request) => (
                       <ItemCard
                         key={request.id}
@@ -253,7 +254,7 @@ const PublicProfileComponent = ({ user }) => {
             ) : (
               <div className="flex flex-col">
                 {!loadingSales && sales.length > 0 ? (
-                  <div className="flex flex-col sm:grid sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 min-w-[300px]">
+                  <div className="flex flex-col sm:grid sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4 min-w-[300px]">
                     {sales.slice(0, salesDisplayLimit).map((sale) => (
                       <ItemCard
                         key={sale.id}
