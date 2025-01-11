@@ -167,11 +167,18 @@ const NewPartForm = ({ open, onClose, onSuccess }) => {
       onSuccess(response.data);
       onClose();
     } catch (error) {
+      console.log(error);
       setAlertState({
         open: true,
-        message: error.response?.data?.error?.includes("Integrity Error") 
+        message: (error?.response?.data?.error?.includes("Integrity Error")
           ? "A part with this name and manufacturer already exists!"
-          : "Failed to create part. Please try again.",
+          : error?.response?.data?.image?.[0]?.includes("File size must be no more than 5MB")
+          ? "File size must be no more than 5MB"
+          : error?.response?.data?.image?.[0]?.includes("Image dimensions must be no greater than 4096x4096")
+          ? "Image dimensions must be no greater than 4096x4096"
+          : error?.response?.data?.link?.[0]?.includes("Enter a valid URL")
+          ? "Enter a valid URL"
+          : "Failed to create part. Please try again."),
         severity: 'error'
       });
       setLoading(false);
@@ -184,7 +191,7 @@ const NewPartForm = ({ open, onClose, onSuccess }) => {
       message: message,
       severity: isError ? 'error' : 'success'
     });
-    
+
     if (newManufacturer) {
       fetchManufacturers();
       handleChange("manufacturer_id")({
@@ -202,7 +209,7 @@ const NewPartForm = ({ open, onClose, onSuccess }) => {
       message: message,
       severity: isError ? 'error' : 'success'
     });
-    
+
     if (newCategory) {
       fetchCategories();
       handleChange("category_id")({
@@ -366,7 +373,11 @@ const NewPartForm = ({ open, onClose, onSuccess }) => {
               {isDragActive ? (
                 <Typography>Drop the image here ...</Typography>
               ) : (
-                <Typography>Add An Image*</Typography>
+                <Typography>
+                  Add An Image*
+                  <br />
+                  Max size 5MB, 4096x4096px
+                </Typography>
               )}
             </div>
 
