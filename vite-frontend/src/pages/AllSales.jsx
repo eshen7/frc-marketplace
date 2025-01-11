@@ -82,14 +82,33 @@ const SalesPage = () => {
   const getFilteredResults = () => {
     let results = [...sales];
 
+    // Calculate distances for all items first if user is authenticated
+    if (user) {
+      results = results.map(sale => {
+        if (!sale.user?.formatted_address?.latitude || 
+            !sale.user?.formatted_address?.longitude ||
+            !user?.formatted_address?.latitude || 
+            !user?.formatted_address?.longitude) {
+          return { ...sale, distance: Infinity };
+        }
+        
+        const distance = haversine(
+          user.formatted_address.latitude,
+          user.formatted_address.longitude,
+          sale.user.formatted_address.latitude,
+          sale.user.formatted_address.longitude
+        );
+        return { ...sale, distance: parseFloat(distance.toFixed(1)) };
+      });
+    }
+
     if (searchTerm) {
       results = fuse.search(searchTerm).map((result) => result.item);
     }
 
     if (distance && user) {
       results = results.filter((sale) => {
-        const item = calculateDistanceForSingle(sale);
-        return item.distance <= distance;
+        return sale.distance <= distance;
       });
     }
 
@@ -105,16 +124,16 @@ const SalesPage = () => {
 
     results.sort((a, b) => {
       switch (sortBy) {
+        case "newest":
+          return new Date(b.request_date) - new Date(a.request_date);
+        case "closest":
+          const distanceA = a.distance ?? Infinity;
+          const distanceB = b.distance ?? Infinity;
+          return distanceA - distanceB;
         case "price-low":
           return a.ask_price - b.ask_price;
         case "price-high":
           return b.ask_price - a.ask_price;
-        case "newest":
-          return new Date(b.request_date) - new Date(a.request_date);
-        case "closest":
-          const distanceA = parseFloat(a.distance) || Infinity;
-          const distanceB = parseFloat(b.distance) || Infinity;
-          return distanceA - distanceB;
         default:
           return 0;
       }

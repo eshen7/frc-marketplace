@@ -64,7 +64,7 @@ const ItemCard = ({ item, currentUser, type, itemDistance }) => {
 
 
   return (
-    <div className="max-w-[345px] h-full bg-white rounded-lg shadow-md overflow-hidden">
+    <div className="min-w-[272px] h-full bg-white rounded-lg shadow-md overflow-hidden">
       <div className="relative" style={{ paddingTop: "100%" }}>
         {!imageLoaded && (
           <Skeleton
