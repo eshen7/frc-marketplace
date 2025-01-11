@@ -93,14 +93,33 @@ const AllRequests = () => {
   const getFilteredResults = () => {
     let results = [...requests];
 
+    // Calculate distances for all items first if user is authenticated
+    if (user) {
+      results = results.map(request => {
+        if (!request.user?.formatted_address?.latitude || 
+            !request.user?.formatted_address?.longitude ||
+            !user?.formatted_address?.latitude || 
+            !user?.formatted_address?.longitude) {
+          return { ...request, distance: Infinity };
+        }
+        
+        const distance = haversine(
+          user.formatted_address.latitude,
+          user.formatted_address.longitude,
+          request.user.formatted_address.latitude,
+          request.user.formatted_address.longitude
+        );
+        return { ...request, distance: parseFloat(distance.toFixed(1)) };
+      });
+    }
+
     if (searchTerm) {
       results = fuse.search(searchTerm).map((result) => result.item);
     }
 
     if (filterDistance && user) {
       results = results.filter((request) => {
-        const item = calculateDistanceForSingle(request);
-        return item.distance <= filterDistance;
+        return request.distance <= filterDistance;
       });
     }
 
@@ -121,8 +140,8 @@ const AllRequests = () => {
         case "newest":
           return new Date(b.request_date) - new Date(a.request_date);
         case "closest":
-          const distanceA = parseFloat(a.distance) || Infinity;
-          const distanceB = parseFloat(b.distance) || Infinity;
+          const distanceA = a.distance ?? Infinity;
+          const distanceB = b.distance ?? Infinity;
           return distanceA - distanceB;
         default:
           return 0;
