@@ -111,13 +111,12 @@ export default function FulfillRequest() {
 
     return (
       <p
-        className={`text-sm ${
-          isOverdue || isDueToday
+        className={`text-sm ${isOverdue || isDueToday
             ? "text-red-600 font-bold"
             : isUrgent
-            ? "text-orange-600 font-bold"
-            : "text-gray-500"
-        }`}
+              ? "text-orange-600 font-bold"
+              : "text-gray-500"
+          }`}
       >
         {isOverdue ? (
           <>
@@ -353,11 +352,10 @@ export default function FulfillRequest() {
                         <input
                           type="number"
                           id="quantity"
-                          className={`w-12 ml-2 border-2 ${
-                            formData.quantity.edited
+                          className={`w-12 ml-2 border-2 ${formData.quantity.edited
                               ? "border-blue-800"
                               : "border-gray-500"
-                          }`}
+                            }`}
                           value={formData.quantity.val}
                           onChange={(e) =>
                             setFormData({
@@ -376,11 +374,10 @@ export default function FulfillRequest() {
                         <span className="text-sm text-gray-500">Need By:</span>
                         <input
                           type="date"
-                          className={`${
-                            formData.needed_date.edited
+                          className={`${formData.needed_date.edited
                               ? "border-2 border-blue-800"
                               : "border-2 border-gray-500"
-                          }`}
+                            }`}
                           value={formData.needed_date.val}
                           onChange={(e) =>
                             setFormData({
@@ -401,11 +398,10 @@ export default function FulfillRequest() {
                   {/* Additional Info */}
                   <div className="flex flex-col mt-6">
                     <p className="font-semibold">Part Link</p>
-                    <h3 className="text-gray-500">
+                    <h3>
                       <a
                         href={request.part.link ? request.part.link : ""}
-                        className="truncate block max-w-full"
-                        style={{ maxWidth: "300px" }}
+                        className={`${request.part.link ? "text-blue-500 hover:underline" : "text-gray-500"}`}
                         title={request.part.link ? request.part.link : "No link provided"}
                       >
                         {request.part.link ? request.part.link : "No link provided"}
@@ -424,9 +420,8 @@ export default function FulfillRequest() {
                           type="text"
                           id="additional_info"
                           rows={2}
-                          className={`w-full border-2 ${
-                            formData.additional_info.edited ? "border-blue-800" : "border-gray-300"
-                          } min-h-[32px]`}
+                          className={`w-full border-2 ${formData.additional_info.edited ? "border-blue-800" : "border-gray-300"
+                            } min-h-[32px]`}
                           value={formData.additional_info.val}
                           onChange={(e) =>
                             setFormData({
@@ -445,9 +440,9 @@ export default function FulfillRequest() {
                       )}
                     </div>
                   </div>
-                  </div>
+                </div>
 
-                  {/* Right Column - Sticky Content */}
+                {/* Right Column - Sticky Content */}
                 <div className="hidden md:block">
                   <div className="sticky top-8">
                     {/* Image Container with max height constraint */}

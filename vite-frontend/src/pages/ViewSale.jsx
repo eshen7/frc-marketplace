@@ -318,11 +318,10 @@ export default function ViewSale() {
                         <input
                           type="number"
                           id="quantity"
-                          className={`w-12 ml-2 border-2 ${
-                            formData.quantity.edited
-                              ? "border-green-500"
-                              : "border-gray-300"
-                          }`}
+                          className={`w-12 ml-2 border-2 ${formData.quantity.edited
+                            ? "border-green-500"
+                            : "border-gray-300"
+                            }`}
                           value={formData.quantity.val}
                           onChange={(e) =>
                             setFormData({
@@ -337,44 +336,49 @@ export default function ViewSale() {
                     )}
                     {/* Editing Price */}
                     {isEditing ? (
-                      <div className="flex flex-row justify-between place-items-center">
-                        <span className="text-green-700 text-[24px]">$</span>
-                        <input
-                          type="number"
-                          id="ask_price"
-                          className={`text-green-700 text-[24px] w-28 border-2 ${
-                            formData.ask_price.edited
+                      <div className="flex flex-col">
+                        <p className="text-gray-400 text-xs text-right">each</p>
+
+                        <div className="flex flex-row justify-between place-items-center">
+                          <span className="text-green-700 text-[24px]">$</span>
+                          <input
+                            type="number"
+                            id="ask_price"
+                            className={`text-green-700 text-[24px] w-28 border-2 ${formData.ask_price.edited
                               ? "border-green-500"
                               : "border.gray.300"
-                          }`}
-                          value={formData.ask_price.val}
-                          onChange={(e) =>
-                            setFormData({
-                              ...formData,
-                              ask_price: { val: e.target.value, edited: true },
-                            })
-                          }
-                        />
+                              }`}
+                            value={formData.ask_price.val}
+                            onChange={(e) =>
+                              setFormData({
+                                ...formData,
+                                ask_price: { val: e.target.value, edited: true },
+                              })
+                            }
+                          />
+                        </div>
                       </div>
                     ) : (
                       // Displaying Price
-                      <p className="text-green-700 text-[24px]">
-                        {sale.ask_price > 0
-                          ? `$${sale.ask_price}`
-                          : sale.ask_price == 0
-                          ? "FREE"
-                          : "Trade Wanted"}
-                      </p>
+                      <div className="flex flex-col">
+                        <p className="text-gray-400 text-xs text-right -mb-1">each</p>
+                        <p className="text-green-700 text-[24px]">
+                          {sale.ask_price > 0
+                            ? `$${sale.ask_price}`
+                            : sale.ask_price == 0
+                              ? "FREE"
+                              : "Trade Wanted"}
+                        </p>
+                      </div>
                     )}
                   </div>
                   {/* Additional Info */}
                   <div className="flex flex-col mt-6">
                     <p className="font-semibold">Part Link</p>
-                    <p className="text-gray-500">
+                    <p>
                       <a
                         href={sale.part.link ? sale.part.link : ""}
-                        className="truncate block max-w-full"
-                        style={{ maxWidth: "300px" }}
+                        className={`${sale.part.link ? "text-blue-500 hover:underline" : "text-gray-500"}`}
                         title={
                           sale.part.link
                             ? sale.part.link
@@ -399,11 +403,10 @@ export default function ViewSale() {
                         <select
                           type="text"
                           id="condition"
-                          className={`w-28 border-2 ${
-                            formData.condition.edited
-                              ? "border-green-500"
-                              : "border-gray-300"
-                          }`}
+                          className={`w-28 border-2 ${formData.condition.edited
+                            ? "border-green-500"
+                            : "border-gray-300"
+                            }`}
                           value={formData.condition.val}
                           onChange={(e) =>
                             setFormData({
@@ -423,12 +426,12 @@ export default function ViewSale() {
                           {sale.condition === "new"
                             ? "New"
                             : sale.condition === "like-new"
-                            ? "Like New"
-                            : sale.condition === "good"
-                            ? "Good"
-                            : sale.condition === "fair"
-                            ? "Fair"
-                            : "Poor"}
+                              ? "Like New"
+                              : sale.condition === "good"
+                                ? "Good"
+                                : sale.condition === "fair"
+                                  ? "Fair"
+                                  : "Poor"}
                         </span>
                       )}
                     </div>
@@ -439,11 +442,10 @@ export default function ViewSale() {
                           type="text"
                           id="additional_info"
                           rows={2}
-                          className={`w-full border-2 ${
-                            formData.additional_info.edited
-                              ? "border-green-500"
-                              : "border-gray-300"
-                          } min-h-[32px]`}
+                          className={`w-full border-2 ${formData.additional_info.edited
+                            ? "border-green-500"
+                            : "border-gray-300"
+                            } min-h-[32px]`}
                           value={formData.additional_info.val}
                           onChange={(e) =>
                             setFormData({
