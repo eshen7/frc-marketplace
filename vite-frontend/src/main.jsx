@@ -87,7 +87,7 @@ const router = createBrowserRouter(
           element: <PublicProfilePage />,
         },
         {
-          path: "part/:id",
+          path: "parts/:id",
           element: <PartDetails />,
         },
         {

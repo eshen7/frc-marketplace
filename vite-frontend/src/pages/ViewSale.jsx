@@ -239,7 +239,7 @@ export default function ViewSale() {
                   {/* Part Name */}
                   <div className="flex flex-row justify-between place-items-center relative">
                     <button
-                      onClick={() => navigate(`/part/${sale.part.id}`)}
+                      onClick={() => navigate(`/parts/${sale.part.id}`)}
                       className="text-[30px] font-roboto hover:underline hover:cursor-pointer"
                     >
                       {sale.part.name}

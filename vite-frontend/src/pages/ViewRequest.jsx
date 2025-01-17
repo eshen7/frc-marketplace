@@ -271,7 +271,7 @@ export default function FulfillRequest() {
                   {/* Part Name */}
                   <div className="flex flex-row justify-between place-items-center relative">
                     <button
-                      onClick={() => navigate(`/part/${request.part.id}`)}
+                      onClick={() => navigate(`/parts/${request.part.id}`)}
                       className="text-[30px] font-roboto hover:underline hover:cursor-pointer text-left"
                     >
                       <h1>{request.part.name}</h1>
