@@ -507,7 +507,7 @@ const Chat = () => {
         {!loadingUser && user ? (
           <>
             {/* Back Button */}
-            <button className={`${(!isLargerThanSmall && isOnMessagePage) ? "absolute" : "hidden"} hover:bg-gray-200 shadow-sm rounded-full p-[6px] transition duration-200`}
+            <button className={`${(!isLargerThanSmall && isOnMessagePage) ? "absolute top-4 left-4" : "hidden"} hover:bg-gray-200 shadow-sm rounded-full p-[6px] transition duration-200`}
               onClick={() => {
                 navigate("/chat");
                 setIsOnMessagePage(!isOnMessagePage);

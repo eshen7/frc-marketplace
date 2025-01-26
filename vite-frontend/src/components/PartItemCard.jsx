@@ -27,7 +27,7 @@ const PartItemCard = ({ part, navigate}) => {
         }}
       />
       <CardContent>
-        <button onClick={() => navigate(`/part/${part.id}`)} className="text-blue-500 hover:text-blue-700 hover:underline">
+        <button onClick={() => navigate(`/parts/${part.id}`)} className="text-blue-500 hover:text-blue-700 hover:underline">
           <Typography variant="h6" gutterBottom>
             {part.name || "Part Name"}
           </Typography>
