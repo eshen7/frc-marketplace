@@ -84,7 +84,7 @@ export default function OurTeamPage() {
             name={"Ethan Lemke"}
             image={"/ethanbutt.jpg"}
             title={"Fullstack Dev, 3647 Mentor"}
-            description={"3647 alum also "}
+            description={"3647 alum"}
             linkedin={"https://www.linkedin.com/in/ethan-lemke-492838254/"}
             insta={"https://www.instagram.com/_ethanlemke_/"}
           />
