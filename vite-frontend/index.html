@@ -1,67 +1,66 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/millenniumMarket.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-    <script
-      loading="async"
-      src="https://maps.googleapis.com/maps/api/js?key=%VITE_GOOGLE_API_KEY%&libraries=places"
-    ></script>
+<head>
+  <meta charset="UTF-8" />
+  <link rel="icon" type="image/svg+xml" href="/millenniumMarket.svg" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-    <style>
-      html,
-      body {
-        max-width: 100%;
-        overflow-x: hidden;
-      }
-      #root {
-        max-width: 100vw;
-        overflow-x: hidden;
-      }
-    </style>
+  <script loading="async"
+    src="https://maps.googleapis.com/maps/api/js?key=%VITE_GOOGLE_API_KEY%&libraries=places"></script>
 
-    <title>Millennium Market</title>
+  <style>
+    html,
+    body {
+      max-width: 100%;
+      overflow-x: hidden;
+    }
 
-    <meta
-      name="description"
-      content="Connect, collaborate, and create with fellow robotics teams. Find the parts you need or help others build their dreams."
-    />
-    <meta
-      name="keywords"
-      content="FRC, FIRST Robotics, Robotics, Parts, Market, Buy, Sell, Trade, Connect, Marketplace, Market, Donate"
-    />
-    <meta name="robots" content="index, follow">
+    #root {
+      max-width: 100vw;
+      overflow-x: hidden;
+    }
+  </style>
 
-    <!-- OpenGraph Meta Tags -->
-    <meta property="og:url" content="https://millenniummarket.net/" />
-    <meta property="og:type" content="website" />
-    <meta property="site_name" content="Millennium Market" />
-    <meta property="og:title" content="Millennium Market" />
-    <meta
-      property="og:description"
-      content="Connect, collaborate, and create with fellow robotics teams. Find the parts you need or help others build their dreams."
-    />
-    <meta
-      property="og:image"
-      content="https://frcmresources.s3.us-west-1.amazonaws.com/millenniumMarket.png"
-    />
-    <meta property="og:image:width" content="1200" />
-    <meta property="og:image:height" content="1200" />
-    <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content="Millennium Market" />
-    <meta
-      name="twitter:description"
-      content="Connect, collaborate, and create with fellow robotics teams. Find the parts you need or help others build their dreams."
-    />
-    <meta
-      name="twitter:image"
-      content="https://frcmresources.s3.us-west-1.amazonaws.com/millenniumMarket.png"
-    />
-  </head>
-  <body>
-    <div id="root"></div>
-    <script type="module" src="/src/main.jsx"></script>
-  </body>
+  <title>Millennium Market</title>
+
+  <meta name="description"
+    content="Connect, collaborate, and create with fellow robotics teams. Find the parts you need or help others build their dreams." />
+  <meta name="keywords"
+    content="FRC, FIRST Robotics, Robotics, Parts, Market, Buy, Sell, Trade, Connect, Marketplace, Market, Donate" />
+  <meta name="robots" content="index, follow">
+
+  <!-- OpenGraph Meta Tags -->
+  <meta property="og:url" content="https://millenniummarket.net/" />
+  <meta property="og:type" content="website" />
+  <meta property="site_name" content="Millennium Market" />
+  <meta property="og:title" content="Millennium Market" />
+  <meta property="og:description"
+    content="Connect, collaborate, and create with fellow robotics teams. Find the parts you need or help others build their dreams." />
+  <meta property="og:image" content="https://frcmresources.s3.us-west-1.amazonaws.com/millenniumMarket.png" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="1200" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Millennium Market" />
+  <meta name="twitter:description"
+    content="Connect, collaborate, and create with fellow robotics teams. Find the parts you need or help others build their dreams." />
+  <meta name="twitter:image" content="https://frcmresources.s3.us-west-1.amazonaws.com/millenniumMarket.png" />
+</head>
+
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-C5BERL27HP"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag() { dataLayer.push(arguments); }
+  gtag('js', new Date());
+
+  gtag('config', 'G-C5BERL27HP');
+</script>
+
+
+<body>
+  <div id="root"></div>
+  <script type="module" src="/src/main.jsx"></script>
+</body>
+
 </html>
