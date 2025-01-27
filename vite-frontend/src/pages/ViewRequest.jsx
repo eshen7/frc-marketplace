@@ -6,7 +6,7 @@ import Footer from "../components/Footer.jsx";
 import { useNavigate, useParams } from "react-router-dom";
 import axiosInstance from "../utils/axiosInstance.js";
 import { getDaysUntil } from "../utils/utils.jsx";
-import { Skeleton } from "@mui/material";
+import { CircularProgress, Skeleton } from "@mui/material";
 import { LuSave } from "react-icons/lu";
 import { MdDelete, MdOutlineEdit } from "react-icons/md";
 import ItemScrollBar from "../components/ItemScrollBar.jsx";
@@ -15,6 +15,63 @@ import ItemProfileSection from "../components/ItemProfileSection.jsx";
 import { useUser } from "../contexts/UserContext.jsx";
 import { useData } from "../contexts/DataContext.jsx";
 import AlertBanner from "../components/AlertBanner";
+
+export const LoadingViewPage = () => {
+  return (
+    <div className="flex-grow py-6 px-4 md:px-10">
+      <div className="max-w-7xl mx-auto bg-white rounded-lg shadow p-6">
+        <div className="grid md:grid-cols-2 gap-6">
+          {/* Left Column */}
+          <div className="space-y-4">
+            {/* Title and Status */}
+            <div className="space-y-2">
+              <Skeleton variant="text" width="80%" height={40} animation="wave" />
+              <Skeleton variant="text" width="40%" height={24} animation="wave" />
+            </div>
+
+            {/* Request Info */}
+            <div className="space-y-2 mt-6">
+              <Skeleton variant="rectangular" height={100} animation="wave" className="rounded-lg" />
+              <Skeleton variant="text" width="60%" height={24} animation="wave" />
+            </div>
+          </div>
+
+          {/* Right Column */}
+          <div>
+            {/* Image Area */}
+            <Skeleton
+              variant="rectangular"
+              height={400}
+              animation="wave"
+              className="rounded-lg mb-4"
+            />
+
+            {/* Details under image */}
+            <div className="space-y-2">
+              <Skeleton variant="text" width="70%" height={32} animation="wave" />
+              <Skeleton variant="text" width="50%" height={24} animation="wave" />
+            </div>
+          </div>
+        </div>
+
+        {/* Similar Requests */}
+        <div className="mt-8">
+          <Skeleton variant="text" width="200px" height={32} animation="wave" className="mb-4" />
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {[1, 2, 3].map((i) => (
+              <Skeleton
+                key={i}
+                variant="rectangular"
+                height={200}
+                animation="wave"
+                className="rounded-lg"
+              />
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>);
+};
 
 export default function FulfillRequest() {
   const { request_id } = useParams();
@@ -87,7 +144,7 @@ export default function FulfillRequest() {
       const response = await axiosInstance.get(
         `/parts/id/${request.part.id}/requests`
       );
-      setPartRequests(response.data);
+      setPartRequests(response.data.filter((req) => req.id !== request_id));
     } catch (error) {
       console.error("Error fetching requests:", error);
     } finally {
@@ -96,10 +153,10 @@ export default function FulfillRequest() {
   };
 
   useEffect(() => {
-    if (request) {
+    if (request && request_id) {
       fetchRequests();
     }
-  }, [request]);
+  }, [request, request_id]);
 
   const renderDueDate = (date) => {
     const date_obj = new Date(date);
@@ -112,10 +169,10 @@ export default function FulfillRequest() {
     return (
       <p
         className={`text-sm ${isOverdue || isDueToday
-            ? "text-red-600 font-bold"
-            : isUrgent
-              ? "text-orange-600 font-bold"
-              : "text-gray-500"
+          ? "text-red-600 font-bold"
+          : isUrgent
+            ? "text-orange-600 font-bold"
+            : "text-gray-500"
           }`}
       >
         {isOverdue ? (
@@ -353,8 +410,8 @@ export default function FulfillRequest() {
                           type="number"
                           id="quantity"
                           className={`w-12 ml-2 border-2 ${formData.quantity.edited
-                              ? "border-blue-800"
-                              : "border-gray-500"
+                            ? "border-blue-800"
+                            : "border-gray-500"
                             }`}
                           value={formData.quantity.val}
                           onChange={(e) =>
@@ -375,8 +432,8 @@ export default function FulfillRequest() {
                         <input
                           type="date"
                           className={`${formData.needed_date.edited
-                              ? "border-2 border-blue-800"
-                              : "border-2 border-gray-500"
+                            ? "border-2 border-blue-800"
+                            : "border-2 border-gray-500"
                             }`}
                           value={formData.needed_date.val}
                           onChange={(e) =>
@@ -543,7 +600,10 @@ export default function FulfillRequest() {
               </div>
             </div>
           ) : !error ? (
-            <p className="text-center">Loading Request...</p>
+            // <div className="flex justify-center items-center min-h-[200px]">
+            //   <CircularProgress style={{ color: '#000000' }} />
+            // </div>
+            <LoadingViewPage />
           ) : (
             <p className="text-center">
               Error loading request, please try again.

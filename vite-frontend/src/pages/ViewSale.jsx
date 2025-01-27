@@ -14,6 +14,7 @@ import ItemProfileSection from "../components/ItemProfileSection.jsx";
 import { useUser } from "../contexts/UserContext.jsx";
 import { useData } from "../contexts/DataContext.jsx";
 import AlertBanner from "../components/AlertBanner";
+import { LoadingViewPage } from "./ViewRequest.jsx";
 
 export default function ViewSale() {
   const { sale_id } = useParams();
@@ -88,7 +89,7 @@ export default function ViewSale() {
       const response = await axiosInstance.get(
         `/parts/id/${sale.part.id}/sales`
       );
-      setPartSales(response.data);
+      setPartSales(response.data.filter((sale) => sale.part_id !== sale_id));
     } catch (error) {
       console.error("Error fetching sales:", error);
     } finally {
@@ -97,10 +98,10 @@ export default function ViewSale() {
   };
 
   useEffect(() => {
-    if (sale) {
+    if (sale && sale_id) {
       fetchPartSales();
     }
-  }, [sale]);
+  }, [sale, sale_id]);
 
   const handleImageLoad = () => {
     setImageLoaded(true);
@@ -566,7 +567,7 @@ export default function ViewSale() {
               </div>
             </div>
           ) : !error ? (
-            <p className="text-center">Loading Sale...</p>
+            <LoadingViewPage />
           ) : (
             <p className="text-center">Error loading sale, please try again.</p>
           )}

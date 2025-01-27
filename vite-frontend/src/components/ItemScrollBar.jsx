@@ -41,7 +41,7 @@ const ItemScrollBar = ({ items, loadingItems, user, loadingUser, type, isAuthent
               item={item}
               currentUser={user}
               type={type}
-              itemDistance={ (isAuthenticated && user?.formatted_address && item.user?.formatted_address) ? haversine(
+              itemDistance={(isAuthenticated && user?.formatted_address && item.user?.formatted_address) ? haversine(
                 user.formatted_address.latitude,
                 user.formatted_address.longitude,
                 item.user.formatted_address.latitude,
@@ -53,7 +53,13 @@ const ItemScrollBar = ({ items, loadingItems, user, loadingUser, type, isAuthent
     }
 
     if (items.length === 0) {
-      return <p className="text-center">{type == "sale" ? "No parts for sale!": "No requests!"}</p>;
+      return (
+        <div className="flex items-center justify-center h-full w-full min-h-[200px]">
+          <p className="text-gray-400 text-lg font-medium animate-fade-in">
+            {type == "sale" ? "No parts for sale!" : "No requests!"}
+          </p>
+        </div>
+      );
     }
 
     return <></>;
