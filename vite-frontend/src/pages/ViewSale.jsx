@@ -89,7 +89,7 @@ export default function ViewSale() {
       const response = await axiosInstance.get(
         `/parts/id/${sale.part.id}/sales`
       );
-      setPartSales(response.data.filter((sale) => sale.part_id !== sale_id));
+      setPartSales(response.data.filter((sale) => sale.id !== sale_id));
     } catch (error) {
       console.error("Error fetching sales:", error);
     } finally {
