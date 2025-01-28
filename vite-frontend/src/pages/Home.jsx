@@ -83,6 +83,14 @@ const Home = () => {
                   >
                     Post a Sale
                   </motion.button>
+                  <motion.button
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    className="px-8 py-4 bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-lg font-semibold shadow-lg hover:from-purple-700 hover:to-indigo-700 transition-all"
+                    onClick={() => navigate("/footer/about")}
+                  >
+                    Learn More
+                  </motion.button>
                 </div>
               </div>
               <div className="w-full lg:w-1/2 px-4">

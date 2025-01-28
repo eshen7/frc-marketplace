@@ -56,7 +56,7 @@ const PartItemCard = ({ part, navigate}) => {
           }}
         >
           {part.description ||
-            "Description placeholder text goes here. This can be multiple lines long and will be truncated after 3 lines."}
+            "No description provided. Click to view more details."}
         </Typography>
       </CardContent>
     </Card>
