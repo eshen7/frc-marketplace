@@ -12,6 +12,7 @@ import ProfilePhoto from "../components/ProfilePhoto";
 import { useWebSocket } from '../contexts/WebSocketContext';
 import { useData } from "../contexts/DataContext";
 import { Skeleton } from "@mui/material";
+import HelmetComp from "../components/HelmetComp";
 
 const convertUrlsToLinks = (text, isSentMessage = false) => {
   // Regex to match URLs
@@ -503,6 +504,7 @@ const Chat = () => {
   return (
     <div className="h-screen flex flex-col">
       <TopBar />
+      <HelmetComp title={`Messaging${roomName !== undefined ? ` - Team ${roomName}` : ""}`} />
       <div className="messages-section flex flex-grow justify-center flex-row bg-gray-100 relative">
         {!loadingUser && user ? (
           <>

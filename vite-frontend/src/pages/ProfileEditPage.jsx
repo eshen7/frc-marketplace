@@ -15,13 +15,14 @@ import {
 import { useUser } from "../contexts/UserContext";
 import ProfilePhoto from "../components/ProfilePhoto";
 import AlertBanner from "../components/AlertBanner";
+import HelmetComp from "../components/HelmetComp";
 
 const UserProfile = () => {
   const { user, loadingUser, isAuthenticated } = useUser();
   const [profileChange, setProfileChange] = useState("");
   const [autocomplete, setAutocomplete] = useState(null);
   const [passwordError, setPasswordError] = useState("");
-  
+
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [deleteConfirmation, setDeleteConfirmation] = useState("");
   const CONFIRMATION_TEXT = "DELETE MY ACCOUNT";
@@ -65,7 +66,7 @@ const UserProfile = () => {
       if (window.google && window.google.maps) {
         // Get the actual input element from the Material-UI TextField
         const input = document.querySelector('#address-input');
-        
+
         if (!input) {
           console.error('Address input element not found');
           return;
@@ -188,7 +189,7 @@ const UserProfile = () => {
       console.error("Error updating profile:", error.response || error.message);
       setPasswordError(
         error.response?.data?.error ||
-          "Failed to change password. Please try again."
+        "Failed to change password. Please try again."
       );
     }
   };
@@ -230,247 +231,250 @@ const UserProfile = () => {
   };
 
   return (
-    <div className="min-h-screen flex flex-col">
-      <AlertBanner
-        message={alertState.message}
-        severity={alertState.severity}
-        open={alertState.open}
-        onClose={handleCloseAlert}
-      />
-      <TopBar />
-      <div className="flex flex-col flex-grow px-20 pt-10">
-        <div className="container mx-auto py-10 px-4">
-          <h1 className="text-3xl font-bold mb-6">Profile</h1>
-          {!isAuthenticated ? (
-            <div>
-              <h1>Please log in to view your profile</h1>
-            </div>
-          ) : (
-            <>
-              <div className="grid gap-6 md:grid-cols-2">
-                {/* Editable Information */}
-                <div className="bg-white shadow-md rounded-lg p-6">
-                  {loadingUser ? (
-                    <Skeleton count={13} />
-                  ) : (
-                    <>
-                      <h2 className="text-xl font-semibold mb-4">
-                        Editable Information
-                      </h2>
-                      <form onSubmit={handleSubmit} className="space-y-4">
-                        <div>
-                          <TextField
-                            type="text"
-                            id="address-input"
-                            label="Address"
-                            name="address"
-                            value={formData.address}
-                            onChange={(e) =>
-                              handleInputChange("address", e.target.value)
-                            }
-                            onFocus={(e) =>
-                              e.target.setAttribute("autocomplete", "none")
-                            }
-                            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
-                          />
-                        </div>
-                        <div>
-                          <TextField
-                            type="text"
-                            id="email-input"
-                            label="Email"
-                            name="email"
-                            value={formData.email}
-                            onChange={(e) =>
-                              handleInputChange("email", e.target.value)
-                            }
-                            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
-                          />
-                        </div>
-                        <div>
-                          <TextField
-                            type="tel"
-                            id="phoneNumber"
-                            label="Phone Number"
-                            name="phoneNumber"
-                            value={formData.phone}
-                            onChange={(e) =>
-                              handleInputChange("phone", e.target.value)
-                            }
-                            className="mt-1 block w-full p-2 rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
-                          />
-                        </div>
-                        <div>
-                          <TextField
-                            type="text"
-                            id="headCoachName"
-                            label="Head Coach Name"
-                            name="headCoachName"
-                            value={formData.full_name}
-                            onChange={(e) =>
-                              handleInputChange("full_name", e.target.value)
-                            }
-                            className="mt-1 block w-full p-2 rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
-                          />
-                        </div>
-                        <button
-                          type="submit"
-                          className="w-full bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
-                        >
-                          Update Profile
-                        </button>
-                      </form>
-                    </>
-                  )}
-                </div>
+    <>
+      <HelmetComp title="Edit Profile - Millennium Market" />
+      <div className="min-h-screen flex flex-col">
+        <AlertBanner
+          message={alertState.message}
+          severity={alertState.severity}
+          open={alertState.open}
+          onClose={handleCloseAlert}
+        />
+        <TopBar />
+        <div className="flex flex-col flex-grow px-20 pt-10">
+          <div className="container mx-auto py-10 px-4">
+            <h1 className="text-3xl font-bold mb-6">Profile</h1>
+            {!isAuthenticated ? (
+              <div>
+                <h1>Please log in to view your profile</h1>
+              </div>
+            ) : (
+              <>
+                <div className="grid gap-6 md:grid-cols-2">
+                  {/* Editable Information */}
+                  <div className="bg-white shadow-md rounded-lg p-6">
+                    {loadingUser ? (
+                      <Skeleton count={13} />
+                    ) : (
+                      <>
+                        <h2 className="text-xl font-semibold mb-4">
+                          Editable Information
+                        </h2>
+                        <form onSubmit={handleSubmit} className="space-y-4">
+                          <div>
+                            <TextField
+                              type="text"
+                              id="address-input"
+                              label="Address"
+                              name="address"
+                              value={formData.address}
+                              onChange={(e) =>
+                                handleInputChange("address", e.target.value)
+                              }
+                              onFocus={(e) =>
+                                e.target.setAttribute("autocomplete", "none")
+                              }
+                              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
+                            />
+                          </div>
+                          <div>
+                            <TextField
+                              type="text"
+                              id="email-input"
+                              label="Email"
+                              name="email"
+                              value={formData.email}
+                              onChange={(e) =>
+                                handleInputChange("email", e.target.value)
+                              }
+                              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
+                            />
+                          </div>
+                          <div>
+                            <TextField
+                              type="tel"
+                              id="phoneNumber"
+                              label="Phone Number"
+                              name="phoneNumber"
+                              value={formData.phone}
+                              onChange={(e) =>
+                                handleInputChange("phone", e.target.value)
+                              }
+                              className="mt-1 block w-full p-2 rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
+                            />
+                          </div>
+                          <div>
+                            <TextField
+                              type="text"
+                              id="headCoachName"
+                              label="Head Coach Name"
+                              name="headCoachName"
+                              value={formData.full_name}
+                              onChange={(e) =>
+                                handleInputChange("full_name", e.target.value)
+                              }
+                              className="mt-1 block w-full p-2 rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
+                            />
+                          </div>
+                          <button
+                            type="submit"
+                            className="w-full bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+                          >
+                            Update Profile
+                          </button>
+                        </form>
+                      </>
+                    )}
+                  </div>
 
-                {/* Password Change */}
-                <div className="bg-white shadow-md rounded-lg p-6">
-                  <h2 className="text-xl font-semibold mb-4">
-                    Change Password
-                  </h2>
-                  <form className="space-y-4">
-                    <div>
-                      <TextField
-                        type="password"
-                        id="currentPassword"
-                        name="currentPassword"
-                        label="Current Password"
-                        value={passwordData.current}
-                        onChange={(e) =>
-                          handlePassInputChange("current", e.target.value)
-                        }
-                        required
-                        className="mt-1 block w-full p-2 rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
-                      />
-                    </div>
-                    <div>
-                      <TextField
-                        type="password"
-                        id="newPassword"
-                        name="newPassword"
-                        label="New Password"
-                        value={passwordData.new}
-                        onChange={(e) =>
-                          handlePassInputChange("new", e.target.value)
-                        }
-                        required
-                        error={!!passwordError}
-                        helperText={passwordError}
-                        className="mt-1 block w-full rounded-md p-2 border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
-                      />
-                    </div>
-                    <div>
-                      <TextField
-                        type="password"
-                        id="confirmPassword"
-                        name="confirmPassword"
-                        label="Confirm New Password"
-                        value={passwordData.confirmation}
-                        onChange={(e) =>
-                          handlePassInputChange("confirmation", e.target.value)
-                        }
-                        required
-                        error={!!passwordError}
-                        helperText={passwordError}
-                        className="mt-1 block w-full p-2 rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
-                      />
-                    </div>
-                    <Button
-                      variant="contained"
-                      color="success"
-                      onClick={handlePasswordChange}
-                      disabled={!!passwordError}
-                      className="w-full font-bold py-2 px-4 rounded"
-                    >
+                  {/* Password Change */}
+                  <div className="bg-white shadow-md rounded-lg p-6">
+                    <h2 className="text-xl font-semibold mb-4">
                       Change Password
-                    </Button>
-                  </form>
-                </div>
-
-                {/* Uneditable Information */}
-                <div className="bg-white shadow-md rounded-lg p-6 relative">
-                  {loadingUser ? (
-                    <Skeleton className="" />
-                  ) : user && !loadingUser ? (
-                    <>
-                      <h2 className="text-xl font-semibold mb-4">
-                        Uneditable Information
-                      </h2>
-                      <div className="absolute right-[20px] top-[20px] rounded-lg bg-gray-200 p-2">
-                        <ProfilePhoto 
-                          src={user.profile_photo}
-                          teamNumber={user.team_number}
-                          className="w-[52px] h-[52px] rounded-md"
-                          alt={"Team Logo"}
+                    </h2>
+                    <form className="space-y-4">
+                      <div>
+                        <TextField
+                          type="password"
+                          id="currentPassword"
+                          name="currentPassword"
+                          label="Current Password"
+                          value={passwordData.current}
+                          onChange={(e) =>
+                            handlePassInputChange("current", e.target.value)
+                          }
+                          required
+                          className="mt-1 block w-full p-2 rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
                         />
                       </div>
-                      <div className="space-y-4">
-                        <div>
-                          <h3 className="text-sm font-medium text-gray-700">
-                            Team Name
-                          </h3>
-                          <p className="mt-1 py-2">{user.team_name}</p>
-                        </div>
-                        <div>
-                          <h3 className="text-sm font-medium text-gray-700">
-                            Team Number
-                          </h3>
-                          <p className="mt-1 py-2">{user.team_number}</p>
-                        </div>
+                      <div>
+                        <TextField
+                          type="password"
+                          id="newPassword"
+                          name="newPassword"
+                          label="New Password"
+                          value={passwordData.new}
+                          onChange={(e) =>
+                            handlePassInputChange("new", e.target.value)
+                          }
+                          required
+                          error={!!passwordError}
+                          helperText={passwordError}
+                          className="mt-1 block w-full rounded-md p-2 border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
+                        />
                       </div>
-                    </>
-                  ) : (<></>)}
-                </div>
+                      <div>
+                        <TextField
+                          type="password"
+                          id="confirmPassword"
+                          name="confirmPassword"
+                          label="Confirm New Password"
+                          value={passwordData.confirmation}
+                          onChange={(e) =>
+                            handlePassInputChange("confirmation", e.target.value)
+                          }
+                          required
+                          error={!!passwordError}
+                          helperText={passwordError}
+                          className="mt-1 block w-full p-2 rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
+                        />
+                      </div>
+                      <Button
+                        variant="contained"
+                        color="success"
+                        onClick={handlePasswordChange}
+                        disabled={!!passwordError}
+                        className="w-full font-bold py-2 px-4 rounded"
+                      >
+                        Change Password
+                      </Button>
+                    </form>
+                  </div>
 
-                {/* Delete Account */}
-                <div className="bg-white shadow-md rounded-lg p-6">
-                  <h2 className="text-xl font-semibold mb-4">Delete Account</h2>
-                  <p className="text-sm mb-4">Actions cannot be undone</p>
-                  <Button
-                    variant="contained"
-                    color="error"
-                    onClick={handleDeleteAccount}
-                    className="w-full py-2 px-4"
-                  >
-                    Delete Account
-                  </Button>
+                  {/* Uneditable Information */}
+                  <div className="bg-white shadow-md rounded-lg p-6 relative">
+                    {loadingUser ? (
+                      <Skeleton className="" />
+                    ) : user && !loadingUser ? (
+                      <>
+                        <h2 className="text-xl font-semibold mb-4">
+                          Uneditable Information
+                        </h2>
+                        <div className="absolute right-[20px] top-[20px] rounded-lg bg-gray-200 p-2">
+                          <ProfilePhoto
+                            src={user.profile_photo}
+                            teamNumber={user.team_number}
+                            className="w-[52px] h-[52px] rounded-md"
+                            alt={"Team Logo"}
+                          />
+                        </div>
+                        <div className="space-y-4">
+                          <div>
+                            <h3 className="text-sm font-medium text-gray-700">
+                              Team Name
+                            </h3>
+                            <p className="mt-1 py-2">{user.team_name}</p>
+                          </div>
+                          <div>
+                            <h3 className="text-sm font-medium text-gray-700">
+                              Team Number
+                            </h3>
+                            <p className="mt-1 py-2">{user.team_number}</p>
+                          </div>
+                        </div>
+                      </>
+                    ) : (<></>)}
+                  </div>
+
+                  {/* Delete Account */}
+                  <div className="bg-white shadow-md rounded-lg p-6">
+                    <h2 className="text-xl font-semibold mb-4">Delete Account</h2>
+                    <p className="text-sm mb-4">Actions cannot be undone</p>
+                    <Button
+                      variant="contained"
+                      color="error"
+                      onClick={handleDeleteAccount}
+                      className="w-full py-2 px-4"
+                    >
+                      Delete Account
+                    </Button>
+                  </div>
                 </div>
-              </div>
-            </>
-          )}
+              </>
+            )}
+          </div>
         </div>
+        <Footer />
+        <Dialog
+          open={deleteDialogOpen}
+          onClose={() => setDeleteDialogOpen(false)}
+        >
+          <DialogTitle>Confirm Account Deletion</DialogTitle>
+          <DialogContent>
+            <p className="mb-4">
+              This action cannot be undone. To confirm, please type:
+            </p>
+            <p className="font-bold mb-4">{CONFIRMATION_TEXT}</p>
+            <TextField
+              fullWidth
+              value={deleteConfirmation}
+              onChange={(e) => setDeleteConfirmation(e.target.value)}
+              placeholder="Type confirmation text here"
+            />
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={() => setDeleteDialogOpen(false)}>Cancel</Button>
+            <Button
+              onClick={handleConfirmDelete}
+              color="error"
+              disabled={deleteConfirmation !== CONFIRMATION_TEXT}
+            >
+              Delete Account
+            </Button>
+          </DialogActions>
+        </Dialog>
       </div>
-      <Footer />
-      <Dialog
-        open={deleteDialogOpen}
-        onClose={() => setDeleteDialogOpen(false)}
-      >
-        <DialogTitle>Confirm Account Deletion</DialogTitle>
-        <DialogContent>
-          <p className="mb-4">
-            This action cannot be undone. To confirm, please type:
-          </p>
-          <p className="font-bold mb-4">{CONFIRMATION_TEXT}</p>
-          <TextField
-            fullWidth
-            value={deleteConfirmation}
-            onChange={(e) => setDeleteConfirmation(e.target.value)}
-            placeholder="Type confirmation text here"
-          />
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setDeleteDialogOpen(false)}>Cancel</Button>
-          <Button
-            onClick={handleConfirmDelete}
-            color="error"
-            disabled={deleteConfirmation !== CONFIRMATION_TEXT}
-          >
-            Delete Account
-          </Button>
-        </DialogActions>
-      </Dialog>
-    </div>
+    </>
   );
 };
 

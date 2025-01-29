@@ -9,6 +9,7 @@ import { MdOutlineEdit } from "react-icons/md";
 import { useUser } from "../contexts/UserContext";
 import ProfilePhoto from "../components/ProfilePhoto";
 import { haversine } from "../utils/utils";
+import HelmetComp from "../components/HelmetComp";
 
 const PublicProfileComponent = ({ user }) => {
   const navigate = useNavigate();
@@ -126,6 +127,7 @@ const PublicProfileComponent = ({ user }) => {
 
   return (
     <>
+      <HelmetComp title={user ? `FRC ${user.team_number} | ${user.team_name}` : "Millennium Market"} />
       <div className="h-full bg-gray-100 flex flex-col p-4">
         <div className="flex items-center justify-center">
           <div className="rounded-lg w-full max-w-2xl relative">

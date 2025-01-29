@@ -1,6 +1,7 @@
 import React from "react";
 import TopBar from "../components/TopBar";
 import Footer from "../components/Footer";
+import HelmetComp from "../components/HelmetComp";
 
 const CreatorCard = ({ image, name, title, description, linkedin, insta }) => {
   return (
@@ -45,6 +46,7 @@ export default function OurTeamPage() {
   return (
     <div className="min-h-screen flex flex-col">
       <TopBar />
+      <HelmetComp title="Millennium Market Team" />
       <div className="flex-grow py-16 px-12 flex flex-col">
         {/* Title Section */}
         <div className="">

@@ -21,7 +21,7 @@ const TermsAndConditions = () => {
           <div className="mt-16 space-y-8">
             <section>
               <p className="text-gray-600 leading-relaxed">
-                Welcome to Millennium Marketplace. By accessing or using the
+                Welcome to Millennium Market. By accessing or using the
                 Website, you agree to comply with and be bound by these Terms
                 and Conditions. Please read these Terms carefully before
                 navigating our Website. If you do not agree with any part of
@@ -38,7 +38,7 @@ const TermsAndConditions = () => {
                 these Terms and confirm that you have the necessary
                 authorization or consent to use this platform. These Terms
                 constitute a legally binding agreement between you and
-                Millennium Marketplace.
+                Millennium Market.
               </p>
             </section>
 
@@ -148,7 +148,7 @@ const TermsAndConditions = () => {
                 9. Indemnification
               </h2>
               <p className="text-gray-600 leading-relaxed">
-                You agree to indemnify and hold harmless Millennium Marketplace,
+                You agree to indemnify and hold harmless Millennium Market,
                 its affiliates, officers, directors, employees, and agents from
                 any claims, damages, liabilities, or expenses arising out of
                 your use of the Website or violation of these Terms.
@@ -187,7 +187,7 @@ const TermsAndConditions = () => {
                 contact us at:
               </p>
               <address className="text-gray-600 leading-relaxed">
-                Millennium Marketplace
+                Millennium Market
                 <br />
                 millenniummarket.team@gmail.com
                 <br />

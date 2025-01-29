@@ -19,16 +19,16 @@ const FAQPage = () => {
           <div className="mt-16 space-y-8">
             <section>
               <h2 className="text-4xl font-semibold text-blue-900 mb-4">
-                Q. What is Millennium Marketplace?
+                Q. What is Millennium Market?
               </h2>
               <p className="text-gray-600 leading-relaxed mb-4">
-                A. Millennium Marketplace is a platform designed for robotics teams to buy, sell, or request specialized parts from other teams nearby. It helps streamline access to components during the build season.
+                A. Millennium Market is a platform designed for robotics teams to buy, sell, or request specialized parts from other teams nearby. It helps streamline access to components during the build season.
               </p>
             </section>
 
             <section>
               <h2 className="text-4xl font-semibold text-blue-900 mb-4">
-                Q. Who can use Millennium Marketplace?
+                Q. Who can use Millennium Market?
               </h2>
               <p className="text-gray-600 leading-relaxed mb-4">
                 A. Any robotics team, particularly those participating in FIRST Robotics Competition (FRC), can use the platform to collaborate and share resources.
@@ -37,7 +37,7 @@ const FAQPage = () => {
 
             <section>
               <h2 className="text-4xl font-semibold text-blue-900 mb-4">
-                Q. Is Millennium Marketplace free to use?
+                Q. Is Millennium Market free to use?
               </h2>
               <p className="text-gray-600 leading-relaxed mb-4">
                 A. Yes, the platform is free to use for teams to list items or make requests. However, transactions for parts may involve costs determined by the seller.

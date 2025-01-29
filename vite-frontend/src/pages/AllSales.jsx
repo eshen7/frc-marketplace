@@ -9,6 +9,7 @@ import SearchAndFilter from "../components/SearchAndFilter";
 import { haversine } from "../utils/utils";
 import { useUser } from "../contexts/UserContext";
 import { useData } from "../contexts/DataContext";
+import HelmetComp from "../components/HelmetComp";
 
 // Fuse.js options
 const fuseOptions = {
@@ -180,6 +181,7 @@ const SalesPage = () => {
   return (
     <div className="min-h-screen flex flex-col">
       <TopBar />
+      <HelmetComp title="All Sales" />
       <SearchAndFilter
         onSearchChange={setSearchTerm}
         onDistanceChange={setDistance}

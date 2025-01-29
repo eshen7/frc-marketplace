@@ -28,6 +28,7 @@ import { FaEdit, FaSave } from "react-icons/fa";
 import { useData } from "../contexts/DataContext";
 import { haversine } from "../utils/utils";
 import AlertBanner from "../components/AlertBanner";
+import HelmetComp from "../components/HelmetComp";
 
 const PartDetailsComponent = ({ part, setPart, isAuthenticated }) => {
   const [isEditing, setIsEditing] = useState(false);
@@ -312,120 +313,123 @@ const PartDetailsPage = () => {
   }, [salesObserverCallback, requestsObserverCallback]);
 
   return (
-    <Box sx={{ display: "flex", flexDirection: "column", minHeight: "100vh" }}>
-      <TopBar />
-      <Box sx={{ flexGrow: 1, bgcolor: "grey.100", px: 3 }}>
-        {!error && part ? (
-          <PartDetailsComponent part={part} setPart={setPart} isAuthenticated={isAuthenticated} />
-        ) : loading ? (
-          <Box
-            sx={{
-              display: "flex",
-              justifyContent: "center",
-              alignItems: "center",
-              height: "100vh",
-            }}
-          >
-            <CircularProgress />
-          </Box>
-        ) : (
-          <Alert severity="error" sx={{ mt: 2 }}>
-            Error: {error}
-          </Alert>
-        )}
-
-        <Container maxWidth="lg" sx={{ mb: 5 }}>
-          <Box sx={{ borderBottom: 1, borderColor: "divider", mt: 4 }}>
-            <Tabs
-              value={onRequests ? 0 : 1}
-              onChange={(_, value) => setOnRequests(value === 0)}
+    <>
+      <HelmetComp title={part ? part.name : "Part Details"} />
+      <Box sx={{ display: "flex", flexDirection: "column", minHeight: "100vh" }}>
+        <TopBar />
+        <Box sx={{ flexGrow: 1, bgcolor: "grey.100", px: 3 }}>
+          {!error && part ? (
+            <PartDetailsComponent part={part} setPart={setPart} isAuthenticated={isAuthenticated} />
+          ) : loading ? (
+            <Box
+              sx={{
+                display: "flex",
+                justifyContent: "center",
+                alignItems: "center",
+                height: "100vh",
+              }}
             >
-              <Tab label="Part Requests" />
-              <Tab label="View Sales" />
-            </Tabs>
-          </Box>
+              <CircularProgress />
+            </Box>
+          ) : (
+            <Alert severity="error" sx={{ mt: 2 }}>
+              Error: {error}
+            </Alert>
+          )}
 
-          <Box sx={{ mt: 3 }}>
-            {onRequests ? (
-              <Grid container spacing={2} className={`${loadingStates.requests ? "justify-center items-center" : ""}`}>
-                {filteredRequests.length > 0 ? (
-                  <>
-                    {filteredRequests.slice(0, requestsDisplayLimit).map((request) => (
-                      <Grid item xs={12} sm={6} md={4} lg={3} key={request.id}>
-                        <ItemCard
-                          item={request}
-                          currentUser={user}
-                          type="request"
-                          itemDistance={isAuthenticated ? haversine(
-                            user.formatted_address.latitude,
-                            user.formatted_address.longitude,
-                            request.user.formatted_address.latitude,
-                            request.user.formatted_address.longitude
-                          ).toFixed(1) : null}
-                        />
-                      </Grid>
-                    ))}
-                    {filteredRequests.length > requestsDisplayLimit && (
-                      <div 
-                        ref={requestsObserverTarget}
-                        className="col-span-full flex justify-center p-4 w-full"
-                      >
-                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
-                      </div>
-                    )}
-                  </>
-                ) : loadingStates.requests ? (
-                  <div className="flex items-center justify-center">
-                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
-                    <p className="ml-2">Loading Requests...</p>
-                  </div>
-                ) : (
-                  <Typography color="text.secondary">No requests found for this part.</Typography>
-                )}
-              </Grid>
-            ) : (
-              <Grid container spacing={2} className={`${loadingStates.sales ? "justify-center items-center" : ""}`}>
-                {filteredSales.length > 0 ? (
-                  <>
-                    {filteredSales.slice(0, salesDisplayLimit).map((sale) => (
-                      <Grid item xs={12} sm={6} md={4} lg={3} key={sale.id}>
-                        <ItemCard
-                          item={sale}
-                          currentUser={user}
-                          type="sale"
-                          itemDistance={isAuthenticated ? haversine(
-                            user.formatted_address.latitude,
-                            user.formatted_address.longitude,
-                            sale.user.formatted_address.latitude,
-                            sale.user.formatted_address.longitude
-                          ).toFixed(1) : null}
-                        />
-                      </Grid>
-                    ))}
-                    {filteredSales.length > salesDisplayLimit && (
-                      <div 
-                        ref={salesObserverTarget}
-                        className="col-span-full flex justify-center p-4 w-full"
-                      >
-                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
-                      </div>
-                    )}
-                  </>
-                ) : loadingStates.sales ? (
-                  <div className="flex items-center justify-center">
-                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
-                    <p className="ml-2">Loading Sales...</p>
-                  </div>
-                ) : (
-                  <Typography color="text.secondary">No sales found for this part.</Typography>
-                )}
-              </Grid>
-            )}
-          </Box>
-        </Container>
+          <Container maxWidth="lg" sx={{ mb: 5 }}>
+            <Box sx={{ borderBottom: 1, borderColor: "divider", mt: 4 }}>
+              <Tabs
+                value={onRequests ? 0 : 1}
+                onChange={(_, value) => setOnRequests(value === 0)}
+              >
+                <Tab label="Part Requests" />
+                <Tab label="View Sales" />
+              </Tabs>
+            </Box>
+
+            <Box sx={{ mt: 3 }}>
+              {onRequests ? (
+                <Grid container spacing={2} className={`${loadingStates.requests ? "justify-center items-center" : ""}`}>
+                  {filteredRequests.length > 0 ? (
+                    <>
+                      {filteredRequests.slice(0, requestsDisplayLimit).map((request) => (
+                        <Grid item xs={12} sm={6} md={4} lg={3} key={request.id}>
+                          <ItemCard
+                            item={request}
+                            currentUser={user}
+                            type="request"
+                            itemDistance={isAuthenticated ? haversine(
+                              user.formatted_address.latitude,
+                              user.formatted_address.longitude,
+                              request.user.formatted_address.latitude,
+                              request.user.formatted_address.longitude
+                            ).toFixed(1) : null}
+                          />
+                        </Grid>
+                      ))}
+                      {filteredRequests.length > requestsDisplayLimit && (
+                        <div
+                          ref={requestsObserverTarget}
+                          className="col-span-full flex justify-center p-4 w-full"
+                        >
+                          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
+                        </div>
+                      )}
+                    </>
+                  ) : loadingStates.requests ? (
+                    <div className="flex items-center justify-center">
+                      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
+                      <p className="ml-2">Loading Requests...</p>
+                    </div>
+                  ) : (
+                    <Typography color="text.secondary">No requests found for this part.</Typography>
+                  )}
+                </Grid>
+              ) : (
+                <Grid container spacing={2} className={`${loadingStates.sales ? "justify-center items-center" : ""}`}>
+                  {filteredSales.length > 0 ? (
+                    <>
+                      {filteredSales.slice(0, salesDisplayLimit).map((sale) => (
+                        <Grid item xs={12} sm={6} md={4} lg={3} key={sale.id}>
+                          <ItemCard
+                            item={sale}
+                            currentUser={user}
+                            type="sale"
+                            itemDistance={isAuthenticated ? haversine(
+                              user.formatted_address.latitude,
+                              user.formatted_address.longitude,
+                              sale.user.formatted_address.latitude,
+                              sale.user.formatted_address.longitude
+                            ).toFixed(1) : null}
+                          />
+                        </Grid>
+                      ))}
+                      {filteredSales.length > salesDisplayLimit && (
+                        <div
+                          ref={salesObserverTarget}
+                          className="col-span-full flex justify-center p-4 w-full"
+                        >
+                          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
+                        </div>
+                      )}
+                    </>
+                  ) : loadingStates.sales ? (
+                    <div className="flex items-center justify-center">
+                      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
+                      <p className="ml-2">Loading Sales...</p>
+                    </div>
+                  ) : (
+                    <Typography color="text.secondary">No sales found for this part.</Typography>
+                  )}
+                </Grid>
+              )}
+            </Box>
+          </Container>
+        </Box>
+        <Footer />
       </Box>
-      <Footer />
-    </Box>
+    </>
   );
 };
 

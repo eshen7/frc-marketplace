@@ -7,6 +7,7 @@ import TextField from "@mui/material/TextField";
 import axiosInstance from "../utils/axiosInstance.js";
 import Footer from "../components/Footer.jsx";
 import AlertBanner from "../components/AlertBanner";
+import HelmetComp from "../components/HelmetComp.jsx";
 
 const Login = () => {
   const [formData, setFormData] = useState({
@@ -91,6 +92,7 @@ const Login = () => {
       />
       <div className="flex flex-col min-h-screen">
         <TopBar />
+        <HelmetComp title="Log In - Millennium Market" />
         <div className="flex flex-row min-h-screen">
           {/* Left Side */}
           <div className="hidden h-screen lg:flex w-[55.5%] overflow-hidden bg-black sticky top-0">

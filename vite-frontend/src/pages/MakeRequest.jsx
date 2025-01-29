@@ -23,6 +23,7 @@ import AlertBanner from "../components/AlertBanner";
 import axiosInstance from "../utils/axiosInstance";
 import { useData } from "../contexts/DataContext";
 import { useNavigate } from "react-router-dom";
+import HelmetComp from "../components/HelmetComp";
 
 const INITIAL_FORM_STATE = {
   quantity: 1,
@@ -122,6 +123,7 @@ const PartRequestForm = () => {
       />
 
       <TopBar />
+      <HelmetComp title="Make a Part Request" />
       <div className="w-screen flex-grow flex flex-col place-items-center bg-white relative">
         {/* Form */}
         <div className="flex flex-col justify-center place-items-center w-full sm:w-2/3 md:w-[55%] my-[40px] mx-[20px] sm:mx-[30px] bg-white py-10 sm:py-16 px-10">

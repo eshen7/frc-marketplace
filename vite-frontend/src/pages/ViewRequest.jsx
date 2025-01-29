@@ -15,6 +15,7 @@ import ItemProfileSection from "../components/ItemProfileSection.jsx";
 import { useUser } from "../contexts/UserContext.jsx";
 import { useData } from "../contexts/DataContext.jsx";
 import AlertBanner from "../components/AlertBanner";
+import HelmetComp from "../components/HelmetComp.jsx";
 
 export const LoadingViewPage = () => {
   return (
@@ -315,6 +316,11 @@ export default function FulfillRequest() {
           {request && !error ? (
             <div className="px-5 sm:px-12 md:px-20">
               {/* Main Content */}
+              <HelmetComp
+                title={`${request.part.name} - Request - Team ${request.user.team_number} ${request.user.team_name}`}
+                keywords={`Team ${request.user.team_number}, ${request.user.team_name}, sale, ${request.part.name}, ${request.part.manufacturer.name}`}
+                description={`Robotics part ${request.part.name} requested - needed by ${new Date(request.needed_date).toLocaleDateString()} - Team ${request.user.team_number} ${request.user.team_name}`}
+              />
               <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
                 {/* Left Column - Scrollable Content */}
                 <div className="flex flex-col">
