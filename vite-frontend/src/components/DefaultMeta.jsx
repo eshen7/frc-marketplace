@@ -4,7 +4,7 @@ import { Helmet } from "react-helmet";
 const DefaultMeta = () => {
   return (
     <Helmet>
-      <title>Millennium Marketplace</title>
+      <title>Millennium Market</title>
       <meta
         name="description"
         content="Connect, collaborate, and create with fellow robotics teams. Find the parts you need or help others build their dreams."

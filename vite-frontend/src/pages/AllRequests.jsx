@@ -9,6 +9,7 @@ import SearchAndFilter from "../components/SearchAndFilter";
 import { getDaysUntil, haversine } from "../utils/utils";
 import { useUser } from "../contexts/UserContext";
 import { useData } from "../contexts/DataContext";
+import HelmetComp from "../components/HelmetComp";
 
 const fuseOptions = {
   keys: ["part.name"],
@@ -189,6 +190,7 @@ const AllRequests = () => {
   return (
     <div className="min-h-screen flex flex-col">
       <TopBar />
+      <HelmetComp title="Part Requests" />
       <SearchAndFilter
         onSearchChange={setSearchTerm}
         onDistanceChange={setFilterDistance}

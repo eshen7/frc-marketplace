@@ -9,6 +9,7 @@ import PartItemCard from "../components/PartItemCard";
 import { useData } from '../contexts/DataContext';
 import SearchAndFilter from "../components/SearchAndFilter";
 import PartsSearchAndFilter from "../components/PartsSearchAndFilter";
+import HelmetComp from "../components/HelmetComp";
 
 const fuseOptions = {
   keys: ["name", "category", "manufacturer"],
@@ -106,6 +107,7 @@ const AllParts = () => {
   return (
     <div className="min-h-screen flex flex-col">
       <TopBar />
+      <HelmetComp title="Robotics Part Directory" />
 
       <div className="flex flex-col flex-grow bg-gray-100 font-sans">
         <PartsSearchAndFilter

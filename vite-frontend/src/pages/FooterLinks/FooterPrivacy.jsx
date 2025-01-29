@@ -25,7 +25,7 @@ const PrivacyStatement = () => {
                 Introduction
               </h2>
               <p className="text-gray-600 leading-relaxed">
-                Millennium Marketplace is committed to protecting your privacy.
+                Millennium Market is committed to protecting your privacy.
                 This Privacy Statement explains how we collect, use, disclose,
                 and safeguard your information when you visit our website
                 (website url and site name). By using the site, you consent to

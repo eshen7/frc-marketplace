@@ -4,6 +4,7 @@ import TopBar from "./../components/TopBar.jsx";
 import Footer from "../components/Footer.jsx";
 import axiosInstance from "../utils/axiosInstance.js";
 import AlertBanner from "../components/AlertBanner";
+import HelmetComp from "../components/HelmetComp.jsx";
 
 const Signup = () => {
   const [formData, setFormData] = useState({
@@ -140,6 +141,7 @@ const Signup = () => {
 
   return (
     <>
+      <HelmetComp title="Sign Up - Millennium Market" />
       <AlertBanner
         {...alertState}
         onClose={() => setAlertState({ ...alertState, open: false })}
