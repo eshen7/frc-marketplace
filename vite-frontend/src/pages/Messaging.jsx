@@ -6,22 +6,23 @@ import axiosInstance from "../utils/axiosInstance";
 import { v4 as uuidv4 } from "uuid";
 import { formatTimestamp, timeSince } from "../utils/utils";
 import useScreenSize from "../components/useScreenSize";
-import { FaArrowLeft } from "react-icons/fa";
+import { FaArrowLeft, FaLock } from "react-icons/fa";
 import { useUser } from "../contexts/UserContext";
 import ProfilePhoto from "../components/ProfilePhoto";
 import { useWebSocket } from '../contexts/WebSocketContext';
 import { useData } from "../contexts/DataContext";
+import { Skeleton } from "@mui/material";
 
 const convertUrlsToLinks = (text, isSentMessage = false) => {
   // Regex to match URLs
   const urlRegex = /(https?:\/\/[^\s]+)|(www\.[^\s]+)/g;
-  
+
   // Split the text into parts (URLs and non-URLs)
   const parts = text.split(urlRegex);
-  
+
   return parts.map((part, index) => {
     if (!part) return null;
-    
+
     // Check if this part is a URL
     if (urlRegex.test(part)) {
       const href = part.startsWith('www.') ? `https://${part}` : part;
@@ -31,11 +32,10 @@ const convertUrlsToLinks = (text, isSentMessage = false) => {
           href={href}
           target="_blank"
           rel="noopener noreferrer"
-          className={`hover:underline ${
-            isSentMessage 
-              ? 'text-white font-medium underline' 
-              : 'text-blue-500'
-          }`}
+          className={`hover:underline ${isSentMessage
+            ? 'text-white font-medium underline'
+            : 'text-blue-500'
+            }`}
           onClick={(e) => e.stopPropagation()}
         >
           {part}
@@ -621,7 +621,7 @@ const Chat = () => {
                       sendMessage();
                     }
                   }}
-                  className="mr-3 border border-gray-300 
+                  className="mr-3 border-2 border-gray-500 
                                 focus:shadow-md focus:border-b-2 focus:ring-0 px-3 py-1 bg-inherit w-[87%] flex-shrink-0 rounded-md"
                 />
                 <button
@@ -637,9 +637,65 @@ const Chat = () => {
             </div>
           </>
         ) : loadingUser ? (
-          <p>loading</p>
+          <>
+            {/* Left Sidebar */}
+            <div className="overflow-y-auto w-full sm:w-1/2 lg:w-1/3 bg-white">
+              <div className="p-3">
+                <Skeleton variant="text" width="40%" height={40} animation="wave" className="mx-auto mb-4" />
+                <div className="space-y-4">
+                  {[1, 2, 3, 4, 5].map((i) => (
+                    <div key={i} className="flex items-center gap-3 p-2">
+                      <Skeleton variant="circular" width={40} height={40} animation="wave" />
+                      <div className="flex-grow">
+                        <Skeleton variant="text" width="60%" height={24} animation="wave" />
+                        <Skeleton variant="text" width="40%" height={20} animation="wave" />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {/* Chat Area */}
+            <div className="hidden sm:flex flex-col flex-grow bg-white">
+              {/* Chat Header */}
+              <div className="p-4 border-b">
+                <Skeleton variant="text" width="30%" height={32} animation="wave" />
+              </div>
+
+              {/* Messages Area */}
+              <div className="flex-grow p-4 space-y-4">
+                {[1, 2, 3, 4].map((i) => (
+                  <div key={i} className={`flex ${i % 2 === 0 ? 'justify-end' : 'justify-start'}`}>
+                    <div className={`${i % 2 === 0 ? 'ml-12' : 'mr-12'} w-1/2`}>
+                      <Skeleton variant="rounded" height={60} animation="wave" />
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {/* Input Area */}
+              <div className="p-4 border-t">
+                <Skeleton variant="rounded" height={50} animation="wave" />
+              </div>
+            </div>
+          </>
         ) : !user ? (
-          <p>Login to view messages</p>
+          <>
+            <div className="rounded-lg p-8 max-w-md w-full text-center space-y-6">
+              <div className="flex justify-center">
+                <FaLock className="text-4xl text-gray-400" />
+              </div>
+              <h2 className="text-2xl font-semibold text-gray-700">Login Required</h2>
+              <p className="text-gray-500">Please sign in to view and send messages</p>
+              <button
+                onClick={() => navigate("/login")}
+                className="w-full bg-green-600 hover:bg-green-700 text-white font-medium py-3 px-6 rounded-lg transition duration-150"
+              >
+                Login to Continue
+              </button>
+            </div>
+          </>
         ) : (
           <p>___</p>
         )}

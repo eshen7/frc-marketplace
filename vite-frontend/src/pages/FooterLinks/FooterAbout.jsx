@@ -1,111 +1,153 @@
 import React from "react";
-import TopBar from "../../components/TopBar.jsx";
-import Footer from "../../components/Footer.jsx";
+import TopBar from "../../components/TopBar";
+import Footer from "../../components/Footer";
+import { FaHandshake, FaUsers, FaMapMarkedAlt, FaRecycle, FaShieldAlt } from "react-icons/fa";
+import { MdOutlineLocalShipping } from "react-icons/md";
 import dinglebob from "../../assets/dinglebob.jpg";
-import replaceasap from "../../assets/replaceasap.jpg";
 import FIRST from "../../assets/FIRST.png";
+import sustainabilityImage from "../../assets/walleSustainability.png"; // You'll need to add this image
+import { useNavigate } from "react-router-dom";
+
+const FeatureCard = ({ icon, title, description }) => (
+  <div className="bg-white p-6 rounded-xl shadow-md hover:shadow-lg transition duration-300">
+    <div className="flex items-center mb-4">
+      <div className="p-3 bg-blue-100 rounded-full mr-4">
+        {icon}
+      </div>
+      <h3 className="text-xl font-semibold text-gray-800">{title}</h3>
+    </div>
+    <p className="text-gray-600 leading-relaxed">{description}</p>
+  </div>
+);
+
+const ValueCard = ({ icon, title, description }) => (
+  <div className="flex flex-col items-center text-center p-6 bg-white rounded-lg shadow-md hover:shadow-lg transition duration-300">
+    <div className="text-3xl text-blue-500 mb-4">
+      {icon}
+    </div>
+    <h3 className="text-lg font-semibold mb-2">{title}</h3>
+    <p className="text-gray-600">{description}</p>
+  </div>
+);
 
 const About = () => {
-
+  const navigate = useNavigate();
   return (
-    <>
+    <div className="min-h-screen bg-gray-50">
       <TopBar />
-      <div className="min-h-screen bg-gradient-to-b from-gray-50 to-gray-100">
-        <div className="px-5 md:px-10 lg:px-20 py-16">
-          <div className="max-w-4xl mx-auto text-center">
-            <h1 className="text-6xl font-bold text-blue-900 mb-8">
-              About{" "}
-              <span className="text-blue-600">Millennium Market</span>
-            </h1>
-            <p className="text-lg text-gray-600 leading-relaxed">
-              Welcome to Millennium Market, your go-to platform for
-              fostering collaboration and innovation within the FIRST Robotics
-              community. Our mission is to empower teams, students, mentors, and
-              enthusiasts by providing a centralized hub for sharing resources
-              and connecting with others.
+
+      {/* Hero Section */}
+      <div className="bg-gradient-to-r from-blue-600 to-blue-800 text-white py-16">
+        <div className="container mx-auto px-4 text-center">
+          <h1 className="text-6xl font-bold text-white mb-8">
+            About Millennium Market
+          </h1>
+          <p className="text-xl max-w-2xl mx-auto">
+            Every FRC team has faced the frustration of running out of critical parts at the worst possible time.
+            That's why we created Millennium Market — a platform designed to help teams connect, share resources,
+            and foster a sense of community.
+          </p>
+        </div>
+      </div>
+
+      {/* Who We Are Section */}
+      <div className="container mx-auto px-4 py-16">
+        <div className="flex flex-wrap items-center gap-8">
+          <div className="flex-1">
+            <h2 className="text-3xl font-bold mb-6">Who We Are</h2>
+            <p className="text-gray-600 leading-relaxed">
+              Millennium Market was created by passionate members of the FIRST Robotics community
+              who recognized the need for a space where collaboration can thrive. Whether you are
+              a rookie team looking for parts or a seasoned team ready to pass on spare equipment,
+              this platform makes it easy for everyone to connect and share resources.
             </p>
           </div>
+          <div className="flex-1">
+            <img src={dinglebob} alt="Who We Are" className="rounded-lg shadow-lg w-full" />
+          </div>
+        </div>
+      </div>
 
-          <div className="mt-16 space-y-16">
-            {/* 1st section */}
-            <div className="flex flex-wrap items-center justify-between">
-              <div className="w-full md:w-1/2 px-4">
-                <h2 className="text-4xl font-semibold text-blue-900 mb-4">
-                  Who We Are
-                </h2>
-                <p className="text-gray-600 leading-relaxed">
-                  Millennium Market was created by passionate members of
-                  the FIRST Robotics community who recognized the need for a
-                  space where collaboration can thrive. Whether you are a rookie
-                  team looking for parts or a seasoned team ready to pass on
-                  spare equipment, this platform makes it easy for everyone to
-                  connect and share resources.
-                </p>
-              </div>
-              <div className="w-full md:w-1/2 px-4 mt-4">
-                <img
-                  src={dinglebob}
-                  alt="Who We Are"
-                  className="rounded-lg shadow-lg"
-                />
-              </div>
+      {/* Key Features Section */}
+      <div className="container mx-auto px-4 py-16">
+        <h2 className="text-3xl font-bold text-center mb-12">Key Features</h2>
+        <div className="grid md:grid-cols-2 gap-8">
+          <FeatureCard
+            icon={<MdOutlineLocalShipping className="text-2xl text-blue-600" />}
+            title="Request & Fulfill Parts"
+            description="Post requests with need-by dates visible to nearby teams. Connect directly through our messaging system to coordinate exchanges and support other teams."
+          />
+          <FeatureCard
+            icon={<FaMapMarkedAlt className="text-2xl text-blue-600" />}
+            title="Interactive Team Map"
+            description="Discover and connect with nearby teams through our interactive map. Build local relationships and strengthen the FRC community in your area."
+          />
+          <FeatureCard
+            icon={<FaRecycle className="text-2xl text-blue-600" />}
+            title="Post & Sell Spare Items"
+            description="List extra parts, tools, or machines for sale. Our platform supports custom listings, helping teams find new homes for unused resources."
+          />
+          <FeatureCard
+            icon={<FaShieldAlt className="text-2xl text-blue-600" />}
+            title="Secure Accounts"
+            description="Each team gets one verified account, typically managed by the head mentor. Our approval process ensures a trustworthy environment for all users."
+          />
+        </div>
+      </div>
+
+      {/* Sustainability Section */}
+      <div className="bg-gray-100 py-16">
+        <div className="container mx-auto px-4">
+          <div className="flex flex-wrap items-center gap-8">
+            <div className="flex-1">
+              <img src={sustainabilityImage} alt="Sustainability" className="rounded-lg shadow-lg w-full" />
             </div>
-
-            {/*2nd section */}
-            <div className="flex flex-wrap items-center justify-between">
-              <div className="w-full md:w-1/2 px-4 order-last md:order-first mt-4">
-                <img
-                  src={FIRST}
-                  alt="Our Goals"
-                  className="rounded-lg shadow-lg py-5 px-3"
-                />
-              </div>
-              <div className="w-full md:w-1/2 px-4">
-                <h2 className="text-4xl font-semibold text-blue-900 mb-4">
-                  Our Goals
-                </h2>
-                <ul className="list-disc list-inside text-gray-600 leading-relaxed">
-                  <li>
-                    <strong>Facilitate Connections:</strong> Provide a
-                    user-friendly platform that helps teams easily find and
-                    connect with others in the FIRST Robotics community.
-                  </li>
-                  <li>
-                    <strong>Foster Collaboration:</strong> Enable teams to share
-                    ideas, swap parts, and support each other in the spirit of
-                    gracious professionalism.
-                  </li>
-                  <li>
-                    <strong>Promote Sustainability:</strong> Encourage the reuse
-                    and repurposing of parts, fostering an eco-friendly approach
-                    to robotics and collaboration.
-                  </li>
-                </ul>
-              </div>
-            </div>
-
-            {/*3rd section */}
-            <div className="text-center">
-              <h2 className="text-4xl font-semibold text-blue-900 mb-4">
-                Join Us
-              </h2>
-              <p className="text-lg text-gray-600 leading-relaxed">
-                Millennium Market thrives on the contributions of its
-                community. Whether you are here to learn, share, or connect,
-                we are excited to have you on board. Together, we can continue to
-                inspire innovation and build a brighter future.
+            <div className="flex-1">
+              <h2 className="text-3xl font-bold mb-6">Committed to Sustainability</h2>
+              <p className="text-gray-600 leading-relaxed">
+                We believe in promoting sustainable practices within the FIRST community.
+                By facilitating the reuse and sharing of parts between teams, we're helping
+                reduce waste and environmental impact while fostering collaboration and
+                resource efficiency.
               </p>
-              <div className="mt-8">
-                {/*<button className="px-8 py-4 bg-blue-600 text-white rounded-lg font-semibold shadow-lg hover:bg-blue-700 transition-all">
-                Learn More
-              </button> */}
-              </div>
             </div>
           </div>
         </div>
       </div>
+
+      {/* FIRST Values Section */}
+      <div className="container mx-auto px-4 py-16">
+        <div className="flex flex-wrap items-center gap-8">
+          <div className="flex-1">
+            <h2 className="text-3xl font-bold mb-6">FIRST Values</h2>
+            <ul className="list-disc list-inside text-gray-600 leading-relaxed">
+              <li><strong>Gracious Professionalism:</strong> Fostering respect, kindness, and high-quality work</li>
+              <li><strong>Collaboration:</strong> Building stronger teams through resource sharing</li>
+              <li><strong>Community Impact:</strong> Creating lasting connections between nearby teams</li>
+            </ul>
+          </div>
+          <div className="flex-1">
+            <img src={FIRST} alt="FIRST Values" className="rounded-lg shadow-lg w-full p-4 bg-white" />
+          </div>
+        </div>
+      </div>
+
+      {/* Call to Action */}
+      <div className="text-center py-16">
+        <div className="container mx-auto px-4">
+          <h2 className="text-3xl font-bold mb-6">Join Our Community</h2>
+          <p className="text-xl text-gray-600 mb-8 max-w-2xl mx-auto">
+            Be part of a collaborative community that empowers FRC teams to achieve more together!
+          </p>
+          <button className="bg-blue-600 text-white px-8 py-3 rounded-lg font-semibold hover:bg-blue-700 transition duration-300"
+            onClick={() => navigate("/signup")}>
+            Get Started
+          </button>
+        </div>
+      </div>
+
       <Footer />
-    </>
+    </div >
   );
 };
 
