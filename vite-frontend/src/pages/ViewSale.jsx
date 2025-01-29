@@ -379,6 +379,7 @@ export default function ViewSale() {
                     <p>
                       <a
                         href={sale.part.link ? sale.part.link : ""}
+                        target="_blank"
                         className={`${sale.part.link ? "text-blue-500 hover:underline" : "text-gray-500"}`}
                         title={
                           sale.part.link

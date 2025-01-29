@@ -458,6 +458,7 @@ export default function FulfillRequest() {
                     <h3>
                       <a
                         href={request.part.link ? request.part.link : ""}
+                        target="_blank"
                         className={`${request.part.link ? "text-blue-500 hover:underline" : "text-gray-500"}`}
                         title={request.part.link ? request.part.link : "No link provided"}
                       >
