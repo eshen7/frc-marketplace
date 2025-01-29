@@ -6,13 +6,11 @@ import { WebSocketProvider } from "./contexts/WebSocketContext";
 import { DataProvider } from "./contexts/DataContext";
 import DefaultMeta from "./components/DefaultMeta";
 import ScrollToTop from "./components/ScrollToTop";
-import { HelmetProvider } from "react-helmet-async";
 
 
 const App = () => {
   console.log("App component rendered");
   return (
-    <HelmetProvider>
       <UserProvider>
         <DataProvider>
           <WebSocketProvider>
@@ -22,7 +20,6 @@ const App = () => {
           </WebSocketProvider>
         </DataProvider>
       </UserProvider>
-    </HelmetProvider>
   );
 };
 
