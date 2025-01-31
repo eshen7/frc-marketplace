@@ -11,15 +11,15 @@ import ScrollToTop from "./components/ScrollToTop";
 const App = () => {
   console.log("App component rendered");
   return (
-      <UserProvider>
-        <DataProvider>
-          <WebSocketProvider>
-            <DefaultMeta />
-            <ScrollToTop /> {/* Scroll restoration */}
-            <Outlet />
-          </WebSocketProvider>
-        </DataProvider>
-      </UserProvider>
+    <UserProvider>
+      <DataProvider>
+        <WebSocketProvider>
+          <DefaultMeta />
+          <ScrollToTop /> {/* Scroll restoration */}
+          <Outlet />
+        </WebSocketProvider>
+      </DataProvider>
+    </UserProvider>
   );
 };
 
