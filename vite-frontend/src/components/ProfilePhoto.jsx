@@ -1,19 +1,33 @@
 import React, { useState } from 'react';
 import { Skeleton } from '@mui/material';
 
-const ProfilePhoto = ({ src, alt, className, containerClassName = "", teamNumber = 3647 }) => {
+const ProfilePhoto = ({ src, alt, className, containerClassName = "", teamNumber }) => {
   const [imageLoaded, setImageLoaded] = useState(false);
-  const [imageError, setImageError] = useState(false);
-  const defaultImage = `https://www.thebluealliance.com/avatar/2024/frc${teamNumber}.png`;
+  const [primaryImageError, setPrimaryImageError] = useState(false);
+  const [fallbackImageError, setFallbackImageError] = useState(false);
+
+  const fallbackImage = `https://www.thebluealliance.com/avatar/2024/frc${teamNumber}.png`;
+  const defaultImage = "/default.png";
+
 
   const handleError = () => {
-    setImageError(true);
-    setImageLoaded(true);
+    if (!primaryImageError) {
+      setPrimaryImageError(true);
+      setImageLoaded(false);
+    } else {
+      setFallbackImageError(true);
+      setImageLoaded(true);
+    }
   };
 
   const handleLoad = () => {
     setImageLoaded(true);
-    setImageError(false);
+  };
+
+  const getImageSrc = () => {
+    if (!primaryImageError) return src;
+    if (!fallbackImageError) return fallbackImage;
+    return defaultImage;
   };
 
   return (
@@ -28,14 +42,12 @@ const ProfilePhoto = ({ src, alt, className, containerClassName = "", teamNumber
         </>
       )}
       <img
-        src={imageError ? defaultImage : src}
+        src={getImageSrc()}
         alt={alt || 'Profile Photo'}
         className={`${className} object-cover`}
         style={{ display: imageLoaded ? 'block' : 'none' }}
-        {...(!imageError && {
-          onError: handleError,
-          onLoad: handleLoad
-        })}
+        onError={handleError}
+        onLoad={handleLoad}
       />
     </div>
   );

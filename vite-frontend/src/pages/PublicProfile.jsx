@@ -19,7 +19,7 @@ const PublicProfileComponent = ({ user }) => {
   const [sales, setSales] = useState([]);
   const [loadingSales, setLoadingSales] = useState(true);
 
-  const { user: currentUser, loadingUser, isAuthenticated } = useUser();
+  const { currentUser, loadingUser, isAuthenticated } = useUser();
 
   const [onRequests, setOnRequests] = useState(true);
 
@@ -148,8 +148,9 @@ const PublicProfileComponent = ({ user }) => {
               <div className="flex items-center justify-center">
                 <ProfilePhoto
                   src={user.profile_photo}
-                  className="w-[64px] h-[64px] rounded-full bg-gray-400 p-1"
+                  className="w-[64px] h-[64px] rounded-lg bg-gray-300 p-1"
                   alt="Team Logo"
+                  teamNumber={user.team_number}
                 />
               </div>
 
@@ -219,7 +220,7 @@ const PublicProfileComponent = ({ user }) => {
                       <ItemCard
                         key={request.id}
                         item={request}
-                        currentUser={user}
+                        currentUser={currentUser}
                         type="request"
                         itemDistance={
                           isAuthenticated
@@ -261,13 +262,13 @@ const PublicProfileComponent = ({ user }) => {
                       <ItemCard
                         key={sale.id}
                         item={sale}
-                        currentUser={user}
+                        currentUser={currentUser}
                         type="sale"
                         itemDistance={
                           isAuthenticated
                             ? haversine(
-                              user.formatted_address.latitude,
-                              user.formatted_address.longitude,
+                              currentUser.formatted_address.latitude,
+                              currentUser.formatted_address.longitude,
                               sale.user.formatted_address.latitude,
                               sale.user.formatted_address.longitude
                             ).toFixed(1)
