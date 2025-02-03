@@ -83,6 +83,11 @@ const PublicProfileComponent = ({ user }) => {
   }, [salesObserverCallback, requestsObserverCallback]);
 
   useEffect(() => {
+    setRequests([]);
+    setSales([]);
+    setLoadingRequests(true);
+    setLoadingSales(true);
+    
     const fetchRequests = async () => {
       try {
         const response = await axiosInstance.get(
@@ -115,7 +120,7 @@ const PublicProfileComponent = ({ user }) => {
 
     fetchRequests();
     fetchSales();
-  }, []);
+  }, [user.team_number]);
 
   const handleClickRequests = () => {
     setOnRequests(true);
@@ -311,6 +316,10 @@ const PublicProfilePage = () => {
   const [loadingUser, setLoadingUser] = useState(true);
 
   useEffect(() => {
+    setUser(null);
+    setError(null);
+    setLoadingUser(true);
+    
     const fetchUser = async () => {
       try {
         const response = await axiosInstance.get(`/users/frc${teamNumber}/`);
