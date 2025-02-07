@@ -272,11 +272,11 @@ const PublicProfileComponent = ({ user }) => {
                         itemDistance={
                           isAuthenticated
                             ? haversine(
-                              currentUser.formatted_address.latitude,
-                              currentUser.formatted_address.longitude,
-                              sale.user.formatted_address.latitude,
-                              sale.user.formatted_address.longitude
-                            ).toFixed(1)
+                                user.formatted_address.latitude,
+                                user.formatted_address.longitude,
+                                sale.user.formatted_address.latitude,
+                                sale.user.formatted_address.longitude
+                              ).toFixed(1)
                             : null
                         }
                       />
