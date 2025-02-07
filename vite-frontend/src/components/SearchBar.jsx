@@ -90,7 +90,7 @@ const SearchBar = () => {
   const handleResultClick = (item) => {
     switch (item.type) {
       case "team":
-        navigate(`/profile/frc/${item.team_number}`);
+        navigate(`/profile/frc/${item.team_number}`, { replace: true });
         break;
       case "part":
         navigate(`/parts/${item.id}`);
