@@ -93,7 +93,24 @@ const TermsAndConditions = () => {
 
             <section>
               <h2 className="text-4xl font-semibold text-blue-900 mb-4">
-                5. Location Sharing and Visibility
+                5. Mentor Only Usage and Verification
+              </h2>
+              <p className="text-gray-600 leading-relaxed">
+                Our service is intended solely for verified mentors. Only approved
+                mentors may use the platform and communicate with other mentors.
+                Under no circumstances should minors or unverified individuals
+                use this Website to interact with adults. We conduct a verification
+                process to ensure the authenticity of all mentors, and any attempt 
+                to bypass this process or misrepresent identity will result in 
+                immediate suspension or termination of access. If you suspect unauthorized 
+                use, please report it immediately.
+              </p>
+            </section>
+
+
+            <section>
+              <h2 className="text-4xl font-semibold text-blue-900 mb-4">
+                6. Location Sharing and Visibility
               </h2>
               <p className="text-gray-600 leading-relaxed">
                 By using this service, you acknowledge and consent that your
@@ -106,7 +123,7 @@ const TermsAndConditions = () => {
 
             <section>
               <h2 className="text-4xl font-semibold text-blue-900 mb-4">
-                6. Third-Party Links
+                7. Third-Party Links
               </h2>
               <p className="text-gray-600 leading-relaxed">
                 The Website may contain links to third-party websites or
@@ -118,7 +135,7 @@ const TermsAndConditions = () => {
 
             <section>
               <h2 className="text-4xl font-semibold text-blue-900 mb-4">
-                7. Disclaimer of Warranties
+                8. Disclaimer of Warranties
               </h2>
               <p className="text-gray-600 leading-relaxed">
                 The Website is provided "as is" and "as available." We make no
@@ -132,7 +149,7 @@ const TermsAndConditions = () => {
 
             <section>
               <h2 className="text-4xl font-semibold text-blue-900 mb-4">
-                8. Limitation of Liability
+                9. Limitation of Liability
               </h2>
               <p className="text-gray-600 leading-relaxed">
                 To the maximum extent permitted by law, we are not liable for
@@ -145,7 +162,7 @@ const TermsAndConditions = () => {
 
             <section>
               <h2 className="text-4xl font-semibold text-blue-900 mb-4">
-                9. Indemnification
+                10. Indemnification
               </h2>
               <p className="text-gray-600 leading-relaxed">
                 You agree to indemnify and hold harmless Millennium Market,
@@ -157,7 +174,7 @@ const TermsAndConditions = () => {
 
             <section>
               <h2 className="text-4xl font-semibold text-blue-900 mb-4">
-                10. Termination
+                11. Termination
               </h2>
               <p className="text-gray-600 leading-relaxed">
                 We reserve the right to suspend or terminate your access to the
@@ -168,7 +185,7 @@ const TermsAndConditions = () => {
 
             <section>
               <h2 className="text-4xl font-semibold text-blue-900 mb-4">
-                11. Governing Law
+                12. Governing Law
               </h2>
               <p className="text-gray-600 leading-relaxed">
                 These Terms are governed by and construed in accordance with the
@@ -180,7 +197,7 @@ const TermsAndConditions = () => {
 
             <section>
               <h2 className="text-4xl font-semibold text-blue-900 mb-4">
-                12. Contact Information
+                13. Contact Information
               </h2>
               <p className="text-gray-600 leading-relaxed">
                 For any questions or concerns regarding these Terms, please
@@ -196,7 +213,7 @@ const TermsAndConditions = () => {
 
             <section>
               <h2 className="text-4xl font-semibold text-blue-900 mb-4">
-                13. Miscellaneous
+                14. Miscellaneous
               </h2>
               <p className="text-gray-600 leading-relaxed">
                 If any provision of these Terms is found to be invalid or
