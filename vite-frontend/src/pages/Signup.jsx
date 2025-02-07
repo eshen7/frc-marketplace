@@ -110,7 +110,7 @@ const Signup = () => {
     try {
       const response = await axiosInstance.post("/users/", formData);
       if (response.status === 201 || response.status === 200) {
-        navigate("/landingPage");
+        navigate("/landing-page");
       } else {
         setAlertState({
           open: true,
@@ -200,7 +200,7 @@ const Signup = () => {
             <div className="flex flex-col items-center my-8">
               <h2 className="text-black font-semibold text-[24px] my-4 text-center">Sign Up</h2>
               <p className="text-black text-[16px] w-[80%] mx-auto text-center">
-                Add your team to the marketplace and start connecting with nearby teams. <span className="font-bold">One account per team.</span>
+                Add your team to the marketplace and start connecting with nearby teams. <span className="font-bold">One account per team handled by a mentor.</span>
               </p>
             </div>
             <form onSubmit={handleSubmit}>
@@ -208,7 +208,7 @@ const Signup = () => {
                 <div className="w-10/12 mx-auto">
                   <input
                     type="text"
-                    placeholder="Full Name"
+                    placeholder="Mentor Full Name"
                     className="w-full p-3 rounded-md border border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     required
                     onChange={(e) => handleChange("full_name", e.target.value)}
@@ -236,7 +236,7 @@ const Signup = () => {
                   <input
                     id="address-input"
                     type="text"
-                    placeholder="Address"
+                    placeholder="Team Address"
                     className="w-full p-3 rounded-md border border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     required
                     onChange={(e) => handleChange("address", e.target.value)}
