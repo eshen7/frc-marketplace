@@ -28,6 +28,8 @@ import OurTeamPage from "./pages/FooterLinks/OurTeam.jsx";
 import AllParts from "./pages/AllParts.jsx";
 import ResetPassword from "./pages/ResetPassword.jsx";
 import ForgotPassword from "./pages/ForgotPassword.jsx";
+import PageNotFound from "./pages/PageNotFound.jsx";
+import Contact from "./pages/FooterLinks/Contact.jsx";
 
 const ErrorPage = () => <p> Sorry, this page does not exist</p>;
 
@@ -75,7 +77,7 @@ const router = createBrowserRouter(
           element: <SalesPage />,
         },
         {
-          path: "landingPage",
+          path: "landing-page",
           element: <LandingPage />,
         },
         {
@@ -131,8 +133,12 @@ const router = createBrowserRouter(
           element: <ResetPassword />,
         },
         {
+          path: "/footer/contact",
+          element: <Contact />,
+        },
+        {
           path: "*",
-          element: <p>Page not found</p>,
+          element: <PageNotFound />,
         },
       ],
     },

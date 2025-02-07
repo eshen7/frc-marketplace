@@ -14,7 +14,7 @@ const Footer = () => {
                     <button onClick={() => navigate("/footer/privacy")} className='text-blue-500 underline hover:text-blue-600'>Privacy</button>
                     <button onClick={() => navigate("/footer/FAQ")} className='text-blue-500 underline hover:text-blue-600'>FAQs</button>
                     <button onClick={() => navigate("/footer/ourteam")} className='text-blue-500 underline hover:text-blue-600'>Our Team</button>
-
+                    <button onClick={() => navigate("/footer/contact")} className='text-blue-500 underline hover:text-blue-600'>Contact</button>
                 </div>
             </div>
 
