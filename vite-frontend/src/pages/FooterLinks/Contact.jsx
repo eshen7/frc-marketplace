@@ -22,23 +22,25 @@ const ContactLink = ({ icon, label, value, href, onCopy }) => {
       href={href}
       target="_blank"
       rel="noopener noreferrer"
-      className="flex items-center gap-4 p-6 bg-white rounded-xl shadow-md hover:shadow-lg transition-all duration-300"
+      className="flex flex-col sm:flex-row items-start sm:items-center gap-4 p-6 bg-white rounded-xl shadow-md hover:shadow-lg transition-all duration-300"
       whileHover={{ scale: 1.02 }}
       whileTap={{ scale: 0.98 }}
     >
-      <div className="p-4 bg-blue-100 rounded-full text-blue-600 text-2xl">
+      <div className="p-3 bg-blue-100 rounded-full text-blue-600 text-xl">
         {icon}
       </div>
-      <div className="flex-grow">
-        <h3 className="font-semibold text-gray-800">{label}</h3>
-        <p className="text-blue-600">{value}</p>
+      <div className="flex-grow min-w-0">
+        <h3 className="font-semibold text-gray-800 mb-1">{label}</h3>
+        <p className="text-blue-600 break-all sm:break-normal">
+          {value}
+        </p>
       </div>
       {isEmail && (
         <motion.button
           onClick={handleCopy}
           whileHover={{ scale: 1.1 }}
           whileTap={{ scale: 0.9 }}
-          className={`p-2 rounded-full transition-colors ${
+          className={`p-2 rounded-full transition-colors mt-2 sm:mt-0 ${
             copied 
               ? 'bg-green-100 text-green-600' 
               : 'bg-gray-100 text-gray-600 hover:bg-blue-100 hover:text-blue-600'
