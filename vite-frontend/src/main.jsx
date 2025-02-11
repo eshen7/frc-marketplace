@@ -30,6 +30,7 @@ import ResetPassword from "./pages/ResetPassword.jsx";
 import ForgotPassword from "./pages/ForgotPassword.jsx";
 import PageNotFound from "./pages/PageNotFound.jsx";
 import Contact from "./pages/FooterLinks/Contact.jsx";
+import Comp from "./pages/Comp.jsx";
 
 const ErrorPage = () => <p> Sorry, this page does not exist</p>;
 
@@ -135,6 +136,10 @@ const router = createBrowserRouter(
         {
           path: "/footer/contact",
           element: <Contact />,
+        },
+        {
+          path: "/comp",
+          element: <Comp />,
         },
         {
           path: "*",

@@ -141,6 +141,12 @@ const TopBar = () => {
             link={"/parts"}
             navigate={navigate}
           />
+          <button
+            onClick={() => navigate("/comp")}
+            className="px-6 py-2 bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-lg font-semibold shadow-lg hover:from-indigo-700 hover:to-purple-700 transition-all whitespace-nowrap"
+          >
+            Comp Mode
+          </button>
           {isAuthenticated && (
             <>
               <NavButton
