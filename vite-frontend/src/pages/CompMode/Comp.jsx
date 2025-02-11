@@ -1,90 +1,20 @@
-import React, { useState, useEffect } from "react";
-import TopBar from "../components/TopBar";
-import Footer from "../components/Footer";
-import CompCard from "../components/CompCard";
+import React, { useState } from "react";
+import TopBar from "../../components/TopBar";
+import Footer from "../../components/Footer";
+import CompCard from "../../components/CompCard";
 import { motion } from "framer-motion";
 import { FaSearch, FaFilter } from "react-icons/fa";
+import { useCompetitions } from "../../contexts/CompetitionsContext";
 
 const Comp = () => {
-  const comp_format = [{
-    "key": "string",
-    "name": "string",
-    "event_code": "string",
-    "event_type": 0,
-    "district": {
-      "abbreviation": "string",
-      "display_name": "string",
-      "key": "string",
-      "year": 0
-    },
-    "city": "string",
-    "state_prov": "string",
-    "country": "string",
-    "start_date": "2025-02-11",
-    "end_date": "2025-02-11",
-    "year": 0,
-    "short_name": "string",
-    "event_type_string": "string",
-    "week": 0,
-    "address": "string",
-    "postal_code": "string",
-    "gmaps_place_id": "string",
-    "gmaps_url": "string",
-    "lat": 0,
-    "lng": 0,
-    "location_name": "string",
-    "timezone": "string",
-    "website": "string",
-    "first_event_id": "string",
-    "first_event_code": "string",
-    "webcasts": [
-      {
-        "type": "youtube",
-        "channel": "string",
-        "date": "string",
-        "file": "string"
-      }
-    ],
-    "division_keys": [
-      "string"
-    ],
-    "parent_event_key": "string",
-    "playoff_type": 0,
-    "playoff_type_string": "string"
-  }];
-
-  const [comps, setComps] = useState(comp_format);
-  const [regionals, setRegionals] = useState(comp_format);
-  const [districts, setDistricts] = useState(comp_format);
-  const [districtChamps, setDistrictChamps] = useState(comp_format);
+  const { competitions, loading, error } = useCompetitions();
   const [activeTab, setActiveTab] = useState('all');
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedWeeks, setSelectedWeeks] = useState([]);
   const [showWeekFilter, setShowWeekFilter] = useState(false);
 
-  useEffect(() => {
-    fetch("https://www.thebluealliance.com/api/v3/events/2025", {
-      headers: {
-        "X-TBA-Auth-Key": import.meta.env.VITE_TBA_API_KEY
-      }
-    })
-      .then((response) => response.json())
-      .then((data) => {
-        // Filter for valid week numbers (0-6) before sorting
-        const validData = data.filter(comp => comp.week >= 0 && comp.week <= 6);
-        const sortedData = validData.sort((a, b) => a.start_date.localeCompare(b.start_date));
-
-        setRegionals(sortedData.filter((comp) => comp.event_type === 0));
-        setDistricts(sortedData.filter((comp) => comp.event_type === 1));
-        setDistrictChamps(sortedData.filter((comp) => comp.event_type === 2));
-        setComps(sortedData.filter((comp) => 
-          (comp.event_type === 0 || comp.event_type === 1 || comp.event_type === 2)
-        ));
-      });
-  }, []);
-
   // Get unique weeks from competitions
-  const availableWeeks = [...new Set(comps.map(comp => comp.week + 1))].sort((a, b) => a - b);
+  const availableWeeks = [...new Set(competitions.map(comp => comp.week + 1))].sort((a, b) => a - b);
 
   const handleWeekToggle = (week) => {
     setSelectedWeeks(prev => 
@@ -95,7 +25,7 @@ const Comp = () => {
   };
 
   // Updated filter function
-  const filteredComps = comps.filter(comp => 
+  const filteredComps = competitions.filter(comp => 
     (searchTerm === '' || 
       comp.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       comp.city.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -117,8 +47,32 @@ const Comp = () => {
     }
   };
 
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex flex-col">
+        <TopBar />
+        <div className="flex items-center justify-center flex-grow">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+        </div>
+        <Footer />
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex flex-col">
+        <TopBar />
+        <div className="container mx-auto px-4 py-16 text-center flex-grow">
+          <h2 className="text-2xl text-red-600">{error}</h2>
+        </div>
+        <Footer />
+      </div>
+    );
+  }
+
   return (
-    <div className="min-h-screen bg-gradient-to-b from-gray-50 to-gray-100">
+    <div className="min-h-screen bg-gradient-to-b from-gray-50 to-gray-100 flex flex-col">
       <TopBar />
       
       {/* Hero Section */}
@@ -179,7 +133,7 @@ const Comp = () => {
         </div>
       </div>
 
-      <div className="container mx-auto px-4 py-6 sm:py-8">
+      <div className="container mx-auto px-4 py-6 sm:py-8 flex-grow">
         {/* Filter Tabs */}
         <div className="flex flex-wrap justify-center gap-2 sm:gap-4 mb-6 sm:mb-8">
           {[

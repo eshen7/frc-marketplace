@@ -1,8 +1,10 @@
 import React from "react";
 import { FaMapMarkerAlt, FaCalendarAlt, FaTrophy } from "react-icons/fa";
 import { motion } from "framer-motion";
+import { useNavigate } from "react-router-dom";
 
 const CompCard = ({ comp }) => {
+  const navigate = useNavigate();
   const startDate = new Date(comp.start_date).toLocaleDateString('en-US', {
     month: 'short',
     day: 'numeric'
@@ -15,7 +17,8 @@ const CompCard = ({ comp }) => {
   return (
     <motion.div
       whileHover={{ scale: 1.02 }}
-      className="bg-white rounded-xl shadow-lg overflow-hidden mb-4 hover:shadow-xl transition-all duration-300"
+      className="bg-white rounded-xl shadow-lg overflow-hidden mb-4 hover:shadow-xl transition-all duration-300 cursor-pointer"
+      onClick={() => navigate(`/comp/${comp.key}`)}
     >
       <div className="p-4 sm:p-6">
         <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-3 relative">

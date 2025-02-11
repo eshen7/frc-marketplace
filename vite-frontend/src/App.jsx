@@ -6,7 +6,7 @@ import { WebSocketProvider } from "./contexts/WebSocketContext";
 import { DataProvider } from "./contexts/DataContext";
 import DefaultMeta from "./components/DefaultMeta";
 import ScrollToTop from "./components/ScrollToTop";
-
+import { CompetitionsProvider } from './contexts/CompetitionsContext';
 
 const App = () => {
   console.log("App component rendered");
@@ -14,9 +14,11 @@ const App = () => {
     <UserProvider>
       <DataProvider>
         <WebSocketProvider>
-          <DefaultMeta />
-          <ScrollToTop /> {/* Scroll restoration */}
-          <Outlet />
+          <CompetitionsProvider>
+            <DefaultMeta />
+            <ScrollToTop /> {/* Scroll restoration */}
+            <Outlet />
+          </CompetitionsProvider>
         </WebSocketProvider>
       </DataProvider>
     </UserProvider>

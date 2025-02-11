@@ -30,16 +30,15 @@ import ResetPassword from "./pages/ResetPassword.jsx";
 import ForgotPassword from "./pages/ForgotPassword.jsx";
 import PageNotFound from "./pages/PageNotFound.jsx";
 import Contact from "./pages/FooterLinks/Contact.jsx";
-import Comp from "./pages/Comp.jsx";
-
-const ErrorPage = () => <p> Sorry, this page does not exist</p>;
+import Comp from "./pages/CompMode/Comp.jsx";
+import CompSite from "./pages/CompMode/CompSite.jsx";
 
 const router = createBrowserRouter(
   [
     {
       path: "/",
       element: <App />,
-      errorElement: <ErrorPage />,
+      errorElement: <PageNotFound error={"500"} />,
       children: [
         {
           path: "/",
@@ -142,8 +141,12 @@ const router = createBrowserRouter(
           element: <Comp />,
         },
         {
+          path: "/comp/:eventKey",
+          element: <CompSite />,
+        },
+        {
           path: "*",
-          element: <PageNotFound />,
+          element: <PageNotFound error={"404"} />,
         },
       ],
     },
