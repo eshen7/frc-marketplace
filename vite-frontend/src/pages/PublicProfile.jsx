@@ -19,7 +19,7 @@ const PublicProfileComponent = ({ user }) => {
   const [sales, setSales] = useState([]);
   const [loadingSales, setLoadingSales] = useState(true);
 
-  const { currentUser, loadingUser, isAuthenticated } = useUser();
+  const { user: currentUser, loadingUser, isAuthenticated } = useUser();
 
   const [onRequests, setOnRequests] = useState(true);
 
