@@ -31,7 +31,7 @@ export const CompetitionsProvider = ({ children }) => {
         const districts = validData.filter(comp => comp.event_type === 1);
         const districtChamps = validData.filter(comp => comp.event_type === 2);
         const allComps = validData.filter(comp => 
-          comp.event_type === 0 || comp.event_type === 1 || comp.event_type === 2
+          comp.event_type !== 99 && comp.event_type !== 100 && comp.event_type !== 5
         );
 
         setRegionals(regionals);

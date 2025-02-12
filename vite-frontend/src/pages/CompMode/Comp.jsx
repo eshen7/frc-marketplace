@@ -1,10 +1,11 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import TopBar from "../../components/TopBar";
 import Footer from "../../components/Footer";
 import CompCard from "../../components/CompCard";
 import { motion } from "framer-motion";
-import { FaSearch, FaFilter } from "react-icons/fa";
+import { FaSearch, FaFilter, FaArrowUp } from "react-icons/fa";
 import { useCompetitions } from "../../contexts/CompetitionsContext";
+import { AnimatePresence } from "framer-motion";
 
 const Comp = () => {
   const { competitions, loading, error } = useCompetitions();
@@ -12,6 +13,20 @@ const Comp = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedWeeks, setSelectedWeeks] = useState([]);
   const [showWeekFilter, setShowWeekFilter] = useState(false);
+  const [showScrollTop, setShowScrollTop] = useState(false);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setShowScrollTop(window.scrollY > 400);
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  const scrollToTop = () => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
 
   // Get unique weeks from competitions
   const availableWeeks = [...new Set(competitions.map(comp => comp.week + 1))].sort((a, b) => a - b);
@@ -40,8 +55,10 @@ const Comp = () => {
         return filteredComps.filter(comp => comp.event_type === 0);
       case 'districts':
         return filteredComps.filter(comp => comp.event_type === 1);
-      case 'championships':
+      case 'districtChamps':
         return filteredComps.filter(comp => comp.event_type === 2);
+      case 'championships':
+        return filteredComps.filter(comp => comp.event_type === 3 || comp.event_type === 4);
       default:
         return filteredComps;
     }
@@ -140,7 +157,8 @@ const Comp = () => {
             { id: 'all', label: 'All' },
             { id: 'regionals', label: 'Regionals' },
             { id: 'districts', label: 'Districts' },
-            { id: 'championships', label: 'Champs' },
+            { id: 'districtChamps', label: 'District Champs' },
+            { id: 'championships', label: 'Championships' },
           ].map(tab => (
             <button
               key={tab.id}
@@ -170,6 +188,23 @@ const Comp = () => {
           </div>
         )}
       </div>
+
+      {/* Scroll to Top Button */}
+      <AnimatePresence>
+        {showScrollTop && (
+          <motion.button
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 20 }}
+            onClick={scrollToTop}
+            className="fixed bottom-8 right-8 p-4 bg-blue-600 text-white rounded-full shadow-lg hover:bg-blue-700 transition-colors z-50"
+            whileHover={{ scale: 1.1 }}
+            whileTap={{ scale: 0.9 }}
+          >
+            <FaArrowUp />
+          </motion.button>
+        )}
+      </AnimatePresence>
 
       <Footer />
     </div>

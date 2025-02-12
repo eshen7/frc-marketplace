@@ -1,10 +1,14 @@
 import React, { useState, useEffect } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import TopBar from "../../components/TopBar";
 import Footer from "../../components/Footer";
 import ProfilePhoto from "../../components/ProfilePhoto";
-import { FaMapMarkerAlt, FaCalendarAlt, FaLink, FaUsers } from "react-icons/fa";
+import { FaMapMarkerAlt, FaCalendarAlt, FaLink, FaUsers, FaArrowLeft } from "react-icons/fa";
 import { motion } from "framer-motion";
+import { useData } from "../../contexts/DataContext";
+import ItemCard from "../../components/ItemCard";
+import { useUser } from "../../contexts/UserContext";
+import { haversine } from "../../utils/utils";
 
 const TeamCard = ({ team }) => (
   <motion.div
@@ -45,6 +49,10 @@ const TeamCard = ({ team }) => (
 
 const CompSite = () => {
   const { eventKey } = useParams();
+  const navigate = useNavigate();
+  const [activeTab, setActiveTab] = useState('info');
+  const { user, isAuthenticated } = useUser();
+  const { requests } = useData();
   const [eventDetails, setEventDetails] = useState(null);
   const [teams, setTeams] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -86,6 +94,11 @@ const CompSite = () => {
     fetchEventData();
   }, [eventKey]);
 
+  // Filter requests for teams at this competition
+  const eventRequests = requests.filter(request => 
+    teams.some(team => team.team_number === request.user.team_number)
+  );
+
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 flex flex-col">
@@ -125,8 +138,17 @@ const CompSite = () => {
   });
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 flex flex-col"> {/* Added flex-col */}
       <TopBar />
+
+      {/* Back Button */}
+      <button
+        onClick={() => navigate(-1)}
+        className="absolute top-20 left-4 z-10 p-2 bg-white rounded-full shadow-lg hover:bg-gray-50 transition-colors"
+        aria-label="Go back"
+      >
+        <FaArrowLeft className="text-xl text-gray-700" />
+      </button>
 
       {/* Event Header - Updated design */}
       <div className="bg-gradient-to-r from-blue-600 to-blue-800 text-white">
@@ -149,56 +171,122 @@ const CompSite = () => {
         </div>
       </div>
 
-      {/* Event Details */}
-      <div className="container mx-auto px-4 py-8">
-        <div className="grid md:grid-cols-3 gap-8 mb-12">
-          <div className="col-span-2">
-            <div className="bg-white rounded-lg shadow-md p-6">
-              <h2 className="text-2xl font-semibold mb-4">Event Information</h2>
-              <div className="space-y-4">
-                <p><strong>Dates:</strong> {startDate} - {endDate}</p>
-                <p><strong>Location:</strong> {eventDetails.address}</p>
-                {eventDetails.website && (
-                  <p>
-                    <strong>Website: </strong>
-                    <a
-                      href={eventDetails.website}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-blue-600 hover:text-blue-700"
-                    >
-                      Visit Event Website
-                    </a>
-                  </p>
-                )}
-              </div>
-            </div>
-          </div>
-
-          <div>
-            <div className="bg-white rounded-lg shadow-md p-6">
-              <h2 className="text-2xl font-semibold mb-4">Quick Stats</h2>
-              <div className="space-y-2">
-                <p><strong>Event Type:</strong> {eventDetails.event_type_string}</p>
-                <p><strong>District:</strong> {eventDetails.district?.display_name || "N/A"}</p>
-              </div>
-            </div>
-          </div>
+      {/* Tabs */}
+      <div className="container mx-auto px-4 flex-grow"> {/* Added flex-grow */}
+        <div className="border-b border-gray-200 mt-8">
+          <nav className="flex gap-4">
+            <button
+              className={`py-4 px-6 font-medium transition-colors ${
+                activeTab === 'info'
+                  ? 'border-b-2 border-blue-600 text-blue-600'
+                  : 'text-gray-500 hover:text-gray-700'
+              }`}
+              onClick={() => setActiveTab('info')}
+            >
+              Event Information
+            </button>
+            <button
+              className={`py-4 px-6 font-medium transition-colors ${
+                activeTab === 'requests'
+                  ? 'border-b-2 border-blue-600 text-blue-600'
+                  : 'text-gray-500 hover:text-gray-700'
+              }`}
+              onClick={() => setActiveTab('requests')}
+            >
+              Team Requests
+            </button>
+          </nav>
         </div>
 
-        {/* Teams List */}
-        <div className="mb-12">
-          <h2 className="text-2xl font-semibold mb-6">Participating Teams</h2>
-          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {teams.map(team => (
-              <TeamCard key={team.key} team={team} />
-            ))}
-          </div>
+        {/* Tab Content */}
+        <div className="py-8 h-full"> {/* Added h-full */}
+          {activeTab === 'info' ? (
+            <>
+              {/* Event Details Grid */}
+              <div className="grid md:grid-cols-3 gap-8 mb-12">
+                <div className="col-span-2">
+                  <div className="bg-white rounded-lg shadow-md p-6">
+                    <h2 className="text-2xl font-semibold mb-4">Event Information</h2>
+                    <div className="space-y-4">
+                      <p><strong>Dates:</strong> {startDate} - {endDate}</p>
+                      <p><strong>Location:</strong> {eventDetails.address}</p>
+                      {eventDetails.website && (
+                        <p>
+                          <strong>Website: </strong>
+                          <a
+                            href={eventDetails.website}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-blue-600 hover:text-blue-700"
+                          >
+                            Visit Event Website
+                          </a>
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                </div>
+
+                <div>
+                  <div className="bg-white rounded-lg shadow-md p-6">
+                    <h2 className="text-2xl font-semibold mb-4">Quick Stats</h2>
+                    <div className="space-y-2">
+                      <p><strong>Event Type:</strong> {eventDetails.event_type_string}</p>
+                      <p><strong>District:</strong> {eventDetails.district?.display_name || "N/A"}</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Teams List */}
+              <div className="mb-12">
+                <h2 className="text-2xl font-semibold mb-6">Participating Teams</h2>
+                <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {teams.map(team => (
+                    <TeamCard key={team.key} team={team} />
+                  ))}
+                </div>
+              </div>
+            </>
+          ) : activeTab === "requests" ? (
+            <div className="h-full flex flex-col"> {/* Added flex container */}
+              <h2 className="text-2xl font-semibold mb-6">
+                Active Requests from Event Teams ({eventRequests.length})
+              </h2>
+              {eventRequests.length > 0 ? (
+                <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {eventRequests.map((request) => (
+                    <ItemCard
+                      key={request.id}
+                      item={request}
+                      currentUser={user}
+                      type="request"
+                      itemDistance={isAuthenticated ? haversine(
+                        user.formatted_address.latitude,
+                        user.formatted_address.longitude,
+                        request.user.formatted_address.latitude,
+                        request.user.formatted_address.longitude
+                      ).toFixed(1) : null}
+                    />
+                  ))}
+                </div>
+              ) : (
+                <div className="flex-grow flex items-center justify-center"> {/* Made empty state fill space */}
+                  <div className="text-center text-gray-600">
+                    No active requests from teams at this event.
+                  </div>
+                </div>
+              )}
+            </div>
+          ) : (
+            <>
+            </>
+          )}
         </div>
-      </div >
+      </div>
 
       <Footer />
-    </div >
+    </div>
   );
 };
 
