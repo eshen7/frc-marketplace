@@ -1,14 +1,14 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import TopBar from "../../components/TopBar";
 import Footer from "../../components/Footer";
 import ProfilePhoto from "../../components/ProfilePhoto";
-import { FaMapMarkerAlt, FaCalendarAlt, FaLink, FaUsers, FaArrowLeft } from "react-icons/fa";
+import { FaMapMarkerAlt, FaCalendarAlt, FaLink, FaUsers, FaArrowLeft, FaPlay, FaPause, FaTh, FaExpand, FaCompress } from "react-icons/fa";
 import { motion } from "framer-motion";
 import { useData } from "../../contexts/DataContext";
 import ItemCard from "../../components/ItemCard";
 import { useUser } from "../../contexts/UserContext";
-import { haversine } from "../../utils/utils";
+import LoanedPartCard from "../../components/LoanedPartCard";
 
 const TeamCard = ({ team }) => (
   <motion.div
@@ -18,9 +18,10 @@ const TeamCard = ({ team }) => (
     <div className="flex items-center gap-4">
       <div className="flex-shrink-0">
         <ProfilePhoto
-          imageUrl={`https://frcteamimages.en.galactictech.net/frc${team.team_number}.jpg`}
-          size={60}
-          name={`Team ${team.team_number}`}
+          src={`https://www.thebluealliance.com/avatar/2025/frc${team.team_number}.png`}
+          teamNumber={team.team_number}
+          alt={"Team Logo"}
+          className={"h-[40px] w-[40px]"}
         />
       </div>
       <div className="flex-grow min-w-0">
@@ -57,6 +58,9 @@ const CompSite = () => {
   const [teams, setTeams] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [teamLoans, setTeamLoans] = useState([]);
+  const [isDisplayMode, setIsDisplayMode] = useState(false);
+  const [isFullscreen, setIsFullscreen] = useState(false);
 
   useEffect(() => {
     const fetchEventData = async () => {
@@ -94,10 +98,122 @@ const CompSite = () => {
     fetchEventData();
   }, [eventKey]);
 
+  // Reset display mode when switching tabs
+  useEffect(() => {
+    setIsDisplayMode(false);
+  }, [activeTab]);
+
   // Filter requests for teams at this competition
-  const eventRequests = requests.filter(request => 
+  const eventRequests = requests.filter(request =>
     teams.some(team => team.team_number === request.user.team_number)
   );
+
+  // Check if current team is participating
+  const isTeamParticipating = isAuthenticated && teams.some(
+    team => team.team_number === user?.team_number
+  );
+
+  // Filter requests for the logged-in team
+  const teamRequests = requests.filter(
+    request => request.user.team_number === user?.team_number
+  );
+
+  const renderRequestsContent = () => {
+    if (eventRequests.length === 0) {
+      return (
+        <div className="flex-grow flex items-center justify-center">
+          <div className="text-center text-gray-600">
+            No active requests from teams at this event.
+          </div>
+        </div>
+      );
+    }
+
+    if (isFullscreen) {
+      const repeatedRequests = () => {
+        switch (eventRequests.length) {
+          case 1:
+            return Array(4).fill(eventRequests).flat();
+          case 2: 
+            return Array(3).fill(eventRequests).flat();
+          default:
+            return Array(2).fill(eventRequests).flat();
+        }
+      };
+
+      return (
+        <div className="fixed inset-0 bg-gray-900 z-50">
+          <div className="absolute top-4 right-4 space-x-4">
+            <button
+              onClick={() => setIsFullscreen(false)}
+              className="p-3 rounded-full bg-white text-gray-800 hover:bg-gray-100 transition-colors"
+              title="Exit Fullscreen"
+            >
+              <FaCompress />
+            </button>
+          </div>
+          <div className="h-full w-full overflow-hidden px-8">
+            <div className="flex animate-scroll gap-8 py-12 items-center h-full">
+              {repeatedRequests().map((request, index) => (
+                <div 
+                  key={`${request.id}-${index}`} 
+                  className="flex-shrink-0 w-[300px]"
+                >
+                  <ItemCard
+                    item={request}
+                    currentUser={user}
+                    type="request"
+                    itemDistance={0}
+                  />
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    return isDisplayMode ? (
+      <div className="relative w-full overflow-hidden bg-gray-50 rounded-lg p-4">
+        <div className="flex animate-scroll gap-6 py-4">
+          {/* First set of cards */}
+          {eventRequests.map((request) => (
+            <div key={request.id} className="flex-shrink-0 w-[350px]">
+              <ItemCard
+                item={request}
+                currentUser={user}
+                type="request"
+                itemDistance={0}
+              />
+            </div>
+          ))}
+          {/* Duplicate set for seamless loop */}
+          {eventRequests.map((request) => (
+            <div key={`${request.id}-duplicate`} className="flex-shrink-0 w-[350px]">
+              <ItemCard
+                item={request}
+                currentUser={user}
+                type="request"
+                itemDistance={0}
+              />
+            </div>
+          ))}
+        </div>
+      </div>
+    ) : (
+      <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        {eventRequests.map((request) => (
+          <ItemCard
+            key={request.id}
+            item={request}
+            currentUser={user}
+            type="request"
+            itemDistance={0}
+          />
+        ))}
+      </div>
+    );
+  };
 
   if (loading) {
     return (
@@ -152,7 +268,7 @@ const CompSite = () => {
 
       {/* Event Header - Updated design */}
       <div className="bg-gradient-to-r from-blue-600 to-blue-800 text-white">
-        <div className="container mx-auto px-4 py-12">
+        <div className="container mx-auto px-4 sm:py-12 pb-12 pt-16">
           <h1 className="text-3xl md:text-4xl font-bold mb-6">{eventDetails?.name}</h1>
           <div className="flex flex-wrap items-center gap-6 text-gray-100">
             <div className="flex items-center gap-2">
@@ -176,25 +292,34 @@ const CompSite = () => {
         <div className="border-b border-gray-200 mt-8">
           <nav className="flex gap-4">
             <button
-              className={`py-4 px-6 font-medium transition-colors ${
-                activeTab === 'info'
-                  ? 'border-b-2 border-blue-600 text-blue-600'
-                  : 'text-gray-500 hover:text-gray-700'
-              }`}
+              className={`py-4 px-6 font-medium transition-colors ${activeTab === 'info'
+                ? 'border-b-2 border-blue-600 text-blue-600'
+                : 'text-gray-500 hover:text-gray-700'
+                }`}
               onClick={() => setActiveTab('info')}
             >
               Event Information
             </button>
             <button
-              className={`py-4 px-6 font-medium transition-colors ${
-                activeTab === 'requests'
-                  ? 'border-b-2 border-blue-600 text-blue-600'
-                  : 'text-gray-500 hover:text-gray-700'
-              }`}
+              className={`py-4 px-6 font-medium transition-colors ${activeTab === 'requests'
+                ? 'border-b-2 border-blue-600 text-blue-600'
+                : 'text-gray-500 hover:text-gray-700'
+                }`}
               onClick={() => setActiveTab('requests')}
             >
               Team Requests
             </button>
+            {isTeamParticipating && (
+              <button
+                className={`py-4 px-6 font-medium transition-colors ${activeTab === 'profile'
+                  ? 'border-b-2 border-blue-600 text-blue-600'
+                  : 'text-gray-500 hover:text-gray-700'
+                  }`}
+                onClick={() => setActiveTab('profile')}
+              >
+                Team Profile
+              </button>
+            )}
           </nav>
         </div>
 
@@ -229,7 +354,7 @@ const CompSite = () => {
 
                 <div>
                   <div className="bg-white rounded-lg shadow-md p-6">
-                    <h2 className="text-2xl font-semibold mb-4">Quick Stats</h2>
+                    <h2 className="text-2xl font-semibold mb-4">Details</h2>
                     <div className="space-y-2">
                       <p><strong>Event Type:</strong> {eventDetails.event_type_string}</p>
                       <p><strong>District:</strong> {eventDetails.district?.display_name || "N/A"}</p>
@@ -250,38 +375,81 @@ const CompSite = () => {
             </>
           ) : activeTab === "requests" ? (
             <div className="h-full flex flex-col"> {/* Added flex container */}
-              <h2 className="text-2xl font-semibold mb-6">
-                Active Requests from Event Teams ({eventRequests.length})
-              </h2>
-              {eventRequests.length > 0 ? (
-                <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {eventRequests.map((request) => (
-                    <ItemCard
-                      key={request.id}
-                      item={request}
-                      currentUser={user}
-                      type="request"
-                      itemDistance={isAuthenticated ? haversine(
-                        user.formatted_address.latitude,
-                        user.formatted_address.longitude,
-                        request.user.formatted_address.latitude,
-                        request.user.formatted_address.longitude
-                      ).toFixed(1) : null}
-                    />
-                  ))}
-                </div>
-              ) : (
-                <div className="flex-grow flex items-center justify-center"> {/* Made empty state fill space */}
-                  <div className="text-center text-gray-600">
-                    No active requests from teams at this event.
+              <div className="flex justify-between items-center mb-6">
+                <h2 className="text-2xl font-semibold">
+                  Active Requests from Event Teams ({eventRequests.length})
+                </h2>
+                {eventRequests.length > 0 && (
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => setIsDisplayMode(!isDisplayMode)}
+                      className={`p-3 rounded-full transition-colors ${isDisplayMode
+                        ? 'bg-blue-600 text-white hover:bg-blue-700'
+                        : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                        }`}
+                      title={isDisplayMode ? "Grid View" : "Scroll View"}
+                    >
+                      {isDisplayMode ? <FaTh /> : <FaPlay />}
+                    </button>
+                    {isDisplayMode && (
+                      <button
+                        onClick={() => setIsFullscreen(true)}
+                        className="p-3 rounded-full bg-gray-100 text-gray-600 hover:bg-gray-200 transition-colors"
+                        title="Fullscreen Mode"
+                      >
+                        <FaExpand />
+                      </button>
+                    )}
                   </div>
-                </div>
-              )}
+                )}
+              </div>
+              {renderRequestsContent()}
             </div>
-          ) : (
-            <>
-            </>
-          )}
+          ) : activeTab === 'profile' && isTeamParticipating ? (
+            <div className="h-full flex flex-col">
+              {/* Team Requests Section */}
+              <div className="mb-12">
+                <h2 className="text-2xl font-semibold mb-6">
+                  Your Team's Active Requests ({teamRequests.length})
+                </h2>
+                {teamRequests.length > 0 ? (
+                  <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {teamRequests.map((request) => (
+                      <ItemCard
+                        key={request.id}
+                        item={request}
+                        currentUser={user}
+                        type="request"
+                        itemDistance={0}
+                      />
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-center text-gray-600 py-8">
+                    Your team has no active requests at this event.
+                  </div>
+                )}
+              </div>
+
+              {/* Loaned Parts Section */}
+              <div>
+                <h2 className="text-2xl font-semibold mb-6">
+                  Parts Loaned Out ({teamLoans.length})
+                </h2>
+                {teamLoans.length > 0 ? (
+                  <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {teamLoans.map((loan) => (
+                      <LoanedPartCard key={loan.id} loan={loan} />
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-center text-gray-600 py-8">
+                    Your team hasn't loaned any parts at this event.
+                  </div>
+                )}
+              </div>
+            </div>
+          ) : null}
         </div>
       </div>
 

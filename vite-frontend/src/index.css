@@ -3,3 +3,31 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@keyframes scroll {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
+}
+
+.animate-scroll {
+  animation: scroll 30s linear infinite;
+}
+
+/* Pause animation on hover */
+.animate-scroll:hover {
+  animation-play-state: paused;
+}
+
+/* Fullscreen mode styles */
+.fixed .animate-scroll {
+  animation: scroll 60s linear infinite;
+}
+
+/* Remove the transform scale for fullscreen */
+.fixed .animate-scroll > div {
+  transform: none;
+}
