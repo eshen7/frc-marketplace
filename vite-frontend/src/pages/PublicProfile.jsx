@@ -10,6 +10,7 @@ import { useUser } from "../contexts/UserContext";
 import ProfilePhoto from "../components/ProfilePhoto";
 import { haversine } from "../utils/utils";
 import HelmetComp from "../components/HelmetComp";
+import CompCard from "../components/CompCard";
 
 const PublicProfileComponent = ({ user }) => {
   const navigate = useNavigate();
@@ -18,10 +19,10 @@ const PublicProfileComponent = ({ user }) => {
   const [loadingRequests, setLoadingRequests] = useState(true);
   const [sales, setSales] = useState([]);
   const [loadingSales, setLoadingSales] = useState(true);
+  const [competitions, setCompetitions] = useState([]);
+  const [loadingComps, setLoadingComps] = useState(true);
 
   const { user: currentUser, loadingUser, isAuthenticated } = useUser();
-
-  const [onRequests, setOnRequests] = useState(true);
 
   const [salesDisplayLimit, setSalesDisplayLimit] = useState(12);
   const [requestsDisplayLimit, setRequestsDisplayLimit] = useState(12);
@@ -122,13 +123,34 @@ const PublicProfileComponent = ({ user }) => {
     fetchSales();
   }, [user.team_number]);
 
-  const handleClickRequests = () => {
-    setOnRequests(true);
-  };
+  useEffect(() => {
+    const fetchTeamEvents = async () => {
+      try {
+        const response = await fetch(
+          `https://www.thebluealliance.com/api/v3/team/frc${user.team_number}/events/2025`,
+          {
+            headers: {
+              "X-TBA-Auth-Key": import.meta.env.VITE_TBA_API_KEY
+            }
+          }
+        );
+        const data = await response.json();
+        // Filter for regular season events and sort by date
+        const validEvents = data
+          .filter(event => event.week >= 0 && event.week <= 6)
+          .sort((a, b) => new Date(a.start_date) - new Date(b.start_date));
+        setCompetitions(validEvents);
+      } catch (err) {
+        console.error("Error fetching team events:", err);
+      } finally {
+        setLoadingComps(false);
+      }
+    };
 
-  const handleClickSales = () => {
-    setOnRequests(false);
-  };
+    fetchTeamEvents();
+  }, [user.team_number]);
+
+  const [activeTab, setActiveTab] = useState('requests'); // Changed from onRequests boolean
 
   return (
     <>
@@ -197,111 +219,143 @@ const PublicProfileComponent = ({ user }) => {
           </div>
         </div>
 
-        <div className="pt-5">
-          {/* Part Requests Section */}
-          <div className="flex-grow mx-6 mb-10">
-            <div className="flex flex-row justify-between">
-              <button
-                className={`text-xl font-semibold text-gray-700 mb-4 py-2 px-4 rounded-md hover:bg-gray-300 ${onRequests ? "bg-gray-200" : ""
-                  }`}
-                onClick={handleClickRequests}
-              >
-                Requests
-              </button>
-              <button
-                className={`text-xl font-semibold text-gray-700 mb-4 py-2 px-4 rounded-md hover:bg-gray-300 ${onRequests ? "" : "bg-gray-200"
-                  }`}
-                onClick={handleClickSales}
-              >
-                Sales
-              </button>
+        {/* Team's Competitions Section */}
+        <div className="mt-8 mb-8">
+          <h2 className="text-2xl font-bold text-gray-800 mb-4">
+            2025 Competition Schedule
+          </h2>
+          {loadingComps ? (
+            <div className="flex justify-center">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
             </div>
-            {/* Show Requests */}
-            {onRequests ? (
-              <div className="flex flex-col">
-                {!loadingRequests && requests.length > 0 ? (
-                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4 min-w-[300px]">
-                    {requests.slice(0, requestsDisplayLimit).map((request) => (
-                      <ItemCard
-                        key={request.id}
-                        item={request}
-                        currentUser={currentUser}
-                        type="request"
-                        itemDistance={
-                          isAuthenticated
-                            ? haversine(
-                              user.formatted_address.latitude,
-                              user.formatted_address.longitude,
-                              request.user.formatted_address.latitude,
-                              request.user.formatted_address.longitude
-                            ).toFixed(1)
-                            : null
-                        }
-                      />
-                    ))}
-                    {requests.length > requestsDisplayLimit && (
-                      <div
-                        ref={requestsObserverTarget}
-                        className="col-span-full flex justify-center p-4"
-                      >
-                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
-                      </div>
-                    )}
-                  </div>
-                ) : loadingRequests ? (
-                  <div className="flex items-center justify-center">
-                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
-                    <p className="ml-2">Loading Requests...</p>
-                  </div>
-                ) : (
-                  <p className="text-gray-500">
-                    This user hasn't made any requests yet.
-                  </p>
-                )}
-              </div>
-            ) : (
-              <div className="flex flex-col">
-                {!loadingSales && sales.length > 0 ? (
-                  <div className="flex flex-col sm:grid sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4 min-w-[300px]">
-                    {sales.slice(0, salesDisplayLimit).map((sale) => (
-                      <ItemCard
-                        key={sale.id}
-                        item={sale}
-                        currentUser={currentUser}
-                        type="sale"
-                        itemDistance={
-                          isAuthenticated
-                            ? haversine(
+          ) : competitions.length > 0 ? (
+            <div className="space-y-4">
+              {competitions.map((comp) => (
+                <CompCard key={comp.key} comp={comp} />
+              ))}
+            </div>
+          ) : (
+            <div className="text-center text-gray-600 py-8 bg-white rounded-lg shadow">
+              No competitions scheduled for 2025 yet.
+            </div>
+          )}
+        </div>
+
+        <div className="pt-5">
+          <div className="flex-grow mx-6 mb-10">
+            <div className="border-b border-gray-200">
+              <nav className="flex gap-4">
+                <button
+                  className={`py-4 px-6 font-medium transition-colors ${
+                    activeTab === 'requests'
+                      ? 'border-b-2 border-blue-600 text-blue-600'
+                      : 'text-gray-500 hover:text-gray-700'
+                  }`}
+                  onClick={() => setActiveTab('requests')}
+                >
+                  Requests
+                </button>
+                <button
+                  className={`py-4 px-6 font-medium transition-colors ${
+                    activeTab === 'sales'
+                      ? 'border-b-2 border-blue-600 text-blue-600'
+                      : 'text-gray-500 hover:text-gray-700'
+                  }`}
+                  onClick={() => setActiveTab('sales')}
+                >
+                  Sales
+                </button>
+              </nav>
+            </div>
+
+            {/* Tab Content */}
+            <div className="py-8">
+              {activeTab === 'requests' ? (
+                <div className="flex flex-col">
+                  {!loadingRequests && requests.length > 0 ? (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4 min-w-[300px]">
+                      {requests.slice(0, requestsDisplayLimit).map((request) => (
+                        <ItemCard
+                          key={request.id}
+                          item={request}
+                          currentUser={currentUser}
+                          type="request"
+                          itemDistance={
+                            isAuthenticated
+                              ? haversine(
                                 user.formatted_address.latitude,
                                 user.formatted_address.longitude,
-                                sale.user.formatted_address.latitude,
-                                sale.user.formatted_address.longitude
+                                request.user.formatted_address.latitude,
+                                request.user.formatted_address.longitude
                               ).toFixed(1)
-                            : null
-                        }
-                      />
-                    ))}
-                    {sales.length > salesDisplayLimit && (
-                      <div
-                        ref={salesObserverTarget}
-                        className="col-span-full flex justify-center p-4"
-                      >
-                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
-                      </div>
-                    )}
-                  </div>
-                ) : loadingSales ? (
-                  <div className="flex items-center justify-center">
-                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
-                    <p className="ml-2">Loading Sales...</p>
-                  </div>
-                ) : (
-                  <p className="text-gray-500">
-                    This user hasn't made any sales yet.
-                  </p>
-                )}
-              </div>
-            )}
+                              : null
+                          }
+                        />
+                      ))}
+                      {requests.length > requestsDisplayLimit && (
+                        <div
+                          ref={requestsObserverTarget}
+                          className="col-span-full flex justify-center p-4"
+                        >
+                          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
+                        </div>
+                      )}
+                    </div>
+                  ) : loadingRequests ? (
+                    <div className="flex items-center justify-center">
+                      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
+                      <p className="ml-2">Loading Requests...</p>
+                    </div>
+                  ) : (
+                    <p className="text-gray-500">
+                      This user hasn't made any requests yet.
+                    </p>
+                  )}
+                </div>
+              ) : (
+                <div className="flex flex-col">
+                  {!loadingSales && sales.length > 0 ? (
+                    <div className="flex flex-col sm:grid sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4 min-w-[300px]">
+                      {sales.slice(0, salesDisplayLimit).map((sale) => (
+                        <ItemCard
+                          key={sale.id}
+                          item={sale}
+                          currentUser={currentUser}
+                          type="sale"
+                          itemDistance={
+                            isAuthenticated
+                              ? haversine(
+                                  user.formatted_address.latitude,
+                                  user.formatted_address.longitude,
+                                  sale.user.formatted_address.latitude,
+                                  sale.user.formatted_address.longitude
+                                ).toFixed(1)
+                              : null
+                          }
+                        />
+                      ))}
+                      {sales.length > salesDisplayLimit && (
+                        <div
+                          ref={salesObserverTarget}
+                          className="col-span-full flex justify-center p-4"
+                        >
+                          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
+                        </div>
+                      )}
+                    </div>
+                  ) : loadingSales ? (
+                    <div className="flex items-center justify-center">
+                      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
+                      <p className="ml-2">Loading Sales...</p>
+                    </div>
+                  ) : (
+                    <p className="text-gray-500">
+                      This user hasn't made any sales yet.
+                    </p>
+                  )}
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </div>
