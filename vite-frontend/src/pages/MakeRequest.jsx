@@ -24,10 +24,12 @@ import axiosInstance from "../utils/axiosInstance";
 import { useData } from "../contexts/DataContext";
 import { useNavigate } from "react-router-dom";
 import HelmetComp from "../components/HelmetComp";
+import { useUser } from "../contexts/UserContext";
 
 const INITIAL_FORM_STATE = {
   quantity: 1,
   additionalInfo: "",
+  eventKey: "",
 };
 
 const PartRequestForm = () => {
@@ -43,6 +45,10 @@ const PartRequestForm = () => {
     message: "",
     severity: "success",
   });
+  const { user } = useUser();
+  const [competitions, setCompetitions] = useState([]);
+  const [loadingComps, setLoadingComps] = useState(true);
+  const { addItem } = useData();  // Add this line
 
   useEffect(() => {
     fetchParts();
@@ -60,6 +66,36 @@ const PartRequestForm = () => {
     }
   };
 
+  // Add useEffect to fetch team's competitions
+  useEffect(() => {
+    const fetchTeamEvents = async () => {
+      if (!user?.team_number) return;
+      
+      try {
+        const response = await fetch(
+          `https://www.thebluealliance.com/api/v3/team/frc${user.team_number}/events/2025`,
+          {
+            headers: {
+              "X-TBA-Auth-Key": import.meta.env.VITE_TBA_API_KEY
+            }
+          }
+        );
+        const data = await response.json();
+        // Filter for regular season events and sort by date
+        const validEvents = data
+          .filter(event => event.week >= 0 && event.week <= 6)
+          .sort((a, b) => new Date(a.start_date) - new Date(b.start_date));
+        setCompetitions(validEvents);
+      } catch (err) {
+        console.error("Error fetching team events:", err);
+      } finally {
+        setLoadingComps(false);
+      }
+    };
+
+    fetchTeamEvents();
+  }, [user?.team_number]);
+
   const handleInputChange = (event) => {
     const { name, value } = event.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
@@ -72,25 +108,34 @@ const PartRequestForm = () => {
     setLoading(true);
 
     try {
-      setLoading(true);
       const requestData = {
         part_id: selectedPart,
         quantity: formData.quantity,
         additional_info: formData.additionalInfo,
         needed_date: new Date(dateNeeded).toISOString().split("T")[0],
+        event_key: formData.eventKey || null,
       };
 
-      await axiosInstance.post("/requests/", requestData);
+      const response = await axiosInstance.post("/requests/", requestData);
+      
+      // Add the new request to DataContext
+      addItem('requests', response.data);
+      
+      // Update navigation based on whether it's a competition request
+      const navigationPath = formData.eventKey 
+        ? `/comp/${formData.eventKey}` 
+        : "/requests";
+        
       setAlertState({
         open: true,
-        message:
-          "Request submitted successfully. Navigating to requests page...",
+        message: `Request submitted successfully. Navigating to ${formData.eventKey ? 'competition' : 'requests'} page...`,
         severity: "success",
       });
+      
       setSelectedPart("");
       setFormData(INITIAL_FORM_STATE);
       setDateNeeded(null);
-      setTimeout(() => navigate("/requests"), 3000);
+      setTimeout(() => navigate(navigationPath), 3000);
     } catch (error) {
       setAlertState({
         open: true,
@@ -213,6 +258,25 @@ const PartRequestForm = () => {
                 />
               </LocalizationProvider>
             </div>
+
+            <FormControl fullWidth margin="normal">
+              <InputLabel>At a Competition?</InputLabel>
+              <Select
+                name="eventKey"
+                value={formData.eventKey}
+                onChange={handleInputChange}
+                label="At a Competition?"
+              >
+                <MenuItem value="">
+                  <em>No</em>
+                </MenuItem>
+                {competitions.map((comp) => (
+                  <MenuItem key={comp.key} value={comp.key}>
+                    {comp.name} (Week {comp.week + 1})
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
 
             <TextField
               fullWidth

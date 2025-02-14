@@ -6,6 +6,7 @@ import { motion } from "framer-motion";
 import { FaSearch, FaFilter, FaArrowUp } from "react-icons/fa";
 import { useCompetitions } from "../../contexts/CompetitionsContext";
 import { AnimatePresence } from "framer-motion";
+import HelmetComp from "../../components/HelmetComp";
 
 const Comp = () => {
   const { competitions, loading, error } = useCompetitions();
@@ -32,7 +33,7 @@ const Comp = () => {
   const availableWeeks = [...new Set(competitions.map(comp => comp.week + 1))].sort((a, b) => a - b);
 
   const handleWeekToggle = (week) => {
-    setSelectedWeeks(prev => 
+    setSelectedWeeks(prev =>
       prev.includes(week)
         ? prev.filter(w => w !== week)
         : [...prev, week]
@@ -40,8 +41,8 @@ const Comp = () => {
   };
 
   // Updated filter function
-  const filteredComps = competitions.filter(comp => 
-    (searchTerm === '' || 
+  const filteredComps = competitions.filter(comp =>
+    (searchTerm === '' ||
       comp.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       comp.city.toLowerCase().includes(searchTerm.toLowerCase()) ||
       comp.state_prov.toLowerCase().includes(searchTerm.toLowerCase())
@@ -50,7 +51,7 @@ const Comp = () => {
   );
 
   const getDisplayedComps = () => {
-    switch(activeTab) {
+    switch (activeTab) {
       case 'regionals':
         return filteredComps.filter(comp => comp.event_type === 0);
       case 'districts':
@@ -67,6 +68,7 @@ const Comp = () => {
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 flex flex-col">
+        <HelmetComp title="2025 FRC Competitions" />
         <TopBar />
         <div className="flex items-center justify-center flex-grow">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
@@ -79,6 +81,7 @@ const Comp = () => {
   if (error) {
     return (
       <div className="min-h-screen bg-gray-50 flex flex-col">
+        <HelmetComp title="2025 FRC Competitions" />
         <TopBar />
         <div className="container mx-auto px-4 py-16 text-center flex-grow">
           <h2 className="text-2xl text-red-600">{error}</h2>
@@ -90,15 +93,16 @@ const Comp = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-50 to-gray-100 flex flex-col">
+      <HelmetComp title="2025 FRC Competitions" />
       <TopBar />
-      
+
       {/* Hero Section */}
       <div className="bg-gradient-to-r from-blue-600 to-blue-800 py-8 sm:py-12">
         <div className="container mx-auto px-4">
           <h1 className="text-3xl sm:text-4xl font-bold text-white text-center mb-6 sm:mb-8">
             2025 FRC Competitions
           </h1>
-          
+
           {/* Search and Filter Section */}
           <div className="max-w-xl mx-auto relative px-4">
             <div className="flex gap-2 mb-4">
@@ -114,11 +118,10 @@ const Comp = () => {
               </div>
               <button
                 onClick={() => setShowWeekFilter(!showWeekFilter)}
-                className={`px-4 py-3 rounded-lg shadow-lg transition-colors ${
-                  showWeekFilter || selectedWeeks.length > 0
-                    ? 'bg-blue-500 text-white'
-                    : 'bg-white text-gray-700'
-                }`}
+                className={`px-4 py-3 rounded-lg shadow-lg transition-colors ${showWeekFilter || selectedWeeks.length > 0
+                  ? 'bg-blue-500 text-white'
+                  : 'bg-white text-gray-700'
+                  }`}
               >
                 <FaFilter />
               </button>
@@ -162,11 +165,10 @@ const Comp = () => {
           ].map(tab => (
             <button
               key={tab.id}
-              className={`px-4 sm:px-6 py-2 rounded-full font-medium text-sm sm:text-base transition-all duration-300 ${
-                activeTab === tab.id
-                  ? 'bg-blue-600 text-white shadow-lg'
-                  : 'bg-white text-gray-600 hover:bg-gray-100'
-              }`}
+              className={`px-4 sm:px-6 py-2 rounded-full font-medium text-sm sm:text-base transition-all duration-300 ${activeTab === tab.id
+                ? 'bg-blue-600 text-white shadow-lg'
+                : 'bg-white text-gray-600 hover:bg-gray-100'
+                }`}
               onClick={() => setActiveTab(tab.id)}
             >
               {tab.label}

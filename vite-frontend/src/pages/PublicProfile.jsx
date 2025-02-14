@@ -220,8 +220,8 @@ const PublicProfileComponent = ({ user }) => {
         </div>
 
         {/* Team's Competitions Section */}
-        <div className="mt-8 mb-8">
-          <h2 className="text-2xl font-bold text-gray-800 mb-4">
+        <div className="container mx-auto mt-12 mb-12 px-6">
+          <h2 className="text-2xl font-bold text-gray-800 mb-6">
             2025 Competition Schedule
           </h2>
           {loadingComps ? (
@@ -229,7 +229,7 @@ const PublicProfileComponent = ({ user }) => {
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
             </div>
           ) : competitions.length > 0 ? (
-            <div className="space-y-4">
+            <div className="space-y-6">
               {competitions.map((comp) => (
                 <CompCard key={comp.key} comp={comp} />
               ))}
@@ -241,9 +241,9 @@ const PublicProfileComponent = ({ user }) => {
           )}
         </div>
 
-        <div className="pt-5">
-          <div className="flex-grow mx-6 mb-10">
-            <div className="border-b border-gray-200">
+        <div className="container mx-auto px-6">
+          <div className="flex-grow mb-12">
+            <div className="border-b border-gray-200 mb-8">
               <nav className="flex gap-4">
                 <button
                   className={`py-4 px-6 font-medium transition-colors ${
@@ -269,7 +269,7 @@ const PublicProfileComponent = ({ user }) => {
             </div>
 
             {/* Tab Content */}
-            <div className="py-8">
+            <div className="py-6">
               {activeTab === 'requests' ? (
                 <div className="flex flex-col">
                   {!loadingRequests && requests.length > 0 ? (

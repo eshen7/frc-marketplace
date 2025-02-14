@@ -10,6 +10,7 @@ from address.models import AddressField, Address, Locality
 import logging
 import os
 from django.core.exceptions import ValidationError
+from django.utils import timezone
 
 # Default address for superusers
 DEFAULT_ADDRESS = {"raw": "1001 Avenida De Las Americas, Houston, TX 77010"}
@@ -159,6 +160,30 @@ class PartRequest(models.Model):
     )  # -1 if they are willing to trade, 0 for donation
     # is_open = models.BooleanField(default=True) ADD IN V2
 
+    # New fields
+    is_fulfilled = models.BooleanField(default=False)
+    fulfilled_by = models.ForeignKey(
+        User,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='fulfilled_requests'
+    )
+    fulfillment_date = models.DateTimeField(null=True, blank=True)
+    requires_return = models.BooleanField(default=False)
+    is_returned = models.BooleanField(default=False)
+    return_date = models.DateTimeField(null=True, blank=True)
+    event_key = models.CharField(max_length=20, null=True, blank=True)  # TBA event key
+
+    def save(self, *args, **kwargs):
+        # Auto-update fulfillment date when request is fulfilled
+        if self.is_fulfilled and not self.fulfillment_date:
+            self.fulfillment_date = timezone.now()
+        # Auto-update return date when item is returned
+        if self.is_returned and not self.return_date:
+            self.return_date = timezone.now()
+        super().save(*args, **kwargs)
+
 
 class PartSale(models.Model):
     """Part Sale Model."""
@@ -174,6 +199,23 @@ class PartSale(models.Model):
     additional_info = models.TextField(null=True, blank=True)
     condition = models.CharField(max_length=255, null=True, blank=True)
     # is_listed = models.BooleanField(default=True) ADD IN V2
+
+    # New fields
+    is_sold = models.BooleanField(default=False)
+    sold_to = models.ForeignKey(
+        User,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='purchased_items'
+    )
+    sale_date = models.DateTimeField(null=True, blank=True)
+
+    def save(self, *args, **kwargs):
+        # Auto-update sale date when item is marked as sold
+        if self.is_sold and not self.sale_date:
+            self.sale_date = timezone.now()
+        super().save(*args, **kwargs)
 
 
 class Message(models.Model):

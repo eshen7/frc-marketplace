@@ -233,8 +233,7 @@ class PartCategorySerializer(serializers.ModelSerializer):
 
 class PartRequestSerializer(serializers.ModelSerializer):
     """Serializer for the PartRequest model."""
-
-    # Include part_id for write operations
+    
     part_id = serializers.PrimaryKeyRelatedField(
         queryset=Part.objects.all(), source="part", write_only=True
     )
@@ -249,8 +248,21 @@ class PartRequestSerializer(serializers.ModelSerializer):
             "needed_date",
             "needed_for",
             "additional_info",
+            "is_fulfilled",
+            "fulfilled_by",
+            "fulfillment_date",
+            "requires_return",
+            "is_returned",
+            "return_date",
+            "event_key",
         ]
-        read_only_fields = ["user", "request_date"]
+        read_only_fields = [
+            "user",
+            "request_date",
+            "fulfilled_by",
+            "fulfillment_date",
+            "return_date"
+        ]
 
     def create(self, validated_data):
         """Add the requesting user to the validated data."""
@@ -285,8 +297,16 @@ class PartSaleSerializer(serializers.ModelSerializer):
             "sale_creation_date",
             "additional_info",
             "condition",
+            "is_sold",
+            "sold_to",
+            "sale_date",
         ]
-        read_only_fields = ["user", "sale_creation_date"]
+        read_only_fields = [
+            "user", 
+            "sale_creation_date",
+            "sale_date",
+            "sold_to"
+        ]
 
     def create(self, validated_data):
         """Add the selling user to the validated data."""
@@ -300,6 +320,8 @@ class PartSaleSerializer(serializers.ModelSerializer):
 
         data["part"] = PartSerializer(instance.part).data
         data["user"] = PublicUserSerializer(instance.user).data
+        if instance.sold_to:
+            data["sold_to"] = PublicUserSerializer(instance.sold_to).data
         return data
 
 

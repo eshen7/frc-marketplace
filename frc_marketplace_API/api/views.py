@@ -35,6 +35,15 @@ from .tasks import send_email_task, send_dm_notification, send_daily_requests_di
 from django.contrib.auth.tokens import default_token_generator
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from django.utils.encoding import force_bytes, force_str  # use force_str instead of force_text in newer Django versions
+from channels.layers import get_channel_layer
+from asgiref.sync import async_to_sync
+from uuid import UUID
+
+class UUIDEncoder(json.JSONEncoder):
+    def default(self, obj):
+        if isinstance(obj, UUID):
+            return str(obj)
+        return super().default(obj)
 
 
 @api_view(["GET"])
@@ -348,7 +357,38 @@ def part_request_views(request):
         )
 
         if serializer.is_valid():
-            serializer.save(user=user)
+            new_request = serializer.save(user=user)
+            
+            # Convert serializer data to JSON-safe format
+            serialized_data = json.loads(
+                json.dumps(serializer.data, cls=UUIDEncoder)
+            )
+            
+            # Get the channel layer and send WebSocket updates
+            channel_layer = get_channel_layer()
+            
+            # Send to the user's personal channel with correct type
+            async_to_sync(channel_layer.group_send)(
+                f"user_{user.team_number}",
+                {
+                    "type": "request.created",
+                    "request": serialized_data
+                }
+            )
+            
+            # If request is for a competition, send to event channel
+            if new_request.event_key:
+                async_to_sync(channel_layer.group_send)(
+                    f"event_{new_request.event_key}",
+                    {
+                        "type": "event.update",
+                        "message": {
+                            "type": "new_request",
+                            "request": serialized_data
+                        }
+                    }
+                )
+
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
@@ -859,6 +899,8 @@ def password_reset_confirm(request):
     except (TypeError, ValueError, OverflowError, User.DoesNotExist):
         return Response({'message': 'Invalid reset link'}, status=400)
 
+
+# For Testing
 @api_view(['GET'])
 def daily_digest_view(request):
     """

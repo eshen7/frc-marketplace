@@ -90,11 +90,11 @@ const AllRequests = () => {
   // Update Fuse instance to use requests from context
   const fuse = useMemo(() => new Fuse(requests, fuseOptions), [requests]);
 
-  // Update getFilteredResults to use requests from context
+  // Update getFilteredResults to filter out requests with event_key
   const getFilteredResults = () => {
-    let results = [...requests];
+    // First filter out requests that have an event_key
+    let results = requests.filter(request => !request.event_key);
 
-    // Calculate distances for all items first if user is authenticated
     if (user) {
       results = results.map(request => {
         if (!request.user?.formatted_address?.latitude || 

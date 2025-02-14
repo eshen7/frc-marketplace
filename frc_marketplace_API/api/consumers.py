@@ -114,6 +114,19 @@ class UserConsumer(AsyncJsonWebsocketConsumer):
                 )
 
                 logger.info(f"Message routed to receiver {receiver} and sender {sender}")
+            
+            elif message_type == 'new_request':
+                # Send to all connected clients (for multiple tabs/devices)
+                sender_group = f"user_{self.user_id}"
+                await self.channel_layer.group_send(
+                    sender_group,
+                    {
+                        "type": "request.created",
+                        "request": content.get('request')
+                    }
+                )
+                logger.info(f"New request broadcast to user {self.user_id}")
+                
         except Exception as e:
             logger.error(f"Error processing received message: {e}")
 
@@ -125,3 +138,86 @@ class UserConsumer(AsyncJsonWebsocketConsumer):
             logger.info(f"Message sent to client: {message}")
         except Exception as e:
             logger.error(f"Error sending message to client: {e}")
+
+    async def request_created(self, event):
+        """Handle new request notifications"""
+        try:
+            # Only send if the request hasn't been sent before
+            request_id = event["request"].get("id")
+            if not hasattr(self, 'sent_requests'):
+                self.sent_requests = set()
+            
+            if request_id not in self.sent_requests:
+                await self.send_json({
+                    "type": "new_request",
+                    "request": event["request"]
+                })
+                self.sent_requests.add(request_id)
+                logger.info("Request notification sent to client")
+        except Exception as e:
+            logger.error(f"Error sending request notification: {e}")
+
+class CompetitionConsumer(AsyncJsonWebsocketConsumer):
+    async def connect(self):
+        self.event_key = self.scope['url_route']['kwargs']['event_key']
+        self.event_group = f"event_{self.event_key}"
+
+        logger.info(f"Connecting user to event group: {self.event_group}")
+
+        try:
+            await self.channel_layer.group_add(
+                self.event_group,
+                self.channel_name
+            )
+            await self.accept()
+            logger.info(f"WebSocket connection established for event: {self.event_key}")
+        except Exception as e:
+            logger.error(f"Error during WebSocket connection: {e}")
+            await self.close()
+
+    async def disconnect(self, close_code):
+        logger.info(f"Disconnecting from event: {self.event_key}")
+        try:
+            await self.channel_layer.group_discard(
+                self.event_group,
+                self.channel_name
+            )
+        except Exception as e:
+            logger.error(f"Error during WebSocket disconnection: {e}")
+
+    async def receive_json(self, content):
+        logger.info(f"Received message in event {self.event_key}: {content}")
+        try:
+            message_type = content.get('type')
+            
+            if message_type == 'event_update':
+                # Broadcast to everyone in the event group
+                await self.channel_layer.group_send(
+                    self.event_group,
+                    {
+                        "type": "event.update",
+                        "message": content
+                    }
+                )
+        except Exception as e:
+            logger.error(f"Error processing received message: {e}")
+
+    async def event_update(self, event):
+        """Send event update to WebSocket"""
+        try:
+            message = event["message"]
+            # Only send if it's a new request we haven't sent before
+            if message.get("type") == "new_request":
+                request_id = message.get("request", {}).get("id")
+                if not hasattr(self, 'sent_requests'):
+                    self.sent_requests = set()
+                
+                if request_id not in self.sent_requests:
+                    await self.send_json(message)
+                    self.sent_requests.add(request_id)
+                    logger.info(f"Event update sent to client: {message}")
+            else:
+                await self.send_json(message)
+                logger.info(f"Event update sent to client: {message}")
+        except Exception as e:
+            logger.error(f"Error sending event update to client: {e}")

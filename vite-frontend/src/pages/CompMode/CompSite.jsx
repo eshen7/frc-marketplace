@@ -9,6 +9,8 @@ import { useData } from "../../contexts/DataContext";
 import ItemCard from "../../components/ItemCard";
 import { useUser } from "../../contexts/UserContext";
 import LoanedPartCard from "../../components/LoanedPartCard";
+import HelmetComp from "../../components/HelmetComp";
+import { useWebSocket } from "../../contexts/WebSocketContext";
 
 const TeamCard = ({ team }) => (
   <motion.div
@@ -53,7 +55,7 @@ const CompSite = () => {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('info');
   const { user, isAuthenticated } = useUser();
-  const { requests } = useData();
+  const { requests, addItem } = useData();  // Add addItem to destructuring
   const [eventDetails, setEventDetails] = useState(null);
   const [teams, setTeams] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -61,6 +63,8 @@ const CompSite = () => {
   const [teamLoans, setTeamLoans] = useState([]);
   const [isDisplayMode, setIsDisplayMode] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
+  const { connectToEvent, registerEventHandler } = useWebSocket();
+  const [eventRequests, setEventRequests] = useState([]);
 
   useEffect(() => {
     const fetchEventData = async () => {
@@ -98,15 +102,51 @@ const CompSite = () => {
     fetchEventData();
   }, [eventKey]);
 
+  useEffect(() => {
+    const cleanup = connectToEvent(eventKey);
+    
+    const handleEventUpdate = (data) => {
+      if (data.type === 'new_request' && data.request) {
+        // Check if request already exists before adding
+        setEventRequests(prev => {
+          const exists = prev.some(req => req.id === data.request.id);
+          if (!exists) {
+            return [data.request, ...prev];
+          }
+          return prev;
+        });
+      }
+    };
+
+    const unregister = registerEventHandler('eventUpdates', handleEventUpdate);
+
+    return () => {
+      cleanup();
+      unregister();
+    };
+  }, [eventKey, connectToEvent]);
+
   // Reset display mode when switching tabs
   useEffect(() => {
     setIsDisplayMode(false);
   }, [activeTab]);
 
-  // Filter requests for teams at this competition
-  const eventRequests = requests.filter(request =>
-    teams.some(team => team.team_number === request.user.team_number)
-  );
+  // Initialize eventRequests when teams or requests change
+  useEffect(() => {
+    const filteredRequests = requests.filter(request => 
+      teams.some(team => team.team_number === request.user.team_number) && 
+      request.event_key === eventKey
+    );
+    // Remove duplicates based on id
+    const uniqueRequests = filteredRequests.reduce((acc, current) => {
+      const exists = acc.find(item => item.id === current.id);
+      if (!exists) {
+        acc.push(current);
+      }
+      return acc;
+    }, []);
+    setEventRequests(uniqueRequests);
+  }, [teams, requests, eventKey]);
 
   // Check if current team is participating
   const isTeamParticipating = isAuthenticated && teams.some(
@@ -115,7 +155,8 @@ const CompSite = () => {
 
   // Filter requests for the logged-in team
   const teamRequests = requests.filter(
-    request => request.user.team_number === user?.team_number
+    request => request.user.team_number === user?.team_number && 
+               request.event_key === eventKey
   );
 
   const renderRequestsContent = () => {
@@ -131,14 +172,24 @@ const CompSite = () => {
 
     if (isFullscreen) {
       const repeatedRequests = () => {
+        let multiplier;
         switch (eventRequests.length) {
           case 1:
-            return Array(4).fill(eventRequests).flat();
+            multiplier = 4;
+            break;
           case 2: 
-            return Array(3).fill(eventRequests).flat();
+            multiplier = 3;
+            break;
           default:
-            return Array(2).fill(eventRequests).flat();
+            multiplier = 2;
         }
+
+        return Array(multiplier).fill().flatMap((_, arrayIndex) => 
+          eventRequests.map((request, requestIndex) => ({
+            ...request,
+            tempId: `${request.id}-array${arrayIndex}-index${requestIndex}`
+          }))
+        );
       };
 
       return (
@@ -154,9 +205,9 @@ const CompSite = () => {
           </div>
           <div className="h-full w-full overflow-hidden px-8">
             <div className="flex animate-scroll gap-8 py-12 items-center h-full">
-              {repeatedRequests().map((request, index) => (
+              {repeatedRequests().map((request) => (
                 <div 
-                  key={`${request.id}-${index}`} 
+                  key={request.tempId}  // Use tempId instead of combining id and index
                   className="flex-shrink-0 w-[300px]"
                 >
                   <ItemCard
@@ -176,9 +227,8 @@ const CompSite = () => {
     return isDisplayMode ? (
       <div className="relative w-full overflow-hidden bg-gray-50 rounded-lg p-4">
         <div className="flex animate-scroll gap-6 py-4">
-          {/* First set of cards */}
-          {eventRequests.map((request) => (
-            <div key={request.id} className="flex-shrink-0 w-[350px]">
+          {eventRequests.map((request, index) => (
+            <div key={`scroll-original-${request.id}-${index}`} className="flex-shrink-0 w-[350px]">
               <ItemCard
                 item={request}
                 currentUser={user}
@@ -188,8 +238,8 @@ const CompSite = () => {
             </div>
           ))}
           {/* Duplicate set for seamless loop */}
-          {eventRequests.map((request) => (
-            <div key={`${request.id}-duplicate`} className="flex-shrink-0 w-[350px]">
+          {eventRequests.map((request, index) => (
+            <div key={`scroll-duplicate-${request.id}-${index}`} className="flex-shrink-0 w-[350px]">
               <ItemCard
                 item={request}
                 currentUser={user}
@@ -255,6 +305,7 @@ const CompSite = () => {
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col"> {/* Added flex-col */}
+      <HelmetComp title={eventDetails?.name} />
       <TopBar />
 
       {/* Back Button */}

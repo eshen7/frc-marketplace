@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useEffect, useRef, useState } from 'react';
+import React, { createContext, useContext, useEffect, useRef, useState, useCallback } from 'react';
 import { useUser } from './UserContext';
 
 const WebSocketContext = createContext(null);
@@ -8,6 +8,8 @@ export const WebSocketProvider = ({ children }) => {
   const [isConnected, setIsConnected] = useState(false);
   const socketRef = useRef(null);
   const messageHandlersRef = useRef(new Map());
+  const [eventSocket, setEventSocket] = useState(null);
+  const eventHandlersRef = useRef(new Map());
 
   // Initialize WebSocket connection
   useEffect(() => {
@@ -84,8 +86,72 @@ export const WebSocketProvider = ({ children }) => {
     }
   };
 
+  const connectToEvent = useCallback((eventKey) => {
+    if (!eventKey) return;
+
+    const protocol = import.meta.env.PROD || window.location.protocol === 'https:' 
+      ? 'wss:' 
+      : 'ws:';
+    const host = window.location.hostname;
+    const port = import.meta.env.PROD ? '' : ':8000';
+    const wsUrl = `${protocol}//${host}${port}`;
+    
+    const ws = new WebSocket(`${wsUrl}/ws/event/${eventKey}/`);
+
+    ws.onopen = () => {
+      console.log('Event WebSocket Connected');
+      setEventSocket(ws);
+    };
+
+    ws.onerror = (error) => {
+      console.error('Event WebSocket Error:', error);
+    };
+
+    ws.onmessage = (event) => {
+      const data = JSON.parse(event.data);
+      eventHandlersRef.current.forEach((handler) => {
+        handler(data);
+      });
+    };
+
+    ws.onclose = () => {
+      console.log('Event WebSocket Disconnected');
+      setEventSocket(null);
+    };
+
+    return () => {
+      if (ws.readyState === WebSocket.OPEN) {
+        ws.close();
+      }
+    };
+  }, []);
+
+  // Register an event handler
+  const registerEventHandler = (id, handler) => {
+    eventHandlersRef.current.set(id, handler);
+    return () => eventHandlersRef.current.delete(id);
+  };
+
+  // Send a message to event room
+  const sendEventMessage = (message) => {
+    if (eventSocket?.readyState === WebSocket.OPEN) {
+      eventSocket.send(JSON.stringify(message));
+    } else {
+      console.warn('Event WebSocket is not connected. Message not sent:', message);
+    }
+  };
+
   return (
-    <WebSocketContext.Provider value={{ isConnected, registerHandler, sendMessage }}>
+    <WebSocketContext.Provider 
+      value={{ 
+        isConnected, 
+        registerHandler, 
+        sendMessage,
+        connectToEvent,
+        registerEventHandler,
+        sendEventMessage
+      }}
+    >
       {children}
     </WebSocketContext.Provider>
   );
@@ -97,4 +163,4 @@ export const useWebSocket = () => {
     throw new Error('useWebSocket must be used within a WebSocketProvider');
   }
   return context;
-}; 
+};
