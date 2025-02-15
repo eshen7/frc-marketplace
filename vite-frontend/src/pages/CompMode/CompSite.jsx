@@ -3,7 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import TopBar from "../../components/TopBar";
 import Footer from "../../components/Footer";
 import ProfilePhoto from "../../components/ProfilePhoto";
-import { FaMapMarkerAlt, FaCalendarAlt, FaLink, FaUsers, FaArrowLeft, FaPlay, FaPause, FaTh, FaExpand, FaCompress, FaListAlt, FaHandshake, FaExchangeAlt, FaCheckCircle } from "react-icons/fa";
+import { FaMapMarkerAlt, FaCalendarAlt, FaLink, FaUsers, FaArrowLeft, FaPlay, FaPause, FaTh, FaExpand, FaCompress, FaListAlt, FaHandshake, FaExchangeAlt, FaCheckCircle, FaPlus } from "react-icons/fa";
 import { motion } from "framer-motion";
 import { useData } from "../../contexts/DataContext";
 import ItemCard from "../../components/ItemCard";
@@ -635,7 +635,20 @@ const CompSite = () => {
       {/* Event Header - Updated design */}
       <div className="bg-gradient-to-r from-blue-600 to-blue-800 text-white">
         <div className="container mx-auto px-4 sm:py-12 pb-12 pt-16">
-          <h1 className="text-3xl md:text-4xl font-bold mb-6">{eventDetails?.name}</h1>
+          <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
+            <h1 className="text-3xl md:text-4xl font-bold">{eventDetails?.name}</h1>
+            {isAuthenticated && isTeamParticipating && (
+              <button
+                onClick={() => navigate('/request', { 
+                  state: { preselectedEvent: eventKey }
+                })}
+                className="px-6 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg font-semibold shadow-lg transition-colors duration-200 flex items-center gap-2"
+              >
+                <FaPlus /> Make Event Request
+              </button>
+            )}
+          </div>
+          
           <div className="flex flex-wrap items-center gap-6 text-gray-100">
             <div className="flex items-center gap-2">
               <FaMapMarkerAlt className="text-xl" />

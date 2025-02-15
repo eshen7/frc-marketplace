@@ -1,21 +1,26 @@
 import React from 'react';
 import TopBar from '../components/TopBar';
 import Footer from '../components/Footer';
+import { DataProvider } from "../contexts/DataContext";
+import { CompetitionsProvider } from "../contexts/CompetitionsContext";
 
-export default function PageNotFound({ error }) {
+const PageNotFound = () => {
     return (
-        <>
-            <div className='h-screen flex flex-col items-center justify-center'>
-                <TopBar />
-                <div className="flex-grow flex flex-col items-center justify-center h-screen">
-                    <h1 className="text-5xl text-gray-800 font-bold">{error}</h1>
-                    <p className="text-2xl text-gray-600">{error === "404" ?
-                        "Page Not Found" :
-                        "There was an error accessing this page, please try again"}</p>
+        <DataProvider>
+            <CompetitionsProvider>
+                <div className="min-h-screen bg-gray-50 flex flex-col">
+                    <TopBar />
+                    <div className="flex-grow flex items-center justify-center">
+                        <div className="text-center">
+                            <h1 className="text-4xl font-bold text-gray-800 mb-4">404</h1>
+                            <p className="text-xl text-gray-600">Page not found</p>
+                        </div>
+                    </div>
+                    <Footer />
                 </div>
-
-            </div>
-            <Footer />
-        </>
+            </CompetitionsProvider>
+        </DataProvider>
     );
-}
+};
+
+export default PageNotFound;

@@ -22,7 +22,7 @@ import AlertBanner from "../components/AlertBanner";
 // Utils
 import axiosInstance from "../utils/axiosInstance";
 import { useData } from "../contexts/DataContext";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import HelmetComp from "../components/HelmetComp";
 import { useUser } from "../contexts/UserContext";
 
@@ -34,6 +34,7 @@ const INITIAL_FORM_STATE = {
 
 const PartRequestForm = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const [parts, setParts] = useState([]);
   const [selectedPart, setSelectedPart] = useState("");
   const [dateNeeded, setDateNeeded] = useState(null);
@@ -95,6 +96,16 @@ const PartRequestForm = () => {
 
     fetchTeamEvents();
   }, [user?.team_number]);
+
+  useEffect(() => {
+    // Set event_key if it was passed through navigation
+    if (location.state?.preselectedEvent) {
+      setFormData(prev => ({
+        ...prev,
+        eventKey: location.state.preselectedEvent
+      }));
+    }
+  }, [location.state]);
 
   const handleInputChange = (event) => {
     const { name, value } = event.target;

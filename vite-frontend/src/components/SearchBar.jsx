@@ -1,11 +1,13 @@
 import React, { useState, useEffect, useRef } from "react";
 import { SearchRounded } from "@mui/icons-material";
 import { TextField, Paper, List, ListItem, ListSubheader, Box, Avatar, Typography } from "@mui/material";
+import { FaCalendarAlt } from "react-icons/fa";
 import Fuse from "fuse.js";
 import axiosInstance from "../utils/axiosInstance";
 import { useNavigate } from "react-router-dom";
 import ProfilePhoto from "./ProfilePhoto";
 import { useData } from '../contexts/DataContext';
+import { useCompetitions } from '../contexts/CompetitionsContext';
 
 const SearchBar = () => {
   const [searchTerm, setSearchTerm] = useState("");
@@ -17,6 +19,7 @@ const SearchBar = () => {
   const navigate = useNavigate();
 
   const { users, parts, requests, sales, loadingStates } = useData();
+  const { competitions } = useCompetitions();
 
   const fuseOptions = {
     threshold: 0.3,
@@ -24,6 +27,9 @@ const SearchBar = () => {
       { name: "team_name", weight: 2 },
       { name: "team_number", weight: 2 },
       { name: "name", weight: 2 },
+      { name: "city", weight: 1 },
+      { name: "state_prov", weight: 1 },
+      { name: "event_type_string", weight: 1 }
     ],
     includeScore: true,
     shouldSort: true,
@@ -36,6 +42,11 @@ const SearchBar = () => {
         ...parts.map((part) => ({ ...part, type: "part" })),
         ...requests.map((request) => ({ ...request, type: "request" })),
         ...sales.map((sale) => ({ ...sale, type: "sale" })),
+        ...competitions.map((comp) => ({ 
+          ...comp, 
+          type: "competition",
+          displayName: `${comp.name} - Week ${comp.week + 1}`
+        }))
       ];
 
       //console.log("processed search data", processedSearchData);
@@ -45,7 +56,7 @@ const SearchBar = () => {
     if (!Object.values(loadingStates).some(state => state)) {
       processSearchData();
     }
-  }, [users, parts, requests, sales, loadingStates]);
+  }, [users, parts, requests, sales, competitions, loadingStates]);
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -95,6 +106,9 @@ const SearchBar = () => {
       case "part":
         navigate(`/parts/${item.id}`);
         break;
+      case "competition":
+        navigate(`/comp/${item.key}`);
+        break;
       default:
         console.warn("Unknown result type:", item);
     }
@@ -130,6 +144,20 @@ const SearchBar = () => {
             />
             <Box>
               <Typography variant="body1">{item.name}</Typography>
+            </Box>
+          </Box>
+        );
+      case "competition":
+        return (
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <div className="p-2 rounded-full bg-purple-100">
+              <FaCalendarAlt className="text-purple-600 text-sm" />
+            </div>
+            <Box>
+              <Typography variant="body1">{item.displayName}</Typography>
+              <Typography variant="caption" color="text.secondary">
+                {item.city}, {item.state_prov}
+              </Typography>
             </Box>
           </Box>
         );

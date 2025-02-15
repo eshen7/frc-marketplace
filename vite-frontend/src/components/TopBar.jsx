@@ -171,7 +171,7 @@ const TopBar = () => {
                 animation: "gradientMove 3s linear infinite",
               }}
             />
-            <span className="relative z-10 whitespace-nowrap">Comp Mode</span>
+            <span className="relative z-10 whitespace-nowrap">🏆 Comp Mode</span>
           </button>
         </div>
       </div>
