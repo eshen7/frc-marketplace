@@ -18,6 +18,7 @@ import SearchBar from "./SearchBar";
 import DropdownButton from "./DropdownButton.jsx";
 import { useUser } from "../contexts/UserContext.jsx";
 import ProfilePhoto from "./ProfilePhoto.jsx";
+import { motion, AnimatePresence } from "framer-motion";
 
 const NavButton = ({ name, link, navigate }) => {
   return (
@@ -38,18 +39,20 @@ const InsideHamburgerButton = ({
   func = undefined,
 }) => {
   return (
-    <button
+    <motion.button
       onClick={() => {
         if (func) {
           func();
         }
         navigate(link);
       }}
-      className="flex place-items-center"
+      className="flex place-items-center w-full hover:bg-gray-900 p-2 rounded-lg transition-colors"
+      whileHover={{ x: 10 }}
+      whileTap={{ scale: 0.95 }}
     >
       <Logo className="mr-5" />
       <div className="">{name}</div>
-    </button>
+    </motion.button>
   );
 };
 
@@ -131,7 +134,7 @@ const TopBar = () => {
 
         {/* Nav Buttons */}
         <div
-          className={`hidden ${isAuthenticated ? "lg:flex lg:flex-row" : "md:flex md:flex-row"
+          className={`hidden ${isAuthenticated ? "xl:flex xl:flex-row" : "850:flex 850:flex-row"
             }`}
         >
           <NavButton name={"Requests"} link={"/requests"} navigate={navigate} />
@@ -141,12 +144,6 @@ const TopBar = () => {
             link={"/parts"}
             navigate={navigate}
           />
-          <button
-            onClick={() => navigate("/comp")}
-            className="px-6 py-2 bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-lg font-semibold shadow-lg hover:from-indigo-700 hover:to-purple-700 transition-all whitespace-nowrap"
-          >
-            Comp Mode
-          </button>
           {isAuthenticated && (
             <>
               <NavButton
@@ -161,6 +158,21 @@ const TopBar = () => {
               />
             </>
           )}
+          <button
+            onClick={() => navigate("/comp")}
+            className="relative px-6 py-2 text-white rounded-lg font-semibold shadow-lg overflow-hidden group"
+            style={{
+              background: "linear-gradient(90deg, #9333ea 0%, #4f46e5 100%)"
+            }}
+          >
+            <div className="absolute top-0 -left-[100%] w-[400%] h-full opacity-0 group-hover:opacity-100 transition-opacity"
+              style={{
+                background: "linear-gradient(90deg, #4f46e5 0%, #9333ea 16.66%, #4f46e5 33.33%, #9333ea 50%, #4f46e5 66.66%, #9333ea 83.33%, #4f46e5 100%)",
+                animation: "gradientMove 3s linear infinite",
+              }}
+            />
+            <span className="relative z-10 whitespace-nowrap">Comp Mode</span>
+          </button>
         </div>
       </div>
 
@@ -170,16 +182,9 @@ const TopBar = () => {
           <SearchBar />
         </div>
 
-        {/* Hamburger Button */}
-        <div className={`flex ${isAuthenticated ? "lg:hidden" : "md:hidden"}`}>
-          <button onClick={() => setIsOpen(true)}>
-            <RxHamburgerMenu className="w-[35px] h-[35px]" color={"#FFFFFF"} />
-          </button>
-        </div>
-
         {/* Right Buttons */}
         <div
-          className={`hidden ${isAuthenticated ? "lg:flex lg:flex-row" : "md:flex md:flex-row"}`}
+          className={`hidden ${isAuthenticated ? "sm:flex sm:flex-row" : "850:flex 850:flex-row"}`}
         >
           {/* Drop Down */}
           <div className="" ref={dropdownRef}>
@@ -255,103 +260,157 @@ const TopBar = () => {
             )}
           </div>
         </div>
+        {/* Hamburger Button */}
+        <div className={`flex ${isAuthenticated ? "xl:hidden" : "850:hidden"}`}>
+          <button onClick={() => setIsOpen(true)}>
+            <RxHamburgerMenu className="w-[35px] h-[35px]" color={"#FFFFFF"} />
+          </button>
+        </div>
       </div>
 
       {/* The Hamburger Bar */}
-      {isOpen ? (
-        <div className="fixed top-0 right-0 h-full w-full bg-black z-50 transition-transform duration-300 flex flex-row">
-          <div className="p-4 pl-10 text-white space-y-6 flex flex-col text-[18px] mt-16 justify-left">
-            <InsideHamburgerButton
-              name={"Home"}
-              Logo={MdHome}
-              link={"/"}
-              navigate={navigate}
-            />
-            <InsideHamburgerButton
-              name={"Requests"}
-              Logo={FaHandHolding}
-              link={"/requests"}
-              navigate={navigate}
-            />
-            <InsideHamburgerButton
-              name={"Sales"}
-              Logo={FaStore}
-              link={"/sales"}
-              navigate={navigate}
-            />
-            <InsideHamburgerButton
-              name={"Parts Directory"}
-              Logo={FaWpforms}
-              link={"/parts"}
-              navigate={navigate}
-            />
-            {isAuthenticated ? (
-              <>
-                <InsideHamburgerButton
-                  name={"Make a Request"}
-                  Logo={FaPlus}
-                  link={"/request"}
-                  navigate={navigate}
-                />
-                <InsideHamburgerButton
-                  name={"Post a Sale"}
-                  Logo={FaPlus}
-                  link={"/sale"}
-                  navigate={navigate}
-                />
-                <InsideHamburgerButton
-                  name={"Messages"}
-                  Logo={LuMessageCircle}
-                  link={"/chat"}
-                  navigate={navigate}
-                />
-                <InsideHamburgerButton
-                  name={"Your Profile"}
-                  Logo={CgProfile}
-                  link={"/profile/frc/" + user.team_number}
-                  navigate={navigate}
-                />
-                <InsideHamburgerButton
-                  name={"Log Out"}
-                  Logo={FaSignOutAlt}
-                  func={handleLogout}
-                  navigate={navigate}
-                />
-              </>
-            ) : (
-              <>
-                <InsideHamburgerButton
-                  name={"Sign In"}
-                  Logo={FaSignInAlt}
-                  link={"/login"}
-                  navigate={navigate}
-                />
-                <InsideHamburgerButton
-                  name={"Register Team"}
-                  Logo={FaWpforms}
-                  link={"/signup"}
-                  navigate={navigate}
-                />
-              </>
-            )}
-          </div>
-          <div>
-            <button onClick={() => navigate("/")}>
-              <img
-                className="absolute top-[12px] left-[8px] h-[40px] min-w-[32px] mr-3 hover:cursor-pointer hover:scale-105 transition-translate duration-100"
-                src="/millenniumMarket.svg"
-                alt="Millennium Market Logo"
-              />
-            </button>
-            <button
-              onClick={() => setIsOpen(false)}
-              className="absolute top-[20px] right-[20px] text-white text-2xl"
+      <AnimatePresence>
+        {isOpen && (
+          <motion.div 
+            className="fixed top-0 right-0 h-full w-full bg-black z-50 flex flex-row"
+            initial={{ x: "100%" }}
+            animate={{ x: 0 }}
+            exit={{ x: "100%" }}
+            transition={{ type: "tween", duration: 0.3 }}
+          >
+            {/* Menu Items */}
+            <motion.div 
+              className="p-4 pl-10 text-white space-y-3 flex flex-col text-[18px] mt-16 justify-left"
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.2, duration: 0.3 }}
             >
-              <FaTimes className="w-[28px] h-[28px]" />
-            </button>
-          </div>
-        </div>
-      ) : null}
+              <InsideHamburgerButton
+                name={"Home"}
+                Logo={MdHome}
+                link={"/"}
+                navigate={navigate}
+              />
+              <InsideHamburgerButton
+                name={"Requests"}
+                Logo={FaHandHolding}
+                link={"/requests"}
+                navigate={navigate}
+              />
+              <InsideHamburgerButton
+                name={"Sales"}
+                Logo={FaStore}
+                link={"/sales"}
+                navigate={navigate}
+              />
+              <InsideHamburgerButton
+                name={"Parts Directory"}
+                Logo={FaWpforms}
+                link={"/parts"}
+                navigate={navigate}
+              />
+
+              {/* Add CompMode button here */}
+              <motion.button
+                onClick={() => navigate("/comp")}
+                className="w-full p-3 rounded-lg font-semibold relative overflow-hidden group"
+                style={{
+                  background: "linear-gradient(90deg, #9333ea 0%, #4f46e5 100%)"
+                }}
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+              >
+                <div className="absolute top-0 -left-[100%] w-[400%] h-full opacity-0 group-hover:opacity-100 transition-opacity"
+                  style={{
+                    background: "linear-gradient(90deg, #4f46e5 0%, #9333ea 16.66%, #4f46e5 33.33%, #9333ea 50%, #4f46e5 66.66%, #9333ea 83.33%, #4f46e5 100%)",
+                    animation: "gradientMove 3s linear infinite",
+                  }}
+                />
+                <span className="relative z-10 flex items-center justify-center text-[20px]">
+                  🏆 Competition Mode
+                </span>
+              </motion.button>
+
+              {/* Rest of menu items */}
+              {isAuthenticated ? (
+                <>
+                  <InsideHamburgerButton
+                    name={"Make a Request"}
+                    Logo={FaPlus}
+                    link={"/request"}
+                    navigate={navigate}
+                  />
+                  <InsideHamburgerButton
+                    name={"Post a Sale"}
+                    Logo={FaPlus}
+                    link={"/sale"}
+                    navigate={navigate}
+                  />
+                  <InsideHamburgerButton
+                    name={"Messages"}
+                    Logo={LuMessageCircle}
+                    link={"/chat"}
+                    navigate={navigate}
+                  />
+                  <InsideHamburgerButton
+                    name={"Your Profile"}
+                    Logo={CgProfile}
+                    link={"/profile/frc/" + user.team_number}
+                    navigate={navigate}
+                  />
+                  <InsideHamburgerButton
+                    name={"Log Out"}
+                    Logo={FaSignOutAlt}
+                    func={handleLogout}
+                    navigate={navigate}
+                  />
+                </>
+              ) : (
+                <>
+                  <InsideHamburgerButton
+                    name={"Sign In"}
+                    Logo={FaSignInAlt}
+                    link={"/login"}
+                    navigate={navigate}
+                  />
+                  <InsideHamburgerButton
+                    name={"Register Team"}
+                    Logo={FaWpforms}
+                    link={"/signup"}
+                    navigate={navigate}
+                  />
+                </>
+              )}
+            </motion.div>
+
+            {/* Header with Logo and Close Button */}
+            <div className="absolute top-0 left-0 right-0 h-16 flex justify-between items-center px-4">
+              <motion.div
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.3 }}
+              >
+                <img
+                  onClick={() => navigate("/")}
+                  className="h-[40px] hover:cursor-pointer hover:scale-105 transition-transform duration-100"
+                  src="/millenniumMarket.svg"
+                  alt="Millennium Market Logo"
+                />
+              </motion.div>
+              
+              <motion.button
+                onClick={() => setIsOpen(false)}
+                className="text-white text-2xl p-2"
+                initial={{ opacity: 0, rotate: -90 }}
+                animate={{ opacity: 1, rotate: 0 }}
+                transition={{ delay: 0.3 }}
+              >
+                <FaTimes className="w-[28px] h-[28px]" />
+              </motion.button>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 };

@@ -14,6 +14,7 @@ export default {
       },
       screens: {
         "525": "525px",
+        "850": "850px",
       },
       animation: {
         'fade-in': 'fadeIn 0.5s ease-in-out',
