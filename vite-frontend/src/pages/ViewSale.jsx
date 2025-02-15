@@ -5,7 +5,7 @@ import TopBar from "../components/TopBar.jsx";
 import Footer from "../components/Footer.jsx";
 import { useNavigate, useParams } from "react-router-dom";
 import axiosInstance from "../utils/axiosInstance.js";
-import { Skeleton } from "@mui/material";
+import { Skeleton, TextField, Autocomplete } from "@mui/material";
 import { MdDelete, MdOutlineEdit } from "react-icons/md";
 import { LuSave } from "react-icons/lu";
 import ItemScrollBar from "../components/ItemScrollBar.jsx";
@@ -19,11 +19,8 @@ import HelmetComp from "../components/HelmetComp.jsx";
 
 export default function ViewSale() {
   const { sale_id } = useParams();
-
   const navigate = useNavigate();
-
-  const { refreshSingle } = useData();
-
+  const { refreshSingle, users } = useData();  // Add users here
   const { user, loadingUser, isAuthenticated } = useUser();
 
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
@@ -55,6 +52,11 @@ export default function ViewSale() {
     message: "",
     severity: "success",
   });
+
+  const [saleOpen, setSaleOpen] = useState(false);
+  const [selectedTeam, setSelectedTeam] = useState(null);
+  const [searchTeam, setSearchTeam] = useState('');
+  const [filteredTeams, setFilteredTeams] = useState([]);
 
   useEffect(() => {
     const fetchSale = async () => {
@@ -90,7 +92,8 @@ export default function ViewSale() {
       const response = await axiosInstance.get(
         `/parts/id/${sale.part.id}/sales`
       );
-      setPartSales(response.data.filter((sale) => sale.id !== sale_id));
+      // Filter out sold items and current sale
+      setPartSales(response.data.filter((s) => !s.is_sold && s.id !== sale_id));
     } catch (error) {
       console.error("Error fetching sales:", error);
     } finally {
@@ -103,6 +106,19 @@ export default function ViewSale() {
       fetchPartSales();
     }
   }, [sale, sale_id]);
+
+  useEffect(() => {
+    if (searchTeam && users) {  // Add users check
+      const filtered = users.filter(u => 
+        (u.team_number.toString().includes(searchTeam) ||
+        u.team_name.toLowerCase().includes(searchTeam.toLowerCase())) &&
+        u.team_number !== sale?.user.team_number
+      ).slice(0, 10);
+      setFilteredTeams(filtered);
+    } else {
+      setFilteredTeams([]);
+    }
+  }, [searchTeam, users, sale?.user.team_number]);  // Add users to dependencies
 
   const handleImageLoad = () => {
     setImageLoaded(true);
@@ -185,6 +201,32 @@ export default function ViewSale() {
 
   const closeSaleChangeBanner = () => {
     setSaleChange("");
+  };
+
+  const handleMarkSold = async () => {
+    try {
+      const response = await axiosInstance.post(
+        `/sales/id/${sale_id}/complete/`,
+        { 
+          team_number: selectedTeam?.team_number || null
+        }
+      );
+      
+      setSale(response.data);
+      setAlertState({
+        open: true,
+        message: "Sale marked as completed successfully!",
+        severity: "success",
+      });
+      setSaleOpen(false);
+      refreshSingle("sales");
+    } catch (error) {
+      setAlertState({
+        open: true,
+        message: error.response?.data?.error || "Error completing sale",
+        severity: "error",
+      });
+    }
   };
 
   return (
@@ -473,6 +515,30 @@ export default function ViewSale() {
                         )}
                       </div>
                     </div>
+                    <div className="mt-4">
+                      {sale?.is_sold ? (
+                        <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+                          <div className="flex justify-between items-center mb-2">
+                            <p className="text-green-700 font-semibold">
+                              Sale Completed
+                              {sale.sold_to && ` to Team ${sale.sold_to.team_number} - ${sale.sold_to.team_name}`}
+                            </p>
+                            <span className="text-sm text-gray-600">
+                              {new Date(sale.sale_date).toLocaleDateString()}
+                            </span>
+                          </div>
+                        </div>
+                      ) : (
+                        isSaleOwner && (
+                          <button
+                            onClick={() => setSaleOpen(true)}
+                            className="bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded w-full"
+                          >
+                            Mark as Sold
+                          </button>
+                        )
+                      )}
+                    </div>
                   </div>
 
                   {/* Right Column - Sticky Content */}
@@ -573,6 +639,51 @@ export default function ViewSale() {
                     isAuthenticated={isAuthenticated}
                   />
                 </div>
+
+                {/* Sale Completion Dialog */}
+                {saleOpen && (
+                  <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full flex items-center justify-center z-50">
+                    <div className="bg-white p-5 rounded-lg shadow-xl max-w-[400px]">
+                      <h2 className="text-xl font-bold mb-4">Mark Sale as Complete</h2>
+                      
+                      <div className="mb-4">
+                        <Autocomplete
+                          options={filteredTeams}
+                          getOptionLabel={(option) => `${option.team_number} - ${option.team_name}`}
+                          value={selectedTeam}
+                          onChange={(_, newValue) => setSelectedTeam(newValue)}
+                          onInputChange={(_, newInputValue) => setSearchTeam(newInputValue)}
+                          renderInput={(params) => (
+                            <TextField 
+                              {...params} 
+                              label="Select Team (Optional)" 
+                              variant="outlined"
+                              fullWidth
+                            />
+                          )}
+                        />
+                        <p className="text-sm text-gray-500 mt-2">
+                          Leave empty if sold outside of Millennium Market
+                        </p>
+                      </div>
+
+                      <div className="flex justify-end space-x-2">
+                        <button
+                          onClick={() => setSaleOpen(false)}
+                          className="bg-gray-300 hover:bg-gray-400 text-gray-800 py-2 px-4 rounded"
+                        >
+                          Cancel
+                        </button>
+                        <button
+                          onClick={handleMarkSold}
+                          className="bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded"
+                        >
+                          Complete Sale
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                )}
               </div>
             ) : !error ? (
               <LoadingViewPage />

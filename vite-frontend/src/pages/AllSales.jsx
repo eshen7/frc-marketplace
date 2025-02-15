@@ -81,9 +81,9 @@ const SalesPage = () => {
   const fuse = useMemo(() => new Fuse(sales, fuseOptions), [sales]);
 
   const getFilteredResults = () => {
-    let results = [...sales];
+    // Start with only active (unsold) sales
+    let results = sales.filter(sale => !sale.is_sold);
 
-    // Calculate distances for all items first if user is authenticated
     if (user) {
       results = results.map(sale => {
         if (!sale.user?.formatted_address?.latitude || 

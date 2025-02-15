@@ -33,6 +33,12 @@ from .views import (
     password_reset_request,
     password_reset_confirm,
     daily_digest_view,
+    fulfill_request_view,
+    mark_request_returned_view,
+    fulfilled_requests_view,
+    received_requests_view,
+    complete_sale_view,
+    bought_items_view,
 )
 
 urlpatterns = [
@@ -81,4 +87,10 @@ urlpatterns = [
     path('password-reset/', password_reset_request, name='password-reset'),
     path('password-reset/confirm/', password_reset_confirm, name='password-reset-confirm'),
     path('daily-digest/', daily_digest_view, name='daily-digest'),
+    path('requests/id/<uuid:request_id>/fulfill/', fulfill_request_view, name='fulfill-request'),
+    path('requests/id/<uuid:request_id>/return/', mark_request_returned_view, name='mark-request-returned'),
+    path('requests/fulfilled/<int:team_number>/', fulfilled_requests_view, name='fulfilled-requests'),
+    path('requests/received/<int:team_number>/', received_requests_view, name='received-requests'),
+    path('sales/id/<uuid:sale_id>/complete/', complete_sale_view, name='complete-sale'),
+    path('sales/bought/<int:team_number>/', bought_items_view, name='bought-items'),
 ]

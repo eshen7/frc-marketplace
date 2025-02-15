@@ -184,6 +184,12 @@ class PartRequest(models.Model):
             self.return_date = timezone.now()
         super().save(*args, **kwargs)
 
+    def can_fulfill(self, user):
+        return self.user.team_number == user.team_number
+
+    def can_mark_returned(self, user):
+        return self.fulfilled_by and self.fulfilled_by.team_number == user.team_number
+
 
 class PartSale(models.Model):
     """Part Sale Model."""

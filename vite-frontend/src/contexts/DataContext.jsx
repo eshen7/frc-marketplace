@@ -262,22 +262,6 @@ export const DataProvider = ({ children }) => {
     refreshSingle(types);
   };
 
-  // const handleWebSocketMessage = (data) => {
-  //   if (data.type === 'new_request') {
-  //     // Add new request to requests state
-  //     addItem('requests', data.request);
-  //   }
-  // };
-
-  // useEffect(() => {
-  //   const handleMessage = handleWebSocketMessage;
-
-  //   if (isAuthenticated) {
-  //     const unregister = registerHandler('requests', handleMessage);
-  //     return () => unregister();
-  //   }
-  // }, [isAuthenticated, registerHandler]);
-
   return (
     <DataContext.Provider value={{
       users,

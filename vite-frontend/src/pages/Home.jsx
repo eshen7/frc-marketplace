@@ -41,6 +41,30 @@ const Home = () => {
     setShowLoginSuccessBanner(false);
   };
 
+  // Filter active items for display sections
+  const getActiveRequests = () => {
+    return requests.filter(req => !req.is_fulfilled && !req.event_key);
+  };
+
+  const getActiveSales = () => {
+    return sales.filter(sale => !sale.is_sold);
+  };
+
+  const getTotalStats = () => {
+    // Get totals without filtering
+    const completedSales = sales.filter(sale => sale.is_sold).length;
+    const completedRequests = requests.filter(req => 
+      req.is_fulfilled && (!req.requires_return || req.is_returned)
+    ).length;
+    const activeTeams = allTeams.length;
+
+    return [
+      { title: "Active Teams", value: activeTeams },
+      { title: "Total Requests", value: requests.length },
+      { title: "Total Sales", value: sales.length }
+    ];
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-50 to-gray-100">
       {showLoginSuccessBanner && (
@@ -105,20 +129,16 @@ const Home = () => {
         {/* Stats Section */}
 
         <div className="container mx-auto px-4">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {[
-              { title: "Active Teams", value: allTeams.length },
-              { title: "Open Sales", value: sales.length },
-              { title: "Active Requests", value: requests.length },
-            ].map((stat, index) => (
+          <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-3 gap-4">
+            {getTotalStats().map((stat, index) => (
               <motion.div
                 key={index}
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
-                className="text-center p-8 rounded-xl bg-gray-50 shadow-lg"
+                className="text-center p-6 rounded-xl bg-gray-50 shadow-lg"
               >
-                <h3 className="text-4xl font-bold text-blue-600 mb-2">{stat.value}</h3>
-                <p className="text-gray-600">{stat.title}</p>
+                <h3 className="text-3xl font-bold text-blue-600 mb-2">{stat.value}</h3>
+                <p className="text-gray-600 text-sm">{stat.title}</p>
               </motion.div>
             ))}
           </div>
@@ -131,7 +151,7 @@ const Home = () => {
               <SectionHeader title="Recent Part Requests" />
               <ItemScrollBar
                 key={requests[0]?.id}
-                items={requests}
+                items={getActiveRequests().slice(0, 10)}
                 loadingItems={loadingStates.requests}
                 user={user}
                 isAuthenticated={isAuthenticated}
@@ -152,7 +172,7 @@ const Home = () => {
               <SectionHeader title="Parts for Sale" />
               <ItemScrollBar
                 key={sales[0]?.id}
-                items={sales}
+                items={getActiveSales().slice(0, 10)}
                 loadingItems={loadingStates.sales}
                 user={user}
                 loadingUser={loadingUser}

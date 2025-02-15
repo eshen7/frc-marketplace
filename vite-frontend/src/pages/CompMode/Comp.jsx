@@ -7,8 +7,10 @@ import { FaSearch, FaFilter, FaArrowUp } from "react-icons/fa";
 import { useCompetitions } from "../../contexts/CompetitionsContext";
 import { AnimatePresence } from "framer-motion";
 import HelmetComp from "../../components/HelmetComp";
+import { useNavigate } from "react-router-dom";
 
 const Comp = () => {
+  const navigate = useNavigate();
   const { competitions, loading, error } = useCompetitions();
   const [activeTab, setActiveTab] = useState('all');
   const [searchTerm, setSearchTerm] = useState('');
@@ -99,9 +101,17 @@ const Comp = () => {
       {/* Hero Section */}
       <div className="bg-gradient-to-r from-blue-600 to-blue-800 py-8 sm:py-12">
         <div className="container mx-auto px-4">
-          <h1 className="text-3xl sm:text-4xl font-bold text-white text-center mb-6 sm:mb-8">
-            2025 FRC Competitions
-          </h1>
+          <div className="flex justify-between items-center mb-6">
+            <h1 className="text-3xl sm:text-4xl font-bold text-white">
+              2025 FRC Competitions
+            </h1>
+            <button
+              onClick={() => navigate('/comp/about')}
+              className="text-white bg-purple-600 hover:bg-purple-700 px-4 py-2 rounded-lg transition-colors duration-200"
+            >
+              About Comp Mode
+            </button>
+          </div>
 
           {/* Search and Filter Section */}
           <div className="max-w-xl mx-auto relative px-4">

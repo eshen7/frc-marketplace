@@ -11,7 +11,7 @@ import Login from "./pages/Login";
 import Signup from "./pages/Signup";
 import MakeRequest from "./pages/MakeRequest";
 import PostSale from "./pages/PostSale";
-import FulfillRequest from "./pages/ViewRequest.jsx";
+import ViewRequest from "./pages/ViewRequest.jsx";
 import ViewSale from "./pages/ViewSale.jsx";
 import AllRequests from "./pages/AllRequests.jsx";
 import SalesPage from "./pages/AllSales.jsx";
@@ -32,6 +32,7 @@ import PageNotFound from "./pages/PageNotFound.jsx";
 import Contact from "./pages/FooterLinks/Contact.jsx";
 import Comp from "./pages/CompMode/Comp.jsx";
 import CompSite from "./pages/CompMode/CompSite.jsx";
+import CompAbout from "./pages/CompMode/CompAbout.jsx";
 
 const router = createBrowserRouter(
   [
@@ -62,7 +63,7 @@ const router = createBrowserRouter(
         },
         {
           path: "requests/:request_id",
-          element: <FulfillRequest />,
+          element: <ViewRequest />,
         },
         {
           path: "sales/:sale_id",
@@ -143,6 +144,10 @@ const router = createBrowserRouter(
         {
           path: "/comp/:eventKey",
           element: <CompSite />,
+        },
+        {
+          path: "/comp/about",
+          element: <CompAbout />,
         },
         {
           path: "*",

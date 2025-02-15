@@ -38,6 +38,7 @@ from django.utils.encoding import force_bytes, force_str  # use force_str instea
 from channels.layers import get_channel_layer
 from asgiref.sync import async_to_sync
 from uuid import UUID
+from django.utils import timezone  # Add this import
 
 class UUIDEncoder(json.JSONEncoder):
     def default(self, obj):
@@ -908,3 +909,216 @@ def daily_digest_view(request):
     """
     send_daily_requests_digest.delay()
     return Response({'message': 'Daily digest email sent'})
+
+
+@permission_classes([IsAuthenticated])
+@api_view(["POST"])
+def fulfill_request_view(request, request_id):
+    """Mark a request as fulfilled with a specified team."""
+    try:
+        part_request = PartRequest.objects.get(id=request_id)
+        user = request.user
+        team_number = request.data.get('team_number')
+        
+        # Only request owner can mark as fulfilled
+        if not part_request.can_fulfill(user):
+            return Response(
+                {"error": "Only the request owner can mark it as fulfilled."},
+                status=status.HTTP_403_FORBIDDEN
+            )
+            
+        try:
+            fulfilling_team = User.objects.get(team_number=team_number)
+        except User.DoesNotExist:
+            return Response(
+                {"error": f"Team {team_number} not found"},
+                status=status.HTTP_404_NOT_FOUND
+            )
+            
+        # Update fulfillment details
+        part_request.is_fulfilled = True
+        part_request.fulfilled_by = fulfilling_team
+        part_request.fulfillment_date = timezone.now()
+        part_request.requires_return = request.data.get('requires_return', False)
+        part_request.save()
+        
+        serializer = PartRequestSerializer(part_request)
+        
+        # Send WebSocket update if this is a competition request
+        if part_request.event_key:
+            channel_layer = get_channel_layer()
+            serialized_data = json.loads(
+                json.dumps(serializer.data, cls=UUIDEncoder)
+            )
+            async_to_sync(channel_layer.group_send)(
+                f"event_{part_request.event_key}",
+                {
+                    "type": "event.update",
+                    "message": {
+                        "type": "request_fulfilled",
+                        "request": serialized_data
+                    }
+                }
+            )
+        
+        return Response(serializer.data, status=status.HTTP_200_OK)
+        
+    except PartRequest.DoesNotExist:
+        return Response(
+            {"error": "Request not found"},
+            status=status.HTTP_404_NOT_FOUND
+        )
+
+@permission_classes([IsAuthenticated])
+@api_view(["POST"])
+def mark_request_returned_view(request, request_id):
+    """Mark a fulfilled request as returned."""
+    try:
+        part_request = PartRequest.objects.get(id=request_id)
+        user = request.user
+        
+        # Only the fulfiller can mark as returned
+        if part_request.fulfilled_by.team_number != user.team_number:
+            return Response(
+                {"error": "Only the fulfilling team can mark the request as returned."},
+                status=status.HTTP_403_FORBIDDEN
+            )
+        
+        if not part_request.is_fulfilled:
+            return Response(
+                {"error": "Request must be fulfilled before being marked as returned."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        if not part_request.requires_return:
+            return Response(
+                {"error": "This request does not require a return."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        part_request.is_returned = True
+        part_request.return_date = timezone.now()
+        part_request.save()
+        
+        serializer = PartRequestSerializer(part_request)
+
+        # Send WebSocket update if this is a competition request
+        if part_request.event_key:
+            channel_layer = get_channel_layer()
+            serialized_data = json.loads(
+                json.dumps(serializer.data, cls=UUIDEncoder)
+            )
+            async_to_sync(channel_layer.group_send)(
+                f"event_{part_request.event_key}",
+                {
+                    "type": "event.update",
+                    "message": {
+                        "type": "request_returned",
+                        "request": serialized_data
+                    }
+                }
+            )
+        
+        return Response(serializer.data, status=status.HTTP_200_OK)
+        
+    except PartRequest.DoesNotExist:
+        return Response(
+            {"error": "Request not found"},
+            status=status.HTTP_404_NOT_FOUND
+        )
+
+@api_view(["GET"])
+def fulfilled_requests_view(request, team_number):
+    """Fetch all requests fulfilled by a team."""
+    try:
+        user = User.objects.get(team_number=team_number)
+        fulfilled = PartRequest.objects.filter(
+            fulfilled_by=user,
+            is_fulfilled=True
+        ).order_by('-fulfillment_date')
+        
+        serializer = PartRequestSerializer(fulfilled, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+    except User.DoesNotExist:
+        return Response(
+            {"error": f"User with team number {team_number} not found."},
+            status=status.HTTP_404_NOT_FOUND,
+        )
+
+@api_view(["GET"])
+def received_requests_view(request, team_number):
+    """Fetch all requests where the team received parts and needs to return them."""
+    try:
+        user = User.objects.get(team_number=team_number)
+        received = PartRequest.objects.filter(
+            user=user,
+            is_fulfilled=True,
+            requires_return=True,
+            is_returned=False
+        ).order_by('-fulfillment_date')
+        
+        serializer = PartRequestSerializer(received, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+    except User.DoesNotExist:
+        return Response(
+            {"error": f"User with team number {team_number} not found."},
+            status=status.HTTP_404_NOT_FOUND,
+        )
+
+@permission_classes([IsAuthenticated])
+@api_view(["POST"])
+def complete_sale_view(request, sale_id):
+    """Mark a sale as completed with an optional buyer."""
+    try:
+        sale = PartSale.objects.get(id=sale_id)
+        user = request.user
+        team_number = request.data.get('team_number')
+        
+        # Only sale owner can mark as sold
+        if sale.user.team_number != user.team_number:
+            return Response(
+                {"error": "Only the sale owner can mark it as sold."},
+                status=status.HTTP_403_FORBIDDEN
+            )
+            
+        if team_number:
+            try:
+                buying_team = User.objects.get(team_number=team_number)
+                sale.sold_to = buying_team
+            except User.DoesNotExist:
+                return Response(
+                    {"error": f"Team {team_number} not found"},
+                    status=status.HTTP_404_NOT_FOUND
+                )
+            
+        # Update sale details
+        sale.is_sold = True
+        sale.sale_date = timezone.now()
+        sale.save()
+        
+        serializer = PartSaleSerializer(sale)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+        
+    except PartSale.DoesNotExist:
+        return Response(
+            {"error": "Sale not found"},
+            status=status.HTTP_404_NOT_FOUND
+        )
+
+@api_view(["GET"])
+def bought_items_view(request, team_number):
+    """Fetch all items bought by a team."""
+    try:
+        user = User.objects.get(team_number=team_number)
+        bought_items = PartSale.objects.filter(
+            sold_to=user,
+            is_sold=True
+        ).order_by('-sale_date')
+        
+        serializer = PartSaleSerializer(bought_items, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+    except User.DoesNotExist:
+        return Response(
+            {"error": f"User with team number {team_number} not found."},
+            status=status.HTTP_404_NOT_FOUND,
+        )

@@ -241,15 +241,15 @@ class PartRequestSerializer(serializers.ModelSerializer):
     class Meta:
         model = PartRequest
         fields = [
-            "id",  # For referencing the request itself
-            "part_id",  # For referencing the part by its ID
+            "id",
+            "part_id",
             "quantity",
             "request_date",
             "needed_date",
             "needed_for",
             "additional_info",
             "is_fulfilled",
-            "fulfilled_by",
+            "fulfilled_by",  # Add this field
             "fulfillment_date",
             "requires_return",
             "is_returned",
@@ -274,9 +274,14 @@ class PartRequestSerializer(serializers.ModelSerializer):
         """Customize the serialized output."""
         data = super().to_representation(instance)
 
-        # Optionally include `user` or other computed fields here
-        data["part"] = PartSerializer(instance.part).data  # Include part details
-        data["user"] = PublicUserSerializer(instance.user).data  # Include user details
+        # Include part details and user details
+        data["part"] = PartSerializer(instance.part).data
+        data["user"] = PublicUserSerializer(instance.user).data
+        
+        # Add fulfilled_by user details if it exists
+        if instance.fulfilled_by:
+            data["fulfilled_by"] = PublicUserSerializer(instance.fulfilled_by).data
+
         return data
 
 

@@ -90,10 +90,10 @@ const AllRequests = () => {
   // Update Fuse instance to use requests from context
   const fuse = useMemo(() => new Fuse(requests, fuseOptions), [requests]);
 
-  // Update getFilteredResults to filter out requests with event_key
+  // Update getFilteredResults to filter out requests with event_key or fulfilled
   const getFilteredResults = () => {
-    // First filter out requests that have an event_key
-    let results = requests.filter(request => !request.event_key);
+    // First filter out requests that have an event_key or are fulfilled
+    let results = requests.filter(request => !request.event_key && !request.is_fulfilled);
 
     if (user) {
       results = results.map(request => {

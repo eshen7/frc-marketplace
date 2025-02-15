@@ -60,9 +60,12 @@ export const UserProvider = ({ children }) => {
 
   return (
     <UserContext.Provider value={{
-      user, setUser,
-      loadingUser, setLoadingUser,
-      isAuthenticated, setIsAuthenticated
+      user: user || null,  // Ensure we always provide a value
+      setUser,
+      loadingUser,
+      setLoadingUser,
+      isAuthenticated,
+      setIsAuthenticated,
     }}>
       {children}
     </UserContext.Provider>
@@ -74,5 +77,5 @@ export const useUser = () => {
   if (context === undefined) {
     throw new Error('useUser must be used within a UserProvider');
   }
-  return context;
-}; 
+  return context || { user: null, loadingUser: true, isAuthenticated: false };  // Provide default values
+};
