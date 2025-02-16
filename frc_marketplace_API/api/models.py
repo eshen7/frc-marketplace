@@ -151,14 +151,13 @@ class PartRequest(models.Model):
     part = models.ForeignKey(Part, on_delete=models.PROTECT, related_name="requests")
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="requests")
     quantity = models.IntegerField(default=1)
-    request_date = models.DateField(auto_now_add=True)
+    request_date = models.DateTimeField(auto_now_add=True)
     needed_date = models.DateField(null=True, blank=True)
     needed_for = models.CharField(max_length=255, null=True, blank=True)
     additional_info = models.TextField(null=True, blank=True)
     bid_price = models.DecimalField(
         max_digits=10, decimal_places=2, null=True, blank=True
     )  # -1 if they are willing to trade, 0 for donation
-    # is_open = models.BooleanField(default=True) ADD IN V2
 
     # New fields
     is_fulfilled = models.BooleanField(default=False)
@@ -198,13 +197,12 @@ class PartSale(models.Model):
     part = models.ForeignKey(Part, on_delete=models.PROTECT, related_name="sales")
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="sales")
     quantity = models.IntegerField(default=1)
-    sale_creation_date = models.DateField(auto_now_add=True)
+    sale_creation_date = models.DateTimeField(auto_now_add=True)
     ask_price = models.DecimalField(
         max_digits=10, decimal_places=2
     )  # -1 if trade, 0 for FREE
     additional_info = models.TextField(null=True, blank=True)
     condition = models.CharField(max_length=255, null=True, blank=True)
-    # is_listed = models.BooleanField(default=True) ADD IN V2
 
     # New fields
     is_sold = models.BooleanField(default=False)

@@ -139,7 +139,7 @@ const AllRequests = () => {
         case "urgent":
           return getDaysUntil(a.needed_date) - getDaysUntil(b.needed_date);
         case "newest":
-          return new Date(b.request_date) - new Date(a.request_date);
+          return new Date(b.request_date).getTime() - new Date(a.request_date).getTime();
         case "closest":
           const distanceA = a.distance ?? Infinity;
           const distanceB = b.distance ?? Infinity;

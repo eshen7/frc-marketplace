@@ -82,17 +82,19 @@ const SalesPage = () => {
 
   const getFilteredResults = () => {
     // Start with only active (unsold) sales
-    let results = sales.filter(sale => !sale.is_sold);
+    let results = sales.filter((sale) => !sale.is_sold);
 
     if (user) {
-      results = results.map(sale => {
-        if (!sale.user?.formatted_address?.latitude || 
-            !sale.user?.formatted_address?.longitude ||
-            !user?.formatted_address?.latitude || 
-            !user?.formatted_address?.longitude) {
+      results = results.map((sale) => {
+        if (
+          !sale.user?.formatted_address?.latitude ||
+          !sale.user?.formatted_address?.longitude ||
+          !user?.formatted_address?.latitude ||
+          !user?.formatted_address?.longitude
+        ) {
           return { ...sale, distance: Infinity };
         }
-        
+
         const distance = haversine(
           user.formatted_address.latitude,
           user.formatted_address.longitude,
@@ -126,7 +128,10 @@ const SalesPage = () => {
     results.sort((a, b) => {
       switch (sortBy) {
         case "newest":
-          return new Date(b.request_date) - new Date(a.request_date);
+          return (
+            new Date(b.request_date).getTime() -
+            new Date(a.request_date).getTime()
+          );
         case "closest":
           const distanceA = a.distance ?? Infinity;
           const distanceB = b.distance ?? Infinity;
